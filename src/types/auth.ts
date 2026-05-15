@@ -18,6 +18,23 @@ export interface AuthContext {
   user: DomainUser;
 }
 
+export interface AdminUsersQuery {
+  page: number;
+  limit: number;
+  role?: UserRole;
+  status?: UserStatus;
+  search?: string;
+}
+
+export interface AdminUsersResult {
+  items: DomainUser[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
 export interface StoreRegistrationPayload {
   email: string;
   password: string;

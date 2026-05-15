@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 import type {
+  AdminUsersQuery,
+  AdminUsersResult,
   ApiFailure,
   ApiSuccess,
   AuthContext,
@@ -89,6 +91,83 @@ export async function getMe(accessToken: string) {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+function bearerHeaders(accessToken: string) {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+  };
+}
+
+export async function listAdminUsers(accessToken: string, query: AdminUsersQuery) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminUsersResult> | ApiFailure>('/api/admin/users', {
+      headers: bearerHeaders(accessToken),
+      params: {
+        page: query.page,
+        limit: query.limit,
+        role: query.role || undefined,
+        status: query.status || undefined,
+        search: query.search || undefined,
+      },
+    });
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function approveUser(accessToken: string, userId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.patch<ApiSuccess<AuthContext['user']> | ApiFailure>(
+      `/api/admin/users/${userId}/approve`,
+      undefined,
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function blockUser(accessToken: string, userId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.patch<ApiSuccess<AuthContext['user']> | ApiFailure>(
+      `/api/admin/users/${userId}/block`,
+      undefined,
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function unblockUser(accessToken: string, userId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.patch<ApiSuccess<AuthContext['user']> | ApiFailure>(
+      `/api/admin/users/${userId}/unblock`,
+      undefined,
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
 
     return unwrapResponse(response.data);
   } catch (error) {

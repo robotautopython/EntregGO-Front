@@ -19,3 +19,7 @@ Apos remover `next-pwa` e corrigir o `glob` transitivo do lint, o residual do au
 ## 2026-05-14 - Sessao real de RLS precisa de limpeza operacional
 
 O frontend M-02B permite obter uma sessao real Supabase Auth pelo login, mas o smoke automatizado completo criaria usuario Auth e linhas de dominio no ambiente remoto. Como a service role foi exposta anteriormente no chat e a rotacao ainda nao esta confirmada nos documentos, e como nao ha endpoint operacional de limpeza, o gate correto e bloquear a criacao automatica e validar apenas anon/read-only ate existir plano seguro de usuario temporario.
+
+## 2026-05-15 - Supabase query builder deve ser aguardado explicitamente
+
+No smoke do painel admin, tentar usar `.catch()` diretamente apos encadear um query builder Supabase (`service.from(...).delete().in(...)`) falhou porque o objeto ainda nao e uma Promise comum naquele ponto. O padrao seguro e atribuir `const result = await query` e entao verificar `result.error`, especialmente em blocos de limpeza que nao podem mascarar sobras temporarias.

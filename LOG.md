@@ -64,3 +64,13 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado com sucesso
 
 **Validacoes:** `node scripts/smoke-auth-rls.mjs` passou no backend com limpeza completa. Frontend permanece sem mudanca de codigo neste fechamento; o residual conhecido de `npm audit` em Next/PostCSS continua aberto para ciclo proprio.
+
+## 2026-05-15 - M-03 ADMIN MINIMO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementado painel admin minimo em `/admin`, substituindo o placeholder por uma tela operacional que valida sessao Supabase Auth, confirma `/api/auth/me`, restringe a UI a `admin` ativo, lista usuarios via API backend com filtros/paginacao e executa aprovar, bloquear e desbloquear com Bearer token. O frontend nao acessa tabelas Supabase diretamente e nao recebeu secrets privados.
+**Arquivos modificados:** `src/app/admin/page.tsx`, `src/components/admin/AdminUsersPanel.tsx`, `src/lib/api.ts`, `src/types/auth.ts`, `STATUS.md`, `LOG.md`, `LEARNINGS.md`
+**Agentes utilizados:** Camisa10, PromptRefiner, ImpactValidator, SecurityValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente; pendente deploy do novo commit frontend
+
+**Validacoes:** Frontend `npm run typecheck`, `npm run lint` e `npm run build` passaram. Backend `npm run typecheck`, `npm test`, `npm run lint` e `npm run build` passaram sem mudanca de codigo backend. Smoke de producao com admin temporario validou `/api/auth/me`, `GET /api/admin/users`, `PATCH approve` para `israel.souza@ent.app.br` e `PATCH block/unblock` em usuario temporario; limpeza confirmou zero linhas temporarias restantes e o motoboy ficou `ativo`.

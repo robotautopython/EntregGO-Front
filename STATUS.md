@@ -31,18 +31,19 @@
 - [x] Smoke anon read-only confirmou negacao `401` nas tabelas de dominio, incluindo `payments`.
 - [x] Chave publica Supabase do frontend corrigida para publishable key e smoke Auth/RLS real aprovado pelo backend com sessao real.
 - [x] Direcao visual inicial criada em `design.md`, com landing page em `/` usando logo oficial, paleta laranja/azul e CTAs para cadastro/login.
+- [x] M-03 admin minimo implementado: `/admin` lista usuarios paginados pela API backend e permite aprovar, bloquear e desbloquear com Bearer token de admin ativo.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards, push real, realtime real ou testes frontend.
+- Projeto ainda nao possui dashboards metricos, push real, realtime real ou testes frontend.
 - `npm audit --audit-level=moderate` ainda falha por vulnerabilidades em `next@14.2.35` e `postcss@8.4.31` embutido no Next; correcao exige migracao major para Next 15.5.16+ ou 16.x com validacao propria.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
-- Credenciais de deploy/VAPID ainda pendentes e nao devem ser hardcoded.
+- VAPID ainda pendente e nao deve ser hardcoded.
 
 ## Saude do Projeto
 
 **Build:** passando
 **Lint:** passando
 **Testes:** inexistente
-**Deploy:** inexistente
+**Deploy:** publicado em Vercel
 **Riscos abertos:** 4
