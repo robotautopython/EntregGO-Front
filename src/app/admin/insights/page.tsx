@@ -60,6 +60,8 @@ export default function AdminInsightsPage() {
   );
 }
 
+
+
 function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
   const [insights, setInsights] = useState<AdminInsights | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,7 +80,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
         return;
       }
 
-      setError('Nao foi possivel carregar os insights.');
+      setError('Não foi possível carregar os insights.');
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +144,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
 
       {!isLoading && !error && isEmpty ? (
         <Alert tone="info" title="Sem dados ainda">
-          A API respondeu, mas ainda nao ha usuarios ou cadastros pendentes para resumir.
+          A API respondeu, mas ainda não há usuários ou cadastros pendentes para resumir.
         </Alert>
       ) : null}
 
@@ -150,7 +152,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
         <>
           <div className="grid gap-3 md:grid-cols-4">
             <MetricCard
-              label="Usuarios"
+              label="Usuários"
               value={totalUsers}
               subtitle={`${pendingUsersCount} pendentes`}
               icon={Users}
@@ -173,7 +175,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
             <MetricCard
               label="Gerado em"
               value={formatDateTime(insights.generated_at)}
-              subtitle="horario da API"
+              subtitle="horário da API"
               icon={Clock3}
               tone="paper"
             />
@@ -183,7 +185,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
             <Card className="overflow-hidden p-0">
               <div className="border-b border-paper-line px-5 py-4">
                 <p className="text-sm font-extrabold text-asphalt-950">
-                  Usuarios por perfil e status
+                  Usuários por perfil e status
                 </p>
               </div>
               <div className="overflow-x-auto">
@@ -239,7 +241,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
             <Card className="p-0">
               <div className="border-b border-paper-line px-5 py-4">
                 <p className="text-sm font-extrabold text-asphalt-950">
-                  Ultimos cadastros pendentes
+                  Últimos cadastros pendentes
                 </p>
                 <p className="mt-1 text-xs font-semibold text-asphalt-950/55">
                   Limite do backend: {insights.latest_pending_users.limit}

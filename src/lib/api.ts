@@ -54,7 +54,7 @@ function mapAxiosError(error: unknown): never {
     throw new ClientApiError(apiError.code, apiError.message, apiError.details);
   }
 
-  throw new ClientApiError('REQUEST_FAILED', 'Nao foi possivel concluir a requisicao');
+  throw new ClientApiError('REQUEST_FAILED', 'Não foi possível concluir a requisição');
 }
 
 export async function registerStore(payload: StoreRegistrationPayload) {

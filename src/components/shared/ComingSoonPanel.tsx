@@ -20,12 +20,12 @@ export function ComingSoonPanel({
       <PageHeader eyebrow={eyebrow} title={title} description={description} />
 
       <Card variant="white" className="space-y-4">
-        <Badge tone="paper">Em preparacao</Badge>
+        <Badge tone="paper">Em preparação</Badge>
         <div className="space-y-2">
-          <h2 className="text-xl font-black text-asphalt-950">Area reservada</h2>
+          <h2 className="text-xl font-black text-asphalt-950">Área reservada</h2>
           <p className="max-w-2xl text-sm leading-6 text-asphalt-950/70">
-            Esta pagina ja esta roteada para evitar tela vazia, mas a operacao real entra em
-            um ciclo proprio com contrato, seguranca e validacao.
+            Esta página já está roteada para evitar tela vazia, mas a operação real entra em
+            um ciclo próprio com contrato, segurança e validação.
           </p>
         </div>
 
