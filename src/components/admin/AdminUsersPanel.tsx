@@ -7,24 +7,38 @@ import {
   ChevronRight,
   Loader2,
   RefreshCw,
-  ShieldAlert,
-  ShieldCheck,
+  Search,
   Unlock,
 } from 'lucide-react';
-import Link from 'next/link';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { PageHeader } from '@/components/shell/PageHeader';
+import { Alert } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Field, Input } from '@/components/ui/Field';
 import {
   approveUser,
   blockUser,
   ClientApiError,
-  getMe,
   listAdminUsers,
   unblockUser,
 } from '@/lib/api';
-import { createBrowserSupabaseClient } from '@/lib/supabase';
-import type { AdminUsersResult, AuthContext, DomainUser, UserRole, UserStatus } from '@/types/auth';
+import { cn } from '@/lib/cn';
+import type {
+  AdminUsersResult,
+  AuthContext,
+  DomainUser,
+  UserRole,
+  UserStatus,
+} from '@/types/auth';
+
+interface AdminUsersPanelProps {
+  authContext: AuthContext;
+  accessToken: string;
+}
 
 type Filters = {
   role: '' | UserRole;
@@ -42,168 +56,102 @@ const roleLabels: Record<UserRole, string> = {
   motoboy: 'Motoboy',
 };
 
-const statusLabels: Record<UserStatus, string> = {
-  pendente: 'Pendente',
-  ativo: 'Ativo',
-  bloqueado: 'Bloqueado',
-};
-
-const statusClasses: Record<UserStatus, string> = {
-  pendente: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-  ativo: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  bloqueado: 'border-red-200 bg-red-50 text-red-800',
+const statusToneMap: Record<
+  UserStatus,
+  { tone: 'warn' | 'success' | 'danger'; label: string; pulse: boolean }
+> = {
+  pendente: { tone: 'warn', label: 'Pendente', pulse: true },
+  ativo: { tone: 'success', label: 'Ativo', pulse: false },
+  bloqueado: { tone: 'danger', label: 'Bloqueado', pulse: false },
 };
 
 const formatDate = (value: string | null) => {
-  if (!value) {
-    return '-';
-  }
-
+  if (!value) return '—';
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value));
 };
 
-function StatusBadge({ status }: { status: UserStatus }) {
+function StatusPill({ status }: { status: UserStatus }) {
+  const meta = statusToneMap[status];
   return (
-    <span
-      className={`inline-flex h-7 items-center rounded-md border px-2 text-xs font-semibold ${statusClasses[status]}`}
-    >
-      {statusLabels[status]}
-    </span>
+    <Badge tone={meta.tone} pulsing={meta.pulse}>
+      {meta.label}
+    </Badge>
   );
 }
 
 function getAvailableActions(user: DomainUser, currentUserId: string | undefined): ActionName[] {
-  if (user.id === currentUserId) {
-    return [];
-  }
-
-  if (user.status === 'pendente') {
-    return ['approve', 'block'];
-  }
-
-  if (user.status === 'bloqueado') {
-    return ['unblock'];
-  }
-
+  if (user.id === currentUserId) return [];
+  if (user.status === 'pendente') return ['approve', 'block'];
+  if (user.status === 'bloqueado') return ['unblock'];
   return ['block'];
 }
 
-export function AdminUsersPanel() {
-  const [authContext, setAuthContext] = useState<AuthContext | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelProps) {
   const [users, setUsers] = useState<AdminUsersResult | null>(null);
   const [filters, setFilters] = useState<Filters>({ role: '', status: '', search: '' });
   const [page, setPage] = useState(1);
-  const [isBooting, setIsBooting] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const canManage = authContext?.user.role === 'admin' && authContext.user.status === 'ativo';
   const totalPages = useMemo(() => {
-    if (!users?.pagination.total) {
-      return 1;
-    }
-
+    if (!users?.pagination.total) return 1;
     return Math.max(1, Math.ceil(users.pagination.total / users.pagination.limit));
   }, [users]);
 
   const loadUsers = useCallback(
-    async (token: string, nextPage = page, nextFilters = filters) => {
+    async (nextPage = page, nextFilters = filters) => {
       setIsLoadingUsers(true);
       setError(null);
 
       try {
-        const result = await listAdminUsers(token, {
+        const result = await listAdminUsers(accessToken, {
           page: nextPage,
           limit: pageSize,
           role: nextFilters.role || undefined,
           status: nextFilters.status || undefined,
           search: nextFilters.search.trim() || undefined,
         });
-        setUsers(result);
+        if (result) setUsers(result);
       } catch (caughtError) {
         if (caughtError instanceof ClientApiError) {
           setError(caughtError.message);
           return;
         }
 
-        setError('Nao foi possivel carregar usuarios.');
+        setError('Não foi possível carregar usuários.');
       } finally {
         setIsLoadingUsers(false);
       }
     },
-    [filters, page],
+    [accessToken, filters, page],
   );
 
   useEffect(() => {
-    async function boot() {
-      try {
-        const supabase = createBrowserSupabaseClient();
-        const { data } = await supabase.auth.getSession();
-
-        if (!data.session?.access_token) {
-          setError('Sessao local nao encontrada.');
-          return;
-        }
-
-        const me = await getMe(data.session.access_token);
-        setAuthContext(me);
-        setAccessToken(data.session.access_token);
-
-        if (me.user.role === 'admin' && me.user.status === 'ativo') {
-          await loadUsers(data.session.access_token, 1, filters);
-        } else {
-          setError('Perfil sem permissao para acessar o painel admin.');
-        }
-      } catch (caughtError) {
-        if (caughtError instanceof ClientApiError) {
-          setError(caughtError.message);
-          return;
-        }
-
-        setError('Nao foi possivel validar a sessao.');
-      } finally {
-        setIsBooting(false);
-      }
-    }
-
-    void boot();
-    // loadUsers is intentionally stable enough for boot; filter submits control reloads.
+    void loadUsers(1, { role: '', status: '', search: '' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [accessToken]);
 
   async function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (!accessToken || !canManage) {
-      return;
-    }
-
     setPage(1);
     setSuccess(null);
-    await loadUsers(accessToken, 1, filters);
+    await loadUsers(1, filters);
   }
 
   async function handlePageChange(nextPage: number) {
-    if (!accessToken || !canManage || nextPage < 1 || nextPage > totalPages) {
-      return;
-    }
-
+    if (nextPage < 1 || nextPage > totalPages) return;
     setPage(nextPage);
     setSuccess(null);
-    await loadUsers(accessToken, nextPage, filters);
+    await loadUsers(nextPage, filters);
   }
 
   async function handleAction(user: DomainUser, action: ActionName) {
-    if (!accessToken || activeAction) {
-      return;
-    }
-
+    if (activeAction) return;
     const actionKey = `${action}:${user.id}`;
     setActiveAction(actionKey);
     setError(null);
@@ -225,280 +173,294 @@ export function AdminUsersPanel() {
         setSuccess(`${user.email} desbloqueado.`);
       }
 
-      await loadUsers(accessToken, page, filters);
+      await loadUsers(page, filters);
     } catch (caughtError) {
       if (caughtError instanceof ClientApiError) {
         setError(caughtError.message);
         return;
       }
 
-      setError('Nao foi possivel concluir a acao.');
+      setError('Não foi possível concluir a ação.');
     } finally {
       setActiveAction(null);
     }
   }
 
+  const pendingCount = users?.items.filter((user) => user.status === 'pendente').length ?? 0;
+
   return (
-    <main className="min-h-screen bg-[#fffaf4] px-4 py-6 sm:px-6 lg:px-8">
-      <section className="mx-auto max-w-7xl space-y-6">
-        <header className="flex flex-col gap-4 border-b border-[#f1e7dc] pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-bold text-brand-600">EntregGO</p>
-            <h1 className="text-3xl font-black text-asphalt-950">Painel Admin</h1>
-            <p className="max-w-2xl text-sm leading-6 text-gray-600">
-              Cadastros, aprovacoes e bloqueios operacionais.
-            </p>
-          </div>
-          {authContext ? (
-            <div className="flex items-center gap-2 rounded-md border border-[#f1e7dc] bg-white px-3 py-2 text-sm text-gray-700">
-              <ShieldCheck className="h-4 w-4 text-brand-600" />
-              <span>{authContext.user.email}</span>
-              <StatusBadge status={authContext.user.status} />
-            </div>
-          ) : null}
-        </header>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Gestão da rede"
+        title="Painel Admin"
+        description="Cadastros, aprovações e bloqueios da central. Aprovações pulsam na lista — entre na linha pra agir."
+        actions={
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => void loadUsers(page, filters)}
+            disabled={isLoadingUsers}
+          >
+            {isLoadingUsers ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Atualizar
+          </Button>
+        }
+      />
 
-        {isBooting ? (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Carregando painel
-          </div>
-        ) : null}
-
-        {!isBooting && !canManage ? (
-          <div className="space-y-4 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-            <div className="flex items-center gap-2 font-semibold">
-              <ShieldAlert className="h-4 w-4" />
-              Acesso administrativo indisponivel
+      <Card>
+        <form
+          className="grid gap-4 md:grid-cols-[1fr_180px_180px_auto] md:items-end"
+          onSubmit={handleFilterSubmit}
+        >
+          <Field label="Buscar por email">
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-asphalt-950/45"
+                aria-hidden="true"
+              />
+              <Input
+                type="search"
+                placeholder="email@empresa.com"
+                className="pl-10"
+                value={filters.search}
+                onChange={(event) =>
+                  setFilters((current) => ({ ...current, search: event.target.value }))
+                }
+              />
             </div>
-            {error ? <p>{error}</p> : null}
-            <Link
-              className="inline-flex h-10 items-center justify-center rounded-md border border-red-300 bg-white px-4 text-sm font-semibold text-red-800 transition hover:border-red-400"
-              href="/login"
+          </Field>
+
+          <Field label="Perfil">
+            <select
+              className="h-12 w-full rounded-md border border-paper-line bg-white px-3 text-sm font-semibold outline-none transition-all duration-ui ease-ride focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              value={filters.role}
+              onChange={(event) =>
+                setFilters((current) => ({
+                  ...current,
+                  role: event.target.value as Filters['role'],
+                }))
+              }
             >
-              Voltar ao login
-            </Link>
+              <option value="">Todos</option>
+              <option value="admin">Admin</option>
+              <option value="logista">Loja</option>
+              <option value="motoboy">Motoboy</option>
+            </select>
+          </Field>
+
+          <Field label="Status">
+            <select
+              className="h-12 w-full rounded-md border border-paper-line bg-white px-3 text-sm font-semibold outline-none transition-all duration-ui ease-ride focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              value={filters.status}
+              onChange={(event) =>
+                setFilters((current) => ({
+                  ...current,
+                  status: event.target.value as Filters['status'],
+                }))
+              }
+            >
+              <option value="">Todos</option>
+              <option value="pendente">Pendente</option>
+              <option value="ativo">Ativo</option>
+              <option value="bloqueado">Bloqueado</option>
+            </select>
+          </Field>
+
+          <Button type="submit" variant="dark" size="lg" disabled={isLoadingUsers}>
+            {isLoadingUsers ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
+            Filtrar
+          </Button>
+        </form>
+      </Card>
+
+      {error ? <Alert tone="danger">{error}</Alert> : null}
+      {success ? (
+        <Alert tone="success" title="Pronto">
+          {success}
+        </Alert>
+      ) : null}
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <MetricCard
+          label="Total"
+          value={users?.pagination.total ?? 0}
+          tone="brand"
+          subtitle="usuários encontrados"
+        />
+        <MetricCard
+          label="Pendentes nesta página"
+          value={pendingCount}
+          tone="warn"
+          subtitle="aguardando aprovação"
+        />
+        <MetricCard label="Página" value={`${page} / ${totalPages}`} tone="route" subtitle="navegação" />
+      </div>
+
+      <Card className="overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[920px] border-collapse text-left text-sm">
+            <thead className="bg-paper-deep text-xs uppercase tracking-wide text-asphalt-950/60">
+              <tr>
+                <th className="border-b border-paper-line px-5 py-3 font-extrabold">Email</th>
+                <th className="border-b border-paper-line px-5 py-3 font-extrabold">Perfil</th>
+                <th className="border-b border-paper-line px-5 py-3 font-extrabold">Status</th>
+                <th className="border-b border-paper-line px-5 py-3 font-extrabold">Criado em</th>
+                <th className="border-b border-paper-line px-5 py-3 font-extrabold">
+                  Aprovado em
+                </th>
+                <th className="border-b border-paper-line px-5 py-3 text-right font-extrabold">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {users?.items.map((user) => {
+                const isMe = user.id === authContext.user.id;
+                return (
+                  <tr
+                    key={user.id}
+                    className={cn(
+                      'border-b border-paper-line last:border-b-0 transition-colors hover:bg-paper',
+                      user.status === 'pendente' && 'bg-warn-50/40',
+                    )}
+                  >
+                    <td className="px-5 py-3 font-bold text-asphalt-950">{user.email}</td>
+                    <td className="px-5 py-3 text-asphalt-950/75">
+                      {roleLabels[user.role]}
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusPill status={user.status} />
+                    </td>
+                    <td className="px-5 py-3 font-mono text-xs text-asphalt-950/65">
+                      {formatDate(user.created_at)}
+                    </td>
+                    <td className="px-5 py-3 font-mono text-xs text-asphalt-950/65">
+                      {formatDate(user.approved_at)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex justify-end gap-2">
+                        {isMe ? (
+                          <Badge tone="paper">Sessão atual</Badge>
+                        ) : (
+                          getAvailableActions(user, authContext.user.id).map((action) => {
+                            const actionKey = `${action}:${user.id}`;
+                            const isBusy = activeAction === actionKey;
+                            const variant =
+                              action === 'approve'
+                                ? 'success'
+                                : action === 'unblock'
+                                  ? 'secondary'
+                                  : 'danger';
+                            const Icon =
+                              action === 'approve'
+                                ? CheckCircle2
+                                : action === 'unblock'
+                                  ? Unlock
+                                  : Ban;
+                            const label =
+                              action === 'approve'
+                                ? 'Aprovar'
+                                : action === 'unblock'
+                                  ? 'Desbloquear'
+                                  : 'Bloquear';
+
+                            return (
+                              <Button
+                                key={action}
+                                size="sm"
+                                variant={variant}
+                                onClick={() => void handleAction(user, action)}
+                                disabled={Boolean(activeAction)}
+                              >
+                                {isBusy ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Icon className="h-3.5 w-3.5" />
+                                )}
+                                {label}
+                              </Button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {!isLoadingUsers && users && users.items.length === 0 ? (
+          <div className="px-5 py-12 text-center text-sm text-asphalt-950/65">
+            Nenhum usuário encontrado pra esses filtros.
           </div>
         ) : null}
 
-        {canManage ? (
-          <>
-            <form
-              className="grid gap-3 border-b border-[#f1e7dc] pb-5 md:grid-cols-[1fr_160px_160px_auto]"
-              onSubmit={handleFilterSubmit}
+        <div className="flex flex-col gap-3 border-t border-paper-line px-5 py-4 text-sm text-asphalt-950/75 sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            {users?.pagination.total ?? 0} usuários · página {page} de {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => void handlePageChange(page - 1)}
+              disabled={page <= 1 || isLoadingUsers}
             >
-              <label className="block space-y-2 text-sm font-medium text-gray-800">
-                <span>Buscar email</span>
-                <input
-                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-base outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-50"
-                  onChange={(event) =>
-                    setFilters((current) => ({ ...current, search: event.target.value }))
-                  }
-                  type="search"
-                  value={filters.search}
-                />
-              </label>
+              <ChevronLeft className="h-4 w-4" />
+              Anterior
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => void handlePageChange(page + 1)}
+              disabled={page >= totalPages || isLoadingUsers}
+            >
+              Próxima
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
 
-              <label className="block space-y-2 text-sm font-medium text-gray-800">
-                <span>Perfil</span>
-                <select
-                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-50"
-                  onChange={(event) =>
-                    setFilters((current) => ({
-                      ...current,
-                      role: event.target.value as Filters['role'],
-                    }))
-                  }
-                  value={filters.role}
-                >
-                  <option value="">Todos</option>
-                  <option value="admin">Admin</option>
-                  <option value="logista">Loja</option>
-                  <option value="motoboy">Motoboy</option>
-                </select>
-              </label>
+function MetricCard({
+  label,
+  value,
+  subtitle,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  subtitle: string;
+  tone: 'brand' | 'route' | 'warn';
+}) {
+  const toneMap = {
+    brand: 'border-brand-200 bg-brand-50 text-brand-700',
+    route: 'border-route-200 bg-route-50 text-route-700',
+    warn: 'border-warn-500/20 bg-warn-50 text-warn-700',
+  };
 
-              <label className="block space-y-2 text-sm font-medium text-gray-800">
-                <span>Status</span>
-                <select
-                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-50"
-                  onChange={(event) =>
-                    setFilters((current) => ({
-                      ...current,
-                      status: event.target.value as Filters['status'],
-                    }))
-                  }
-                  value={filters.status}
-                >
-                  <option value="">Todos</option>
-                  <option value="pendente">Pendente</option>
-                  <option value="ativo">Ativo</option>
-                  <option value="bloqueado">Bloqueado</option>
-                </select>
-              </label>
-
-              <button
-                className="inline-flex h-11 items-center justify-center gap-2 self-end rounded-md bg-gray-950 px-4 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-                disabled={isLoadingUsers}
-                type="submit"
-              >
-                {isLoadingUsers ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-                Atualizar
-              </button>
-            </form>
-
-            {error ? (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
-              </div>
-            ) : null}
-
-            {success ? (
-              <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-                <CheckCircle2 className="h-4 w-4" />
-                {success}
-              </div>
-            ) : null}
-
-            <div className="overflow-hidden rounded-md border border-[#f1e7dc] bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-                  <thead className="bg-[#fffaf4] text-xs uppercase tracking-wide text-gray-600">
-                    <tr>
-                      <th className="border-b border-[#f1e7dc] px-4 py-3">Email</th>
-                      <th className="border-b border-[#f1e7dc] px-4 py-3">Perfil</th>
-                      <th className="border-b border-[#f1e7dc] px-4 py-3">Status</th>
-                      <th className="border-b border-[#f1e7dc] px-4 py-3">Criado em</th>
-                      <th className="border-b border-[#f1e7dc] px-4 py-3">Aprovado em</th>
-                      <th className="border-b border-[#f1e7dc] px-4 py-3 text-right">Acoes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users?.items.map((user) => (
-                      <tr className="border-b border-[#f1e7dc] last:border-b-0" key={user.id}>
-                        <td className="px-4 py-3 font-medium text-gray-950">{user.email}</td>
-                        <td className="px-4 py-3 text-gray-700">{roleLabels[user.role]}</td>
-                        <td className="px-4 py-3">
-                          <StatusBadge status={user.status} />
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">{formatDate(user.created_at)}</td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {formatDate(user.approved_at)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex justify-end gap-2">
-                            {getAvailableActions(user, authContext?.user.id).map((action) => {
-                              const actionKey = `${action}:${user.id}`;
-                              const isBusy = activeAction === actionKey;
-
-                              if (action === 'approve') {
-                                return (
-                                  <button
-                                    className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-emerald-300 px-3 text-xs font-semibold text-emerald-800 transition hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
-                                    disabled={Boolean(activeAction)}
-                                    key={action}
-                                    onClick={() => void handleAction(user, action)}
-                                    type="button"
-                                  >
-                                    {isBusy ? (
-                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ) : (
-                                      <CheckCircle2 className="h-3.5 w-3.5" />
-                                    )}
-                                    Aprovar
-                                  </button>
-                                );
-                              }
-
-                              if (action === 'unblock') {
-                                return (
-                                  <button
-                                    className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-blue-300 px-3 text-xs font-semibold text-blue-800 transition hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                                    disabled={Boolean(activeAction)}
-                                    key={action}
-                                    onClick={() => void handleAction(user, action)}
-                                    type="button"
-                                  >
-                                    {isBusy ? (
-                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ) : (
-                                      <Unlock className="h-3.5 w-3.5" />
-                                    )}
-                                    Desbloquear
-                                  </button>
-                                );
-                              }
-
-                              return (
-                                <button
-                                  className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-red-300 px-3 text-xs font-semibold text-red-800 transition hover:border-red-500 disabled:cursor-not-allowed disabled:opacity-60"
-                                  disabled={Boolean(activeAction)}
-                                  key={action}
-                                  onClick={() => void handleAction(user, action)}
-                                  type="button"
-                                >
-                                  {isBusy ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                  ) : (
-                                    <Ban className="h-3.5 w-3.5" />
-                                  )}
-                                  Bloquear
-                                </button>
-                              );
-                            })}
-                            {user.id === authContext?.user.id ? (
-                              <span className="inline-flex h-9 items-center justify-center rounded-md border border-gray-200 px-3 text-xs font-semibold text-gray-500">
-                                Sessao atual
-                              </span>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {!isLoadingUsers && users?.items.length === 0 ? (
-                <div className="px-4 py-8 text-center text-sm text-gray-600">
-                  Nenhum usuario encontrado.
-                </div>
-              ) : null}
-
-              <div className="flex flex-col gap-3 border-t border-[#f1e7dc] px-4 py-3 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
-                <span>
-                  {users?.pagination.total ?? 0} usuarios encontrados / pagina {page} de{' '}
-                  {totalPages}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 font-semibold transition hover:border-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={page <= 1 || isLoadingUsers}
-                    onClick={() => void handlePageChange(page - 1)}
-                    type="button"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Anterior
-                  </button>
-                  <button
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 font-semibold transition hover:border-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={page >= totalPages || isLoadingUsers}
-                    onClick={() => void handlePageChange(page + 1)}
-                    type="button"
-                  >
-                    Proxima
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : null}
-      </section>
-    </main>
+  return (
+    <div className={cn('rounded-lg border bg-white p-5 shadow-card', toneMap[tone])}>
+      <p className="text-[10px] font-extrabold uppercase tracking-widest opacity-80">
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-3xl font-extrabold tabular-nums text-asphalt-950">
+        {value}
+      </p>
+      <p className="mt-0.5 text-xs font-semibold opacity-70">{subtitle}</p>
+    </div>
   );
 }

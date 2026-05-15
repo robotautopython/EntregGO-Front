@@ -1,10 +1,14 @@
 'use client';
 
-import { Loader2, LogIn } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 
-import { getMe, ClientApiError } from '@/lib/api';
+import { Alert } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Field, Input } from '@/components/ui/Field';
+import { ClientApiError, getMe } from '@/lib/api';
 import { createBrowserSupabaseClient } from '@/lib/supabase';
 import type { AuthContext } from '@/types/auth';
 
@@ -35,6 +39,7 @@ export function LoginForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,7 +54,7 @@ export function LoginForm() {
       });
 
       if (authError || !data.session?.access_token) {
-        setError('Email ou senha invalidos.');
+        setError('Email ou senha inválidos.');
         return;
       }
 
@@ -61,62 +66,82 @@ export function LoginForm() {
         return;
       }
 
-      setError('Nao foi possivel entrar agora.');
+      setError('Não foi possível entrar agora.');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-gray-950">Entrar</h2>
-        <p className="text-sm text-gray-600">Use sua conta do EntregGO.</p>
-      </div>
-
-      <label className="block space-y-2 text-sm font-medium text-gray-800">
-        <span>Email</span>
-        <input
+    <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+      <Field label="Email" required>
+        <Input
           autoComplete="email"
-          className="h-11 w-full rounded-md border border-gray-300 px-3 text-base outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-50"
-          onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-          required
           type="email"
-          value={form.email}
-        />
-      </label>
-
-      <label className="block space-y-2 text-sm font-medium text-gray-800">
-        <span>Senha</span>
-        <input
-          autoComplete="current-password"
-          className="h-11 w-full rounded-md border border-gray-300 px-3 text-base outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-50"
-          minLength={8}
-          onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
           required
-          type="password"
-          value={form.password}
+          placeholder="voce@email.com"
+          value={form.email}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, email: event.target.value }))
+          }
         />
-      </label>
+      </Field>
 
-      {error ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
+      <Field label="Senha" required>
+        <div className="relative">
+          <Input
+            autoComplete="current-password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            minLength={8}
+            placeholder="••••••••"
+            className="pr-12"
+            value={form.password}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, password: event.target.value }))
+            }
+          />
+          <button
+            type="button"
+            aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+            onClick={() => setShowPassword((value) => !value)}
+            className="absolute inset-y-0 right-2 my-auto inline-flex h-9 w-9 items-center justify-center rounded-md text-asphalt-950/60 hover:bg-paper-deep hover:text-asphalt-950"
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
         </div>
-      ) : null}
+      </Field>
 
-      <button
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-        disabled={isSubmitting}
-        type="submit"
-      >
+      {error ? <Alert tone="danger">{error}</Alert> : null}
+
+      <Button type="submit" variant="primary" size="lg" width="full" disabled={isSubmitting}>
         {isSubmitting ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <LogIn className="h-4 w-4" />
+          <ArrowRight className="h-4 w-4" />
         )}
-        Entrar
-      </button>
+        {isSubmitting ? 'Entrando...' : 'Entrar na central'}
+      </Button>
+
+      <div className="space-y-2 pt-2 text-center text-sm">
+        <p className="text-asphalt-950/70">
+          Ainda não tem conta?{' '}
+          <Link href="/registro" className="font-extrabold text-brand-700 underline-offset-4 hover:underline">
+            Fazer cadastro
+          </Link>
+        </p>
+        <p className="text-xs text-asphalt-950/55">
+          Esqueceu a senha? Fale com a central em{' '}
+          <a href="mailto:suporte@ent.app.br" className="font-bold underline">
+            suporte@ent.app.br
+          </a>
+          .
+        </p>
+      </div>
     </form>
   );
 }

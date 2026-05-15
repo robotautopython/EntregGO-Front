@@ -1,10 +1,12 @@
-import { PlaceholderPage } from '@/components/shared/PlaceholderPage';
+'use client';
+
+import { LojaHome } from '@/components/loja/LojaHome';
+import { OperationalShell } from '@/components/shell/OperationalShell';
 
 export default function LojaPage() {
   return (
-    <PlaceholderPage
-      title="Painel da Loja"
-      description="Area da loja preparada para solicitacoes e historico de entregas em etapas futuras."
-    />
+    <OperationalShell role="logista" title="Painel da loja">
+      {({ authContext }) => <LojaHome authContext={authContext} />}
+    </OperationalShell>
   );
 }

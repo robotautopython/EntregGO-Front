@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,12 +20,19 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: #fffaf4;
+  padding: 0;
+}
+
+body {
+  background: var(--entreggo-paper);
   color: var(--entreggo-ink);
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -32,12 +41,77 @@ a {
 }
 
 ::selection {
-  background: rgba(255, 90, 10, 0.2);
+  background: rgba(255, 90, 10, 0.22);
+  color: var(--entreggo-ink);
 }
 
 :focus-visible {
   outline: 3px solid rgba(11, 134, 255, 0.55);
   outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.font-tnum {
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.bg-grid-paper {
+  background-image: radial-gradient(circle at 1px 1px, rgba(11, 18, 32, 0.06) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.glass {
+  background-color: rgba(255, 250, 244, 0.72);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+}
+
+.glass-dark {
+  background-color: rgba(11, 18, 32, 0.72);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+}
+
+.dashed-route {
+  stroke-dasharray: 6 6;
+  animation: dash-move 1.2s linear infinite;
+}
+
+@keyframes dash-move {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -24;
+  }
+}
+
+@keyframes ride-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(11, 18, 32, 0.18);
+  border-radius: 999px;
+  border: 2px solid var(--entreggo-paper);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(11, 18, 32, 0.32);
 }
 
 @media (prefers-reduced-motion: reduce) {

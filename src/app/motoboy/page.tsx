@@ -1,10 +1,22 @@
-import { PlaceholderPage } from '@/components/shared/PlaceholderPage';
+'use client';
+
+import { Suspense } from 'react';
+
+import { CourierHomeFlow } from '@/components/motoboy/CourierHomeFlow';
+import { OperationalShell } from '@/components/shell/OperationalShell';
 
 export default function MotoboyPage() {
   return (
-    <PlaceholderPage
-      title="Painel do Motoboy"
-      description="Area do motoboy preparada para corridas, status e notificacoes futuras."
-    />
+    <OperationalShell role="motoboy" title="Corridas">
+      {({ authContext }) => (
+        <Suspense
+          fallback={
+            <p className="text-sm text-asphalt-950/60">Carregando central...</p>
+          }
+        >
+          <CourierHomeFlow authContext={authContext} />
+        </Suspense>
+      )}
+    </OperationalShell>
   );
 }
