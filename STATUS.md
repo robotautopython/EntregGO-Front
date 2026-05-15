@@ -42,6 +42,7 @@
 - [x] Navegacao admin consolidada (ADR-006): `Dashboard` e `Aprovacoes` removidos do menu por duplicacao funcional; `/admin` e `/admin/aprovacoes` viraram redirects server-side; `AdminUsersPanel` ganhou chip pulsante de pendentes e leitura de `?status` da URL.
 - [x] Migracao segura validada para Next.js `15.5.18`, `eslint-config-next@15.5.18`, React `19.2.6` e React DOM `19.2.6`, sem codemod e sem feature nova.
 - [x] Auditoria de padronizacao executada (Camisa10 + Design Agent): acentuacao PT-BR corrigida em ComingSoonPanel, `/admin/insights` e mensagens de erro padrao; arquivos orfaos `PlaceholderPage` e `MotoboyHome` removidos do componentes/shared e componentes/motoboy.
+- [x] Correcao cirurgica de conformidade pos-layout: landing, loja e motoboy deixam claro que entrega, push, realtime e aceite concorrente ainda sao demonstrativos/planejados; `design.md` e `CONTRACTS.md` refletem `OperationalShell`, `ComingSoonPanel` e fluxos demo.
 
 ## Bloqueios
 

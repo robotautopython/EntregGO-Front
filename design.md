@@ -58,15 +58,16 @@ As rotas `/login`, `/registro` e `/aguardando-aprovacao` usam o mesmo clima visu
 - Azul para sessao/Supabase Auth.
 - Asfalto para comando final quando a decisao for sensivel.
 
-### Paineis Futuros
+### Paineis Internos
 
-Admin, loja e motoboy devem seguir uma interface de operacao, nao marketing:
+Admin, loja e motoboy seguem uma interface de operacao, nao marketing:
 
 - Topbar compacta com status.
 - Sidebar ou rail lateral em desktop.
 - Conteudo denso, escaneavel e com filtros claros.
 - Cards apenas para itens repetidos, resumos e modais.
 - Tabelas/listas com paginacao ou limite antes de qualquer volume real.
+- Fluxos de entrega sem backend real devem ser tratados como previa, simulacao ou demonstracao.
 
 ## Componentes Esperados
 
@@ -74,7 +75,8 @@ Admin, loja e motoboy devem seguir uma interface de operacao, nao marketing:
 - `RoleRoute`: bloco visual para loja/motoboy/admin.
 - `StatusBadge`: status `pendente`, `ativo`, `bloqueado`.
 - `ActionButton`: variantes `primary`, `secondary`, `dark`.
-- `OperationalShell`: layout futuro dos paineis internos.
+- `OperationalShell`: layout atual dos paineis internos.
+- `ComingSoonPanel`: placeholder honesto para telas sem endpoint real.
 
 ## Regras de UX
 
@@ -85,6 +87,7 @@ Admin, loja e motoboy devem seguir uma interface de operacao, nao marketing:
 - Animacoes apenas em `transform` e `opacity`.
 - Respeitar `prefers-reduced-motion`.
 - Nada de dashboard fake antes do ciclo real.
+- Nada de push/realtime/aceite concorrente prometido como real antes do backend correspondente.
 
 ## Regras de Seguranca
 
@@ -96,9 +99,9 @@ Admin, loja e motoboy devem seguir uma interface de operacao, nao marketing:
 
 ## Plano Surpreendente
 
-1. **Agora:** landing de marca com rota operacional e CTAs reais.
-2. **Proximo ciclo visual:** reformular `/login` e `/registro` com o mesmo sistema, preservando handlers.
-3. **Depois do auth/RLS validado:** criar `OperationalShell` para admin, loja e motoboy.
+1. **Agora:** landing de marca com rota operacional, CTAs reais de auth e copy honesta sobre recursos futuros.
+2. **Concluido:** `/login`, `/registro`, admin, loja e motoboy usam o mesmo sistema visual e `OperationalShell`.
+3. **Proximo ciclo backend:** implementar entrega real, push/realtime e aceite concorrente somente com Security/Performance Validator.
 4. **Antes de PWA real:** redesenhar estado offline/instalavel com Security Validator.
 5. **Quando dashboard existir:** usar visual de "torre de controle", com listas densas, status claros e alertas sem excesso decorativo.
 
@@ -109,4 +112,7 @@ Admin, loja e motoboy devem seguir uma interface de operacao, nao marketing:
 - `tailwind.config.ts`: paleta Tailwind.
 - `public/brand/entreggo-logo.png`: logo oficial usada na UI.
 - `src/components/auth/AuthShell.tsx`: base visual de login/cadastro.
-- `src/components/shared/PlaceholderPage.tsx`: placeholder alinhado com a paleta.
+- `src/components/shell/OperationalShell.tsx`: shell atual dos paineis internos.
+- `src/components/shared/ComingSoonPanel.tsx`: placeholder alinhado com a paleta e com contratos ausentes.
+- `src/components/loja/NovaEntregaFlow.tsx`: fluxo visual demonstrativo ate existir backend de entregas.
+- `src/components/motoboy/CourierHomeFlow.tsx`: fluxo visual demonstrativo ate existir push/realtime/aceite real.

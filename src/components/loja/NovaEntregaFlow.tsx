@@ -88,7 +88,7 @@ export function NovaEntregaFlow() {
       <PageHeader
         eyebrow="Pedido em movimento"
         title="Nova entrega"
-        description="Preencha o destino, envie pra rede e acompanhe o aceite — sem complicação."
+        description="Preencha o destino e veja a prévia do fluxo; envio real para a rede ainda não está ativo."
         actions={
           <Link
             href="/loja"

@@ -16,10 +16,10 @@ interface AcceptedStateProps {
 }
 
 const timeline = [
-  { key: 'aceito', label: 'Aceito', icon: Check, hint: 'Motoboy a caminho da loja' },
-  { key: 'coletou', label: 'Coletou', icon: Package, hint: 'Saiu com o pacote' },
-  { key: 'em_transito', label: 'Em trânsito', icon: Truck, hint: 'A caminho do destino' },
-  { key: 'entregue', label: 'Entregue', icon: Sparkles, hint: 'Cliente recebeu' },
+  { key: 'aceito', label: 'Aceito', icon: Check, hint: 'Prévia: motoboy a caminho da loja' },
+  { key: 'coletou', label: 'Coletou', icon: Package, hint: 'Prévia: saiu com o pacote' },
+  { key: 'em_transito', label: 'Em trânsito', icon: Truck, hint: 'Prévia: a caminho do destino' },
+  { key: 'entregue', label: 'Entregue', icon: Sparkles, hint: 'Prévia: cliente recebeu' },
 ] as const;
 
 const order: AcceptedDelivery['status'][] = ['aceito', 'coletou', 'em_transito', 'entregue'];
@@ -40,10 +40,10 @@ export function AcceptedState({ delivery, onNewRequest }: AcceptedStateProps) {
             </span>
             <div>
               <Badge tone="success" pulsing>
-                aceita
+                demo aceita
               </Badge>
               <h2 className="mt-2 text-2xl font-black text-asphalt-950">
-                {delivery.courier.name} aceitou sua entrega
+                Exemplo de aceite por {delivery.courier.name}
               </h2>
               <p className="mt-1 text-sm font-medium text-asphalt-950/70">
                 {delivery.courier.distanceLabel ?? 'A caminho da sua loja'} ·{' '}
@@ -86,7 +86,7 @@ export function AcceptedState({ delivery, onNewRequest }: AcceptedStateProps) {
 
         <p className="mt-4 flex items-center gap-2 text-xs font-bold text-asphalt-950/60">
           <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-          Última atualização há instantes
+          Atualização demonstrativa
         </p>
       </Card>
 
@@ -137,7 +137,7 @@ export function AcceptedState({ delivery, onNewRequest }: AcceptedStateProps) {
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-route-600" aria-hidden="true" />
           <p>
             O EntregGO não tem rastreamento ao vivo — o status muda conforme o motoboy atualiza
-            na rua. Quando ele marcar como <strong>Entregue</strong>, esta tela libera.
+            na rua. Esta prévia só mostra como a linha do tempo ficará quando o backend existir.
           </p>
         </div>
       </Card>

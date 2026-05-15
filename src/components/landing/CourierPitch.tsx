@@ -7,9 +7,9 @@ import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
 const benefits = [
   'Fica online quando quiser, sem turno obrigatório',
-  'Push com som — não perde corrida na rua',
-  'Aceite em um toque, primeiro toque vence',
-  'Cadastro rápido com foto da moto e CNH',
+  'Tela preparada para notificações futuras',
+  'Aceite em um toque demonstrado sem disputa real ainda',
+  'Cadastro inicial; documentos entram só com pipeline validado',
 ];
 
 export function CourierPitch() {
@@ -32,11 +32,11 @@ export function CourierPitch() {
               className="text-3xl font-black leading-tight sm:text-5xl"
             >
               Sua moto, suas regras —{' '}
-              <span className="text-brand-400">a central só te avisa quando tem corrida.</span>
+              <span className="text-brand-400">a central mostra como vai te chamar.</span>
             </h2>
             <p className="max-w-xl text-base leading-7 text-white/75">
-              Você decide quando aparecer. Quando estiver online, recebe notificação com loja,
-              destino e um botão. Aceitou, é seu. Não aceitou, próxima.
+              Você decide quando aparecer. Nesta fase, o painel demonstra a experiência de
+              solicitação e aceite; push real e concorrência entram depois do backend validado.
             </p>
 
             <ul className="grid gap-3">
@@ -88,14 +88,14 @@ export function CourierPitch() {
                 className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-brand-500 px-4 py-4 text-base font-extrabold shadow-pop transition-all hover:bg-brand-600"
               >
                 <Power className="h-5 w-5" aria-hidden="true" />
-                Online · Pronto para corridas
+                Online · Prévia de corridas
               </button>
 
               <div className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-brand-300">
                   <span className="inline-flex items-center gap-1.5">
                     <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-                    Nova solicitação
+                    Solicitação demo
                   </span>
                   <span className="text-white/60">há 4s</span>
                 </div>

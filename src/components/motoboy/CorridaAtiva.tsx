@@ -88,7 +88,7 @@ export function CorridaAtiva({ ride, onAdvance, onFinish }: CorridaAtivaProps) {
           </span>
           <div>
             <Badge tone="brand" pulsing>
-              Corrida em andamento
+              Corrida demo em andamento
             </Badge>
             <h2 className="mt-2 text-2xl font-black text-asphalt-950 sm:text-3xl">
               {ride.store.name}
@@ -211,15 +211,16 @@ export function CorridaAtiva({ ride, onAdvance, onFinish }: CorridaAtivaProps) {
 
       <Alert tone="warn" title="Algum problema na rua?">
         <p className="leading-6">
-          Use o botão abaixo só se houver algo bloqueando a entrega — a central recebe o aviso
-          e ajuda. Sem prejuízo ao seu cadastro.
+          Na versão real, este aviso será enviado para a central. Nesta prévia, o botão só
+          representa o ponto de contato futuro.
         </p>
         <button
           type="button"
-          className="mt-3 inline-flex h-12 items-center justify-center gap-2 rounded-md border border-warn-500/40 bg-white px-4 text-sm font-extrabold text-warn-700 hover:border-warn-500"
+          disabled
+          className="mt-3 inline-flex h-12 items-center justify-center gap-2 rounded-md border border-warn-500/40 bg-white px-4 text-sm font-extrabold text-warn-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-          Reportar problema
+          Aviso em breve
         </button>
       </Alert>
     </section>

@@ -61,7 +61,7 @@ export function HistoricoEntregas() {
       <PageHeader
         eyebrow="Operação"
         title="Histórico de entregas"
-        description="Cada solicitação registrada por dia. Toque numa linha para abrir os detalhes."
+        description="Prévia do histórico por dia. Toque numa linha para abrir os detalhes do exemplo."
       />
 
       <div className="grid gap-3 sm:grid-cols-4">

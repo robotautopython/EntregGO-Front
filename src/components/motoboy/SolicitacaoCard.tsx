@@ -53,7 +53,7 @@ export function SolicitacaoCard({ request, onAccept, onDecline }: SolicitacaoCar
           </span>
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
-              Nova solicitação
+              Solicitação demo
             </p>
             <p className="text-lg font-black leading-tight text-asphalt-950 sm:text-xl">
               {request.store.name}

@@ -12,9 +12,9 @@ interface PushPrimeSheetProps {
 }
 
 const benefits = [
-  { icon: Volume2, label: 'Som chamativo, mesmo com o app fechado' },
-  { icon: Vibrate, label: 'Vibração junto pra você sentir na rua' },
-  { icon: Zap, label: 'Aceite em um toque, sem perder corrida' },
+  { icon: Volume2, label: 'Prévia do som de chamada futura' },
+  { icon: Vibrate, label: 'Vibração planejada para navegador compatível' },
+  { icon: Zap, label: 'Aceite em um toque apenas demonstrativo agora' },
 ];
 
 export function PushPrimeSheet({ open, onClose, onEnable }: PushPrimeSheetProps) {
@@ -50,7 +50,7 @@ export function PushPrimeSheet({ open, onClose, onEnable }: PushPrimeSheetProps)
         <div className="flex items-center justify-between border-b border-paper-line px-5 py-3">
           <p className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-brand-600">
             <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-            Notificações da central
+            Prévia de notificações
           </p>
           <button
             type="button"
@@ -66,11 +66,11 @@ export function PushPrimeSheet({ open, onClose, onEnable }: PushPrimeSheetProps)
           <div className="flex flex-col items-center gap-4 text-center">
             <BoxMark size={96} />
             <h2 id="push-title" className="text-2xl font-black leading-tight text-asphalt-950">
-              Pra receber corridas, ative as notificações.
+              Veja como a permissão de notificações vai aparecer.
             </h2>
             <p className="max-w-sm text-sm text-asphalt-950/70">
-              O navegador vai pedir permissão depois deste passo. Sem isso, a central não consegue
-              te chamar quando uma loja precisar.
+              Nesta etapa, o botão só libera a simulação local. Push real depende de VAPID,
+              service worker, backend e Security Validator.
             </p>
           </div>
 
@@ -98,7 +98,7 @@ export function PushPrimeSheet({ open, onClose, onEnable }: PushPrimeSheetProps)
               className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-md bg-brand-500 px-5 text-base font-extrabold text-white shadow-pop transition-colors hover:bg-brand-600 active:translate-y-px"
             >
               <Bell className="h-5 w-5" aria-hidden="true" />
-              Ativar notificações
+              Liberar prévia
             </button>
             <button
               type="button"
@@ -110,7 +110,7 @@ export function PushPrimeSheet({ open, onClose, onEnable }: PushPrimeSheetProps)
           </div>
 
           <p className="text-center text-[10px] font-bold uppercase tracking-widest text-asphalt-950/45">
-            Você pode mudar isso depois nas configurações do navegador.
+            Nenhuma permissão real de push é solicitada nesta prévia.
           </p>
         </div>
       </div>

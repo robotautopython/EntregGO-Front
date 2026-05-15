@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: 'Funciona no celular como app?',
-    a: 'Sim. É um PWA: você adiciona à tela inicial e usa como aplicativo. Notificações com som e vibração funcionam dentro do navegador suportado.',
+    a: 'A base PWA/manifest já existe. Notificações com som e vibração ainda dependem do ciclo de Web Push real com backend, service worker e validação de segurança.',
   },
   {
     q: 'Quanto tempo demora a aprovação?',
@@ -22,11 +22,11 @@ const faqs = [
   },
   {
     q: 'Como o motoboy recebe as solicitações?',
-    a: 'Por push notification no navegador, com som chamativo. Se a aba estiver aberta, aparece também no painel em tempo real. O primeiro a aceitar fica com a corrida.',
+    a: 'Nesta fundação, o painel do motoboy mostra uma simulação do fluxo. O recebimento real por push/realtime e o primeiro aceite entram em ciclo backend separado.',
   },
   {
     q: 'E se nenhum motoboy aceitar?',
-    a: 'Toda solicitação tem um timer de 60 segundos. Se ninguém aceitar nesse tempo, ela expira e a loja pode solicitar novamente em um clique.',
+    a: 'A interface demonstra um timer de 60 segundos. A expiração real e o retry operacional dependem do endpoint de entregas e do validador de performance.',
   },
   {
     q: 'Posso me cadastrar como loja e motoboy ao mesmo tempo?',

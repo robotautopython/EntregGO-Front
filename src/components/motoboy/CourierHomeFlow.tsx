@@ -149,7 +149,7 @@ export function CourierHomeFlow({ authContext }: CourierHomeFlowProps) {
       <PageHeader
         eyebrow="Sua rua, sua moto"
         title={`Olá, ${name}.`}
-        description="Fique online quando estiver disponível. A central só te chama quando tiver corrida."
+        description="Prévia do painel do motoboy. Online, notificações e aceite real dependem do próximo backend."
       />
 
       <StatusToggleCard
@@ -159,12 +159,12 @@ export function CourierHomeFlow({ authContext }: CourierHomeFlowProps) {
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <MiniStat label="Hoje" value={todayCount} subtitle="corridas concluídas" tone="brand" />
-        <MiniStat label="Status" value={online ? 'Online' : 'Offline'} subtitle={online ? 'na rede' : 'pausado'} tone={online ? 'success' : 'paper'} />
+        <MiniStat label="Hoje" value={todayCount} subtitle="demos concluídas" tone="brand" />
+        <MiniStat label="Status" value={online ? 'Online' : 'Offline'} subtitle={online ? 'simulado' : 'pausado'} tone={online ? 'success' : 'paper'} />
         <MiniStat
           label="Notificações"
           value={pushPrimed ? 'Ok' : '—'}
-          subtitle={pushPrimed ? 'autorizadas' : 'pendentes'}
+          subtitle={pushPrimed ? 'prévia ativa' : 'pendentes'}
           tone={pushPrimed ? 'route' : 'warn'}
         />
       </div>
@@ -191,10 +191,10 @@ export function CourierHomeFlow({ authContext }: CourierHomeFlowProps) {
               <Bell className="mt-0.5 h-5 w-5 text-route-600" aria-hidden="true" />
               <div>
                 <p className="text-sm font-extrabold text-route-700">
-                  Ative as notificações da central
+                  Prévia de notificações da central
                 </p>
                 <p className="mt-1 text-xs text-route-700/85">
-                  Sem isso, o EntregGO não consegue te avisar quando uma loja chamar.
+                  Este passo só simula a permissão; push real entra em ciclo próprio.
                 </p>
               </div>
             </div>
@@ -204,7 +204,7 @@ export function CourierHomeFlow({ authContext }: CourierHomeFlowProps) {
               className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-route-500 px-4 text-sm font-extrabold text-white hover:bg-route-600"
             >
               <Bell className="h-4 w-4" aria-hidden="true" />
-              Ativar agora
+              Abrir prévia
             </button>
           </div>
         </Card>
@@ -249,12 +249,12 @@ function StatusToggleCard({ online, disabled, onToggle }: StatusToggleCardProps)
               Status atual
             </p>
             <p className="text-2xl font-black text-asphalt-950">
-              {online ? 'Online · pronto para corridas' : 'Offline · ninguém te vê'}
+              {online ? 'Online · simulação ativa' : 'Offline · simulação pausada'}
             </p>
             <p className="mt-1 text-sm text-asphalt-950/70">
               {online
-                ? 'A central avisa por push quando uma loja chamar.'
-                : 'Toque para ficar visível e receber notificações.'}
+                ? 'Solicitações de exemplo aparecem no painel.'
+                : 'Toque para iniciar a prévia visual do painel.'}
             </p>
           </div>
         </div>
@@ -304,7 +304,7 @@ function SolicitacoesSection({
           <BellOff className="h-5 w-5 text-asphalt-950/45" aria-hidden="true" />
           <p className="text-lg font-extrabold text-asphalt-950">Você está offline.</p>
           <p className="max-w-md text-sm text-asphalt-950/65">
-            Ative o status acima para começar a receber chamados da central.
+            Ative o status acima para ver chamados demonstrativos da central.
           </p>
         </div>
       </Card>
@@ -318,11 +318,10 @@ function SolicitacoesSection({
           <BoxMark size={108} />
           <Inbox className="h-5 w-5 text-brand-600" aria-hidden="true" />
           <p className="text-lg font-extrabold text-asphalt-950">
-            Pronto. Quando uma loja chamar, aparece aqui.
+            Pronto. Quando a simulação gerar uma loja, aparece aqui.
           </p>
           <p className="max-w-md text-sm text-asphalt-950/65">
-            O som de notificação toca e o card entra deslizando da esquerda. Toque em{' '}
-            <strong>Aceitar</strong> antes dos outros motoboys.
+            O card entra deslizando da esquerda para demonstrar a experiência planejada de aceite.
           </p>
         </div>
       </Card>
@@ -333,10 +332,10 @@ function SolicitacoesSection({
     <section aria-labelledby="solicitacoes-titulo" className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 id="solicitacoes-titulo" className="text-lg font-black text-asphalt-950">
-          Solicitações disponíveis
+          Solicitações demo
         </h2>
         <Badge tone="brand" pulsing>
-          {queue.length} ao vivo
+          {queue.length} simulação
         </Badge>
       </div>
       <div className="space-y-3">
@@ -350,7 +349,7 @@ function SolicitacoesSection({
         ))}
       </div>
       <p className="text-center text-xs text-asphalt-950/55">
-        Cada solicitação expira em 60s. Primeiro aceite vence.
+        Cada solicitação demo expira em 60s. Aceite concorrente real ainda não está ativo.
       </p>
     </section>
   );

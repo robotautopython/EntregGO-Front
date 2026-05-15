@@ -19,12 +19,12 @@ const taglines: Record<NonNullable<AuthShellProps['variant']>, string[]> = {
   register: [
     'Central de entregas, não app de marketing.',
     'Aprovação real, dados protegidos.',
-    'Sua loja na rua em uma decisão.',
+    'Sua loja preparada para operar com segurança.',
   ],
   login: [
     'Energia de rua, controle de central.',
-    'Pedido sai. Motoboy assume. Cliente recebe.',
-    'Primeiro aceite vence — sem leilão.',
+    'Cadastro entra. Admin aprova. Operação evolui.',
+    'Aceite concorrente entra depois dos validadores.',
   ],
   status: [
     'Nossa central confere antes da rua.',

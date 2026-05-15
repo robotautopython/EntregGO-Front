@@ -165,3 +165,13 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado localmente
 
 **Validacoes:** `npm run typecheck` e `npm run build` passaram. Build mantem 24 rotas estaticas; nenhum endpoint backend tocado, nenhum contrato de componente alterado, nenhum handler ou validacao removida. PlaceholderPage e MotoboyHome confirmados como nao-importados antes da exclusao via grep do projeto inteiro.
+
+## 2026-05-15 - CONFORMIDADE POS-LAYOUT SEM FEATURE NOVA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Foi feita correcao cirurgica de copy/estado/documentacao para impedir que o layout finalizado prometa push real, realtime, aceite concorrente, envio real de entrega ou historico real antes dos contratos backend. Landing, loja e motoboy agora tratam os fluxos de entrega como previa, demonstracao ou recurso planejado. `design.md` deixou de tratar `OperationalShell` como futuro, removeu a referencia ao `PlaceholderPage` e registrou `ComingSoonPanel`, `NovaEntregaFlow` e `CourierHomeFlow` conforme o estado real. `CONTRACTS.md` passou a explicitar que entrega loja/motoboy ainda nao chama endpoints de entrega, push, realtime, aceite concorrente ou historico real.
+**Arquivos modificados:** `src/components/landing/*`, `src/components/auth/AuthShell.tsx`, `src/components/loja/*`, `src/components/motoboy/*`, `design.md`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, Design Agent, ImpactValidator, TestEngineer, Documentador
+**Status:** fechado localmente, sem mudanca de dependencia, backend, API, auth, rotas ou schema
+
+**Validacoes:** `npm run typecheck`, `npm run lint`, `npm test --if-present` e `npm run build` passaram. Smoke local em `http://127.0.0.1:3101` retornou `200` para `/`, `/login`, `/registro`, `/aguardando-aprovacao`, `/admin/insights`, `/admin/usuarios`, `/admin/lojas`, `/admin/motoboys`, `/loja` e `/motoboy`; `/admin` e `/admin/aprovacoes` seguiram redirecionando para `/admin/usuarios`. `npm audit --json` permanece com 2 vulnerabilidades moderadas conhecidas (`next` via `postcss` interno), sem altas ou criticas.

@@ -40,7 +40,7 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
         </span>
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
-            Solicitar entrega
+            Prévia de solicitação
           </p>
           <h2 className="text-2xl font-black text-asphalt-950 sm:text-3xl">
             Para onde a entrega vai?
@@ -98,14 +98,14 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
           <div className="flex items-start gap-3 text-sm text-asphalt-950/75">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-route-600" aria-hidden="true" />
             <p>
-              Ao enviar, sua solicitação vai para todos os motoboys online por <strong>60 segundos</strong>.
-              O primeiro a aceitar fica com a corrida — sem leilão.
+              Nesta prévia, o envio simula uma busca de <strong>60 segundos</strong>.
+              O disparo real para motoboys ainda depende do backend de entregas.
             </p>
           </div>
         </div>
 
         <Alert tone="info" title="Sobre o endereço de coleta">
-          O endereço da sua loja já vai junto na solicitação. Ele aparece pro motoboy assim que ele aceitar.
+          Na versão real, o endereço da loja acompanha a solicitação depois que o endpoint existir.
         </Alert>
 
         <div className="flex flex-col gap-3 border-t border-paper-line pt-5 sm:flex-row sm:justify-end">
@@ -117,7 +117,7 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
             className="sm:w-auto"
             disabled={!destination.trim()}
           >
-            Enviar para a rede
+            Simular envio
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </Button>
         </div>

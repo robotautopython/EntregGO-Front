@@ -30,17 +30,16 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
             Tempo esgotado
           </p>
           <h2 className="text-3xl font-black text-asphalt-950">
-            Nenhum motoboy aceitou desta vez.
+            Nenhum aceite nesta simulação.
           </h2>
           <p className="mx-auto max-w-md text-sm text-asphalt-950/70">
-            Pode ser hora de pico ou pouca cobertura. Tente novamente — ou ajuste o destino se algo
-            estava confuso.
+            Use este estado para validar o layout de expiração enquanto o aceite real não existe.
           </p>
         </div>
 
         <div className="w-full max-w-xl rounded-lg border border-dashed border-paper-line bg-paper p-5 text-left">
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
-            Última solicitação
+            Última simulação
           </p>
           <div className="mt-3">
             <RouteLine from={storeName} to={draft.destinationAddress} />
@@ -50,7 +49,7 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="primary" size="lg" onClick={onRetry}>
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Solicitar novamente
+            Simular novamente
           </Button>
           <Button variant="secondary" size="lg" onClick={onEdit}>
             <Pencil className="h-4 w-4" aria-hidden="true" />
@@ -64,7 +63,7 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
         <ul className="mt-2 space-y-1.5 text-sm text-asphalt-950/75">
           <li>· Confirme se o endereço tem número e bairro.</li>
           <li>· Adicione complemento (apto, sala, ponto de referência).</li>
-          <li>· Espere 2-3 minutos entre tentativas pra evitar fila.</li>
+          <li>· Use novas tentativas apenas para validar o fluxo visual.</li>
         </ul>
       </Card>
     </section>

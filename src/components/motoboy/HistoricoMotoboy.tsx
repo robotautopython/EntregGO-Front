@@ -56,7 +56,7 @@ export function HistoricoMotoboy() {
       <PageHeader
         eyebrow="Sua trajetória"
         title="Suas corridas"
-        description="Resumo do que você já fez pela central — entregas, recusas e solicitações que expiraram."
+        description="Prévia do histórico do motoboy — entregas, recusas e solicitações de exemplo."
       />
 
       <div className="grid gap-3 sm:grid-cols-3">

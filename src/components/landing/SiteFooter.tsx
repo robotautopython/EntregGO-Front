@@ -55,7 +55,8 @@ export function SiteFooter() {
               />
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-6 text-white/65">
-              Central de entregas sob demanda. Lojas pedem, motoboys aceitam, a central governa.
+              Central de entregas sob demanda em construção segura. Cadastros e admin já operam;
+              entregas reais entram em ciclo próprio.
             </p>
           </div>
 

@@ -36,7 +36,7 @@ export function CTABand() {
             </h2>
             <p className="mt-4 max-w-xl text-base leading-7 text-white/85">
               Cadastre sua loja ou sua moto. A central confere os dados e libera o acesso.
-              Não tem mensalidade automática, não tem leilão — só pedido e aceite.
+              Pedido real e aceite entram depois, em ciclo validado.
             </p>
           </div>
 

@@ -9,17 +9,17 @@ const features = [
   {
     icon: Package,
     title: '1 clique para solicitar',
-    description: 'Endereço + observação. O resto é com a rede.',
+    description: 'Endereço + observação em fluxo visual, sem envio real ainda.',
   },
   {
     icon: Clock3,
     title: 'Timer de 60 segundos',
-    description: 'Você vê a contagem e sabe na hora se foi aceito ou expirou.',
+    description: 'A interface demonstra a contagem; expiração real depende do backend.',
   },
   {
     icon: History,
-    title: 'Histórico completo',
-    description: 'Cada entrega registrada por dia, com motoboy e destino.',
+    title: 'Histórico planejado',
+    description: 'A estrutura visual está pronta para receber entregas reais depois.',
   },
   {
     icon: Wallet,
@@ -44,7 +44,7 @@ export function StorePitch() {
               </div>
               <div className="mt-6 rounded-lg bg-paper-deep p-4">
                 <p className="font-mono text-xs font-bold uppercase tracking-widest text-brand-700">
-                  recibo da loja
+                  prévia da loja
                 </p>
                 <div className="mt-3 space-y-1.5 text-sm">
                   <div className="flex justify-between">
@@ -57,7 +57,7 @@ export function StorePitch() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-asphalt-950/70">Status</span>
-                    <span className="font-bold text-success-700">Entregue</span>
+                    <span className="font-bold text-success-700">Demo</span>
                   </div>
                 </div>
               </div>
@@ -77,8 +77,8 @@ export function StorePitch() {
               Sai do balcão sem perder o ritmo da operação.
             </h2>
             <p className="max-w-xl text-base leading-7 text-asphalt-950/75">
-              A loja entra, cadastra, e o admin libera. Daí em diante, é um botão para chamar
-              entrega — com timer claro, histórico e status até a porta do cliente.
+              A loja entra, cadastra, e o admin libera. A área operacional já mostra a rota
+              esperada; chamada real, histórico e status dependem do próximo backend.
             </p>
 
             <ul className="grid gap-4 sm:grid-cols-2">

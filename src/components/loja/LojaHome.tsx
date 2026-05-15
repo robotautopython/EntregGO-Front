@@ -25,7 +25,7 @@ export function LojaHome({ authContext }: LojaHomeProps) {
       <PageHeader
         eyebrow={`Olá, ${authContext.user.email.split('@')[0]}`}
         title="Sua central, em uma tela."
-        description="Solicite entregas, acompanhe o status e veja seu histórico operacional."
+        description="Veja a base de solicitação, status e histórico antes do backend de entregas real."
       />
 
       <Link
@@ -51,8 +51,8 @@ export function LojaHome({ authContext }: LojaHomeProps) {
               Solicitar nova entrega
             </h2>
             <p className="mt-2 max-w-md text-sm text-white/85">
-              Endereço de destino e observação. A central avisa os motoboys online —
-              primeiro toque vence.
+              Endereço de destino e observação em prévia visual. O envio real para motoboys
+              entra no próximo ciclo.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-md bg-asphalt-950 px-5 py-3 text-sm font-extrabold shadow-ink transition-colors group-hover:bg-asphalt-700">
@@ -90,10 +90,10 @@ export function LojaHome({ authContext }: LojaHomeProps) {
           <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-paper-line bg-paper p-8 text-center">
             <BoxMark size={88} tone="paper" />
             <p className="text-sm font-bold text-asphalt-950">
-              Quando sua entrega for aceita, ela aparece aqui.
+              Quando o backend de entregas real entrar, corridas aceitas aparecem aqui.
             </p>
             <p className="max-w-xs text-xs text-asphalt-950/60">
-              O motoboy passa do balcão até o destino, e você acompanha cada etapa.
+              O layout já está pronto para acompanhar coleta, trânsito e conclusão.
             </p>
           </div>
         </Card>
@@ -109,7 +109,7 @@ export function LojaHome({ authContext }: LojaHomeProps) {
             <History className="h-5 w-5 text-asphalt-950/45" aria-hidden="true" />
           </div>
           <div className="rounded-md border border-dashed border-paper-line bg-paper p-6 text-sm text-asphalt-950/65">
-            Você verá aqui as últimas corridas, com motoboy, destino e status final.
+            A versão real listará corridas, motoboy, destino e status final quando o endpoint existir.
           </div>
           <Link
             href="/loja/historico"
@@ -128,7 +128,7 @@ export function LojaHome({ authContext }: LojaHomeProps) {
             <p className="text-sm font-extrabold text-asphalt-950">Quer ver insights da loja?</p>
             <p className="text-xs text-asphalt-950/65">
               Acompanhe tempo médio de aceite, taxa de expiração e ranking dos motoboys que mais
-              entregam pra você.
+              entregam pra você quando houver histórico real.
             </p>
             <Link
               href="/loja/insights"

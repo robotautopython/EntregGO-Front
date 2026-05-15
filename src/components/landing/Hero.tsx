@@ -12,8 +12,8 @@ const trustPoints = [
 ];
 
 const heroStats = [
-  { value: '60s', label: 'Timer fixo de aceite' },
-  { value: '1 toque', label: 'Primeiro aceite vence' },
+  { value: '60s', label: 'Timer visual do fluxo' },
+  { value: '1 toque', label: 'Aceite concorrente planejado' },
   { value: '0 leilão', label: 'Sem disputa de preço' },
 ];
 
@@ -67,8 +67,8 @@ export function Hero() {
             </h1>
 
             <p className="max-w-xl text-lg leading-8 text-asphalt-950/75">
-              A EntregGO conecta sua loja a uma rede de motoboys verificados. Você solicita,
-              a central avisa quem está online, e o primeiro toque ganha a corrida.
+              A EntregGO já organiza cadastro, aprovação e painéis operacionais. Solicitação
+              real, push e aceite concorrente entram em ciclo próprio com backend validado.
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">

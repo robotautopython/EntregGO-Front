@@ -24,13 +24,13 @@ export function HeroMockup() {
             </span>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-widest text-asphalt-950/60">
-                Solicitação ativa
+                Simulação de solicitação
               </p>
               <p className="text-base font-extrabold text-asphalt-950">Açaí da Esquina</p>
             </div>
           </div>
           <Badge tone="brand" pulsing>
-            ao vivo
+            demo
           </Badge>
         </div>
 
@@ -46,7 +46,7 @@ export function HeroMockup() {
             Procurando motoboy disponível...
           </p>
           <p className="mt-1 text-center text-xs text-asphalt-950/60">
-            Notificamos todos os motoboys online agora.
+            Prévia visual do envio para a rede.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export function HeroMockup() {
         <div className="mt-4 flex items-center justify-between text-xs font-semibold text-asphalt-950/70">
           <span className="inline-flex items-center gap-1.5">
             <Bike className="h-4 w-4 text-route-600" aria-hidden="true" />
-            12 motoboys online
+            Rede futura
           </span>
           <span className="inline-flex items-center gap-1.5">
             <MapPin className="h-4 w-4 text-brand-600" aria-hidden="true" />
@@ -69,13 +69,13 @@ export function HeroMockup() {
       <div className="absolute -right-3 -top-3 hidden rotate-3 rounded-md border border-paper-line bg-white px-3 py-2 shadow-card sm:block">
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 animate-pulse rounded-full bg-success-500" aria-hidden="true" />
-          <p className="text-xs font-bold text-asphalt-950">Pedido criado · agora</p>
+          <p className="text-xs font-bold text-asphalt-950">Prévia criada · agora</p>
         </div>
       </div>
 
       <div className="absolute -bottom-4 -left-4 hidden -rotate-2 rounded-md border border-paper-line bg-asphalt-950 px-3 py-2 text-white shadow-ink sm:block">
         <p className="text-[10px] font-bold uppercase tracking-widest text-brand-300">
-          Primeiro aceite ganha
+          Aceite concorrente planejado
         </p>
         <p className="text-xs font-semibold">Sem leilão, sem espera longa.</p>
       </div>

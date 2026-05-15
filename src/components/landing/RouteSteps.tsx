@@ -8,14 +8,14 @@ const steps = [
     icon: Store,
     title: 'Loja solicita',
     description:
-      'Endereço, observação, pronto. Em segundos o pedido sai pra rede de motoboys online.',
+      'Endereço e observação já têm fluxo visual. O envio real para motoboys fica para o backend de entregas.',
     accent: 'brand' as const,
   },
   {
     icon: Bike,
     title: 'Motoboy aceita',
     description:
-      'Recebe push com som, vê loja e destino, e o primeiro toque vence. Sem leilão.',
+      'A tela mostra a experiência planejada de aceite; push, realtime e disputa concorrente ainda não estão ativos.',
     accent: 'route' as const,
   },
   {
@@ -52,8 +52,8 @@ export function RouteSteps() {
             </h2>
           </div>
           <p className="max-w-md text-base leading-7 text-asphalt-950/70">
-            Sem rastreio em tempo real, sem chat — a EntregGO mantém o essencial: pedido
-            criado, aceite garantido e status visível para todos os lados.
+            A base real cobre cadastro, aprovação e admin. Pedido, push e aceite concorrente
+            ficam como fluxo demonstrativo até o backend próprio.
           </p>
         </div>
 

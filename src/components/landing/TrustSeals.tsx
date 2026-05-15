@@ -18,14 +18,14 @@ const seals = [
   },
   {
     icon: Bell,
-    title: 'Web Push real',
-    description: 'Notificação com som e vibração no navegador — funciona como app.',
+    title: 'Web Push planejado',
+    description: 'Som, vibração e VAPID entram só após backend, service worker e Security Validator.',
     accent: 'from-signal-500 to-warn-700',
   },
   {
     icon: Smartphone,
-    title: 'PWA instalável',
-    description: 'Vira ícone no celular do motoboy, abre rápido, mantém sessão.',
+    title: 'Base PWA preparada',
+    description: 'Manifest já existe; experiência offline e push real ficam para ciclo próprio.',
     accent: 'from-success-500 to-success-700',
   },
 ];
@@ -49,8 +49,8 @@ export function TrustSeals() {
             Quatro decisões que mantêm a central de pé.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-asphalt-950/70">
-            Não é promessa de marketing — é como o sistema foi desenhado para que loja, motoboy
-            e admin operem com a mesma régua.
+            Não é atalho de marketing — é o mapa do que já opera e do que só entra depois
+            dos validadores certos.
           </p>
         </div>
 

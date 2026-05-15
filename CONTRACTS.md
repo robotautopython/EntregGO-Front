@@ -35,6 +35,18 @@ Erro esperado:
 - Role: `admin`, `logista`, `motoboy`
 - Entrega: `aguardando`, `aceita`, `coletada`, `em_transito`, `entregue`, `expirada`, `cancelada`
 
+## Entregas loja/motoboy
+
+As telas de loja e motoboy para nova entrega, fila, aceite, status e historico ainda sao fluxos visuais demonstrativos. Elas nao devem chamar endpoints de entrega, push, realtime, aceite concorrente ou historico real ate existirem contratos backend validados.
+
+Fora do escopo atual:
+- envio real de solicitacao para motoboys;
+- Web Push/VAPID e Service Worker operacional;
+- assinatura Realtime para fila de entregas;
+- aceite concorrente com primeira aceitacao vencendo;
+- expiracao server-side de solicitacoes;
+- historicos reais de loja/motoboy.
+
 ## Variaveis permitidas no frontend
 
 - `NEXT_PUBLIC_API_URL`

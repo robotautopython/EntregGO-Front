@@ -19,10 +19,10 @@ interface SearchingStateProps {
 }
 
 function microcopyFor(remaining: number): string {
-  if (remaining <= 5) return 'Últimos segundos...';
-  if (remaining <= 15) return 'Quase lá, aguarde só um pouco.';
-  if (remaining <= 30) return 'Procurando motoboys próximos da sua loja.';
-  return 'Procurando motoboy disponível...';
+  if (remaining <= 5) return 'Últimos segundos da simulação...';
+  if (remaining <= 15) return 'Quase lá, prévia terminando.';
+  if (remaining <= 30) return 'Simulando busca por motoboys próximos.';
+  return 'Simulando busca de motoboy disponível...';
 }
 
 export function SearchingState({
@@ -50,7 +50,7 @@ export function SearchingState({
 
       <div className="relative flex flex-col items-center gap-7">
         <Badge tone="brand" pulsing>
-          ao vivo
+          demo
         </Badge>
 
         <h2 className="max-w-2xl text-2xl font-black leading-tight text-asphalt-950 sm:text-4xl">
@@ -67,14 +67,14 @@ export function SearchingState({
         />
 
         <p className="max-w-md text-sm text-asphalt-950/65">
-          Notificamos todos os motoboys online agora. O primeiro a aceitar fica com a corrida —
-          sem leilão, sem ranking, sem espera longa.
+          Esta tela simula o envio para a rede. Notificação real, concorrência e aceite único
+          entram depois do backend validado.
         </p>
 
         <div className="w-full max-w-xl rounded-lg border border-paper-line bg-paper p-5 text-left">
           <div className="mb-4 flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-asphalt-950/55">
             <Bell className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
-            Resumo enviado para a rede
+            Resumo da simulação
           </div>
           <RouteLine
             from={`${storeName} — ${storeAddress}`}
@@ -92,7 +92,7 @@ export function SearchingState({
 
         <Button variant="ghost" size="md" onClick={onCancel}>
           <X className="h-4 w-4" aria-hidden="true" />
-          Cancelar solicitação
+          Cancelar simulação
         </Button>
       </div>
     </section>
