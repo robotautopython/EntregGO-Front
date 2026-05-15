@@ -248,7 +248,7 @@ export function ApprovalStatus() {
           <Link
             href={
               authContext.user.role === 'admin'
-                ? '/admin'
+                ? '/admin/usuarios'
                 : authContext.user.role === 'logista'
                   ? '/loja'
                   : '/motoboy'

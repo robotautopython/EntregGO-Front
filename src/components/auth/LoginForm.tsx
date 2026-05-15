@@ -24,7 +24,7 @@ const initialState: FormState = {
 
 function getDestination(authContext: AuthContext) {
   if (authContext.user.role === 'admin') {
-    return '/admin';
+    return '/admin/usuarios';
   }
 
   if (authContext.user.role === 'logista') {

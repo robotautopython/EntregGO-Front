@@ -1,29 +1,9 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { AdminUsersPanel } from '@/components/admin/AdminUsersPanel';
-import { OperationalShell } from '@/components/shell/OperationalShell';
-
+// `/admin/aprovacoes` é mantido apenas como redirect para a rota de usuários
+// já filtrada por status=pendente. Removido do menu lateral em 2026-05-15:
+// a antiga aba "Aprovações" duplicava `/admin/usuarios` com filtro fixo.
+// O chip pulsante de pendentes dentro do painel cobre a chamada de atenção.
 export default function AdminAprovacoesPage() {
-  return (
-    <OperationalShell
-      role="admin"
-      title="Central · Aprovações"
-      searchPlaceholder="Buscar email pendente..."
-      showSearch
-    >
-      {({ authContext, accessToken }) => (
-        <AdminUsersPanel
-          authContext={authContext}
-          accessToken={accessToken}
-          preset={{
-            title: 'Aprovações pendentes',
-            eyebrow: 'Central',
-            description:
-              'Fila dedicada de cadastros aguardando revisão. Cada linha tem ações inline para aprovar ou bloquear.',
-            forcedStatus: 'pendente',
-          }}
-        />
-      )}
-    </OperationalShell>
-  );
+  redirect('/admin/usuarios?status=pendente');
 }

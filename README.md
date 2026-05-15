@@ -4,7 +4,7 @@ Frontend web do EntregGO, responsavel pela landing page, paineis de admin, loja 
 
 ## Estado atual
 
-Fase de fundacao/auth-operacao com auth/cadastro minimo, direcao visual inicial e painel admin operacional sobre os contratos backend M-02A/Track B. O admin lista usuarios, aprova/bloqueia/desbloqueia, possui paginas segmentadas por papel/status, drawer com perfil expandido sanitizado e insights minimos via `GET /api/admin/insights`. Ainda nao possui dashboards complexos, push real, realtime real ou suite de testes.
+Fase de fundacao/auth-operacao com Next.js `15.5.18`, React `19.2.6`, auth/cadastro minimo, direcao visual inicial e painel admin operacional sobre os contratos backend M-02A/Track B. O admin lista usuarios, aprova/bloqueia/desbloqueia, possui paginas segmentadas por papel/status, drawer com perfil expandido sanitizado e insights minimos via `GET /api/admin/insights`. `/admin` e `/admin/aprovacoes` existem apenas como redirects para a rota canonica de usuarios. Ainda nao possui dashboards complexos, push real, realtime real ou suite de testes.
 
 ## Responsabilidades
 
@@ -33,8 +33,8 @@ Documento base: `design.md`.
 - `npm run dev`
 - `npm run typecheck`
 - `npm run build`
-- `npm run lint`
+- `npm run lint` (`next lint` segue ativo, mas esta deprecado no Next 15 e deve ser substituido antes de Next 16)
 
 ## Proximo passo
 
-Pagamentos, documentos e historico de entregas dependem de endpoints backend e validadores especializados antes de virar UI funcional. Dashboards mais ricos devem passar por Performance Validator antes de novas agregacoes, cache, polling ou listas grandes.
+Pagamentos, documentos e historico de entregas dependem de endpoints backend e validadores especializados antes de virar UI funcional. Dashboards mais ricos devem passar por Performance Validator antes de novas agregacoes, cache, polling ou listas grandes. PWA/Service Worker real deve aguardar Security Validator e acompanhamento do residual moderado de auditoria em Next/PostCSS.

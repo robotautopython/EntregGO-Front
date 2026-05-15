@@ -11,6 +11,7 @@ import {
   Unlock,
   UserCheck,
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -108,17 +109,25 @@ const defaultPreset = {
     'Cadastros, aprovações e bloqueios da central. Toque numa linha para abrir o perfil completo.',
 };
 
+function parseStatusFromQuery(value: string | null | undefined): UserStatus | '' {
+  if (value === 'pendente' || value === 'ativo' || value === 'bloqueado') return value;
+  return '';
+}
+
 export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsersPanelProps) {
   const effectivePreset = preset ?? defaultPreset;
   const forcedRole = preset?.forcedRole;
   const forcedStatus = preset?.forcedStatus;
+  const searchParams = useSearchParams();
+  const initialStatusFromQuery = parseStatusFromQuery(searchParams?.get('status') ?? null);
 
   const [users, setUsers] = useState<AdminUsersResult | null>(null);
   const [filters, setFilters] = useState<Filters>({
     role: forcedRole ?? '',
-    status: forcedStatus ?? '',
+    status: forcedStatus ?? initialStatusFromQuery,
     search: '',
   });
+  const [pendingTotal, setPendingTotal] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -163,13 +172,55 @@ export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsers
   );
 
   useEffect(() => {
+    const statusFromUrl = parseStatusFromQuery(searchParams?.get('status') ?? null);
+    const initialStatus = forcedStatus ?? statusFromUrl;
+    setFilters({
+      role: forcedRole ?? '',
+      status: initialStatus,
+      search: '',
+    });
     void loadUsers(1, {
       role: forcedRole ?? '',
-      status: forcedStatus ?? '',
+      status: initialStatus,
       search: '',
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, forcedRole, forcedStatus]);
+  }, [accessToken, forcedRole, forcedStatus, searchParams]);
+
+  useEffect(() => {
+    if (forcedStatus === 'pendente' || filters.status === 'pendente') {
+      setPendingTotal(null);
+      return;
+    }
+    let cancelled = false;
+    async function loadPendingTotal() {
+      try {
+        const result = await listAdminUsers(accessToken, {
+          page: 1,
+          limit: 1,
+          role: (forcedRole ?? filters.role) || undefined,
+          status: 'pendente',
+        });
+        if (!cancelled && result) {
+          setPendingTotal(result.pagination.total);
+        }
+      } catch {
+        // Chip é nice-to-have; silencia falha pra não poluir o painel.
+      }
+    }
+    void loadPendingTotal();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, forcedRole, forcedStatus, filters.status, filters.role]);
+
+  function focusPendentes() {
+    const next: Filters = { ...filters, status: 'pendente' };
+    setFilters(next);
+    setPage(1);
+    setSuccess(null);
+    void loadUsers(1, next);
+  }
 
   useEffect(() => {
     if (!selectedUser) {
@@ -198,7 +249,7 @@ export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsers
           return;
         }
 
-        setUserDetailError('Nao foi possivel carregar o perfil expandido.');
+        setUserDetailError('Não foi possível carregar o perfil expandido.');
       } finally {
         if (!cancelled) {
           setIsLoadingUserDetail(false);
@@ -302,6 +353,29 @@ export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsers
           </Button>
         }
       />
+
+      {pendingTotal !== null && pendingTotal > 0 && filters.status !== 'pendente' ? (
+        <button
+          type="button"
+          onClick={focusPendentes}
+          className="group flex w-full items-center justify-between gap-3 rounded-md border border-warn-500/40 bg-warn-50 px-4 py-3 text-left transition-all duration-ui ease-ride hover:border-warn-500/70 hover:bg-warn-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-route-500"
+          aria-label={`Filtrar somente pendentes (${pendingTotal})`}
+        >
+          <span className="flex items-center gap-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-warn-500 opacity-70" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-warn-500" />
+            </span>
+            <span className="text-sm font-extrabold text-warn-700">
+              {pendingTotal} {pendingTotal === 1 ? 'cadastro pendente' : 'cadastros pendentes'} aguardando aprovação
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-1 text-xs font-extrabold uppercase tracking-widest text-warn-700 group-hover:text-warn-700/90">
+            <UserCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            Ver agora
+          </span>
+        </button>
+      ) : null}
 
       {(forcedRole || forcedStatus) && (
         <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-widest text-asphalt-950/55">

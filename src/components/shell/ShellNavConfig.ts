@@ -8,7 +8,6 @@ import {
   PackagePlus,
   Settings,
   Store,
-  UserCheck,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -31,18 +30,11 @@ export type NavGroup = {
 export const navConfig: Record<UserRole, NavGroup[]> = {
   admin: [
     {
-      title: 'Central',
-      items: [
-        { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, mobile: true },
-        { href: '/admin/aprovacoes', label: 'Aprovações', icon: UserCheck, mobile: true },
-      ],
-    },
-    {
       title: 'Cadastros',
       items: [
+        { href: '/admin/usuarios', label: 'Usuários', icon: Users, mobile: true },
         { href: '/admin/lojas', label: 'Lojas', icon: Store, mobile: true },
-        { href: '/admin/motoboys', label: 'Motoboys', icon: Bike },
-        { href: '/admin/usuarios', label: 'Usuários', icon: Users },
+        { href: '/admin/motoboys', label: 'Motoboys', icon: Bike, mobile: true },
       ],
     },
     {
@@ -100,7 +92,7 @@ export const roleLabels: Record<UserRole, string> = {
 };
 
 export const roleHome: Record<UserRole, string> = {
-  admin: '/admin',
+  admin: '/admin/usuarios',
   logista: '/loja',
   motoboy: '/motoboy',
 };

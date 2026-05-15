@@ -58,7 +58,7 @@ Uso permitido:
 
 Redirecionamento local esperado:
 - `status != ativo`: `/aguardando-aprovacao`
-- `role=admin`: `/admin`
+- `role=admin`: `/admin/usuarios`
 - `role=logista`: `/loja`
 - `role=motoboy`: `/motoboy`
 
@@ -81,11 +81,11 @@ Consulta a sessao Supabase Auth local e chama `/api/auth/me` quando houver acces
 ## Admin M-03/F7 Track A + Insights
 
 Telas:
-- `/admin`
+- `/admin` (redirect server-side para `/admin/usuarios`)
 - `/admin/usuarios`
 - `/admin/lojas`
 - `/admin/motoboys`
-- `/admin/aprovacoes`
+- `/admin/aprovacoes` (redirect server-side para `/admin/usuarios?status=pendente`)
 - `/admin/insights`
 
 Uso permitido:

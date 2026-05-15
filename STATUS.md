@@ -8,14 +8,13 @@
 
 ## Em Andamento
 
-- [ ] Planejar migracao segura de Next.js 14 para versao corrigida antes de PWA/push real.
 - [ ] Manter abas de documentos, entregas, pagamento e notas como placeholders honestos ate existirem endpoints reais.
 
 ## Proximas Tarefas
 
 - [ ] Criar suite de testes frontend quando houver componentes com comportamento.
 - [ ] Planejar pagamentos, documentos e entregas somente depois dos contratos backend e validadores especializados.
-- [ ] Preparar PWA/Service Worker real somente apos resolver auditoria e validar seguranca.
+- [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 
 ## Concluido
 
@@ -40,20 +39,23 @@
 - [x] `/admin/insights` integrado ao backend real `GET /api/admin/insights`, sem mocks, exibindo apenas agregados e pendentes previstos no contrato.
 - [x] Smoke pos-deploy final de `/admin/insights` aprovado em producao contra backend real: frontend `93d0175`, backend `b34f30d`, chamada autenticada `200` e UI renderizando dados reais.
 - [x] Favicon de producao corrigido com asset oficial estatico; `/favicon.ico` passou de `404` para `200` no deploy frontend `587af96`.
+- [x] Navegacao admin consolidada (ADR-006): `Dashboard` e `Aprovacoes` removidos do menu por duplicacao funcional; `/admin` e `/admin/aprovacoes` viraram redirects server-side; `AdminUsersPanel` ganhou chip pulsante de pendentes e leitura de `?status` da URL.
+- [x] Migracao segura validada para Next.js `15.5.18`, `eslint-config-next@15.5.18`, React `19.2.6` e React DOM `19.2.6`, sem codemod e sem feature nova.
+- [x] Auditoria de padronizacao executada (Camisa10 + Design Agent): acentuacao PT-BR corrigida em ComingSoonPanel, `/admin/insights` e mensagens de erro padrao; arquivos orfaos `PlaceholderPage` e `MotoboyHome` removidos do componentes/shared e componentes/motoboy.
 
 ## Bloqueios
 
 - Projeto ainda nao possui dashboards complexos, push real, realtime real ou testes frontend.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
-- `npm audit --audit-level=moderate` ainda falha por vulnerabilidades em `next@14.2.35` e `postcss@8.4.31` embutido no Next; correcao exige migracao major para Next 15.5.16+ ou 16.x com validacao propria.
+- `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
 
 ## Saude do Projeto
 
 **Build:** passando
-**Lint:** passando
+**Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
 **Testes:** inexistente
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4

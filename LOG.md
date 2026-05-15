@@ -134,3 +134,34 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado em producao
 
 **Validacoes:** Antes do patch, `https://entreggo.vercel.app/favicon.ico` retornava `404`. Localmente, `npm run typecheck`, `npm run lint`, `npm test --if-present` e `npm run build` passaram; `http://127.0.0.1:3010/favicon.ico` retornou `200` e `/admin/insights` retornou `200`. Apos push do commit `587af96`, o auto-deploy da Vercel passou a servir `https://entreggo.vercel.app/favicon.ico` com `200` e `/admin/insights` continuou retornando `200`.
+
+## 2026-05-15 - NAV ADMIN CONSOLIDADO (ADR-006)
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O ImpactValidator confirmou duplicacao funcional entre as 5 abas admin: `Dashboard` (sem filtro) era identica a `Usuarios` e `Aprovacoes` era `Usuarios?status=pendente`. As duas entradas foram removidas do `navConfig.admin`, `/admin/page.tsx` e `/admin/aprovacoes/page.tsx` viraram redirects server-side (`/admin/usuarios` e `/admin/usuarios?status=pendente`), e `AdminUsersPanel` ganhou leitura de `?status` via `useSearchParams` e um chip pulsante de pendentes no topo do painel ("X cadastros pendentes - Ver agora") com contagem real obtida por uma chamada lateral `listAdminUsers({ status: 'pendente', limit: 1 })`. `LoginForm.getDestination`, `ApprovalStatus` e `roleHome` foram atualizados para apontar admin a `/admin/usuarios`. Sidebar e bottom-nav passaram a refletir os 4 itens canonicos: Usuarios, Lojas, Motoboys, Insights.
+**Arquivos modificados:** `src/components/shell/ShellNavConfig.ts`, `src/components/admin/AdminUsersPanel.tsx`, `src/app/admin/page.tsx`, `src/app/admin/aprovacoes/page.tsx`, `src/components/auth/LoginForm.tsx`, `src/components/auth/ApprovalStatus.tsx`, `STATUS.md`, `LOG.md`, `DECISIONS.md`
+**Agentes utilizados:** Camisa10, ImpactValidator, Documentador
+**Status:** fechado localmente
+
+**Validacoes:** `npm run typecheck` e `npm run build` passaram. Build gera 24 rotas; `/admin` e `/admin/aprovacoes` agora exportam como 140 B (apenas redirect), e `/admin/usuarios` continua como a pagina canonica. Nenhum endpoint backend novo foi tocado; o chip de pendentes reaproveita `GET /api/admin/users?status=pendente&limit=1` ja existente.
+
+## 2026-05-15 - MIGRACAO NEXT 15 VALIDADA E FECHADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O ciclo pendente foi fechado sem feature nova. O frontend foi validado em Next.js `15.5.18`, `eslint-config-next@15.5.18`, React `19.2.6` e React DOM `19.2.6`; o `package-lock.json` passou a refletir a arvore do Next 15/React 19 e o `next-env.d.ts` foi atualizado automaticamente pelo build do Next 15 com a referencia gerada de rotas. A consolidacao admin feita no ciclo anterior foi mantida sem reverter mudancas do Claude.
+**Arquivos modificados:** `package.json`, `package-lock.json`, `next-env.d.ts`, `STATUS.md`, `LOG.md`, `LEARNINGS.md`, `DECISIONS.md`, `README.md`, `CONTRACTS.md`
+**Agentes utilizados:** Camisa10, PromptRefiner, ImpactValidator, SecurityValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente com ressalva de auditoria moderada residual
+
+**Validacoes:** `npm run typecheck`, `npm run lint`, `npm test --if-present` e `npm run build` passaram. `npm run lint` avisou que `next lint` esta deprecado e sera removido no Next 16. `npm audit --json` falhou com 2 vulnerabilidades moderadas: `next` via `postcss` interno `8.4.31`; sem vulnerabilidades altas ou criticas. Smoke local em `http://127.0.0.1:3015` retornou `200` para `/`, `/login`, `/registro`, `/aguardando-aprovacao`, `/admin/insights`, `/admin/usuarios`, `/admin/lojas` e `/admin/motoboys`; `/admin` retornou `307 -> /admin/usuarios` e `/admin/aprovacoes` retornou `307 -> /admin/usuarios?status=pendente`.
+
+## 2026-05-15 - AUDITORIA DE PADRONIZACAO (CAMISA10 + DESIGN AGENT)
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Camisa10 acionou o Design Agent + ImpactGuard em modo read-only para auditar padronizacao de layout das 24 rotas + 50 componentes. Resultado: padronizacao alta (todas as telas internas usam `PageHeader`, 0 cores hardcoded em codigo vivo, primitives `Button`/`Field`/`Input`/`Alert`/`Badge`/`Card` consistentes, drawer/modal pattern unificado, motion controlado em transform/opacity, reduced-motion respeitado). Achados pontuais corrigidos: (a) acentuacao PT-BR ausente em `ComingSoonPanel` (afetava 4 rotas placeholder: `/admin/insights`, `/admin/pagamentos`, `/admin/entregas`, `/admin/configuracoes` — corrigido: "Em preparacao" -> "Em preparação", "Area reservada" -> "Área reservada", "Esta pagina ja esta..." -> "Esta página já está..."); (b) acentuacao na pagina `/admin/insights` (labels "Usuarios" -> "Usuários", "Usuarios por perfil e status" -> "Usuários...", "Ultimos cadastros pendentes" -> "Últimos...", "horario da API" -> "horário da API", empty state e erro padrao); (c) mensagens de erro padrao em `src/lib/api.ts` ("Nao foi possivel concluir a requisicao" -> "Não foi possível concluir a requisição") e `src/components/admin/AdminUsersPanel.tsx` ("Nao foi possivel carregar o perfil expandido." -> "Não foi possível..."); (d) remocao de dois arquivos orfaos: `src/components/shared/PlaceholderPage.tsx` (substituido pelo `ComingSoonPanel`, era o unico com hex hardcoded `bg-[#fffaf4]` e `text-gray-600` fora dos tokens) e `src/components/motoboy/MotoboyHome.tsx` (substituido por `CourierHomeFlow` em F6). Itens deixados para ciclo futuro (Baixa prioridade): criar `Select` primitive em `components/ui/Field.tsx` para os 2 selects nativos do `AdminUsersPanel` e usar `Input type="search"` no `ShellTopbar` em vez do `<input>` cru.
+**Arquivos modificados:** `src/components/shared/ComingSoonPanel.tsx`, `src/app/admin/insights/page.tsx`, `src/lib/api.ts`, `src/components/admin/AdminUsersPanel.tsx`, `STATUS.md`, `LOG.md`
+**Arquivos removidos:** `src/components/shared/PlaceholderPage.tsx`, `src/components/motoboy/MotoboyHome.tsx`
+**Agentes utilizados:** Camisa10, Design Agent, ImpactGuard, Documentador
+**Status:** fechado localmente
+
+**Validacoes:** `npm run typecheck` e `npm run build` passaram. Build mantem 24 rotas estaticas; nenhum endpoint backend tocado, nenhum contrato de componente alterado, nenhum handler ou validacao removida. PlaceholderPage e MotoboyHome confirmados como nao-importados antes da exclusao via grep do projeto inteiro.

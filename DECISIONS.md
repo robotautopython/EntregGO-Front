@@ -55,7 +55,29 @@
 
 **Consequencias:** O frontend ganha uma linguagem visual propria sem implementar dashboard, push, realtime ou regras de negocio fora do escopo. Futuras telas devem seguir `design.md` e preservar handlers/validacoes existentes.
 
-## ADR-005 - M-02B usa Supabase Auth somente para sessao no browser
+## ADR-006 - Consolidacao da navegacao admin
+
+**Data:** 2026-05-15
+**Status:** aceito
+
+**Contexto:** O painel admin entrou em F7 Track A com cinco abas no menu lateral: `Dashboard` (`/admin`), `Aprovacoes` (`/admin/aprovacoes`), `Lojas` (`/admin/lojas`), `Motoboys` (`/admin/motoboys`) e `Usuarios` (`/admin/usuarios`). As tres ultimas usam o mesmo `AdminUsersPanel` com presets diferentes (`forcedRole=logista`, `forcedRole=motoboy`, sem filtro). `Dashboard` era visualmente identica a `Usuarios` (mesmo conteudo, sem filtro) e `Aprovacoes` era apenas `Usuarios` com `forcedStatus=pendente`. O ImpactValidator confirmou duplicacao funcional sem ganho de informacao, e o usuario solicitou consolidacao.
+
+**Decisao:** Remover `Dashboard` e `Aprovacoes` do `navConfig.admin`. Manter apenas tres itens em `Cadastros`: `Usuarios`, `Lojas`, `Motoboys`. A rota canonica do admin passa a ser `/admin/usuarios`. `/admin` e `/admin/aprovacoes` sao mantidas apenas como redirects server-side (`redirect('/admin/usuarios')` e `redirect('/admin/usuarios?status=pendente')`) para nao quebrar bookmarks nem destinos de login antigos. `AdminUsersPanel` passa a ler `?status` da URL como filtro inicial e ganha um chip pulsante destacado no topo (`{n} cadastros pendentes - Ver agora`) que aplica o filtro inline, alimentado por contagem real via `GET /api/admin/users?status=pendente&limit=1`. `LoginForm.getDestination`, `ApprovalStatus` e `roleHome.admin` apontam admin direto a `/admin/usuarios`.
+
+**Consequencias:** Menos abas, menos confusao, mesma funcionalidade. Bottom-nav mobile passa a expor `Usuarios`, `Lojas`, `Motoboys` e `Insights` (4 slots disponiveis, todos ocupados). Pendentes nao perdem destaque visual: o chip pulsa apenas quando existem cadastros pendentes na rede inteira e some quando o filtro ja esta em `status=pendente`. Bookmarks antigos seguem funcionando via redirect. Nenhum endpoint backend novo foi necessario, nenhum contrato mudou e o build manteve 24 rotas estaticas.
+
+## ADR-007 - Next 15 como linha intermediaria corrigida do frontend
+
+**Data:** 2026-05-15
+**Status:** aceito
+
+**Contexto:** O frontend estava em `next@14.2.35` e a auditoria apontava riscos residuais no Next/PostCSS interno. Migrar direto para Next 16 aumentaria o risco de tooling e removals, enquanto permanecer no Next 14 manteria o projeto preso ao bloqueio antigo antes de PWA/push real.
+
+**Decisao:** Usar Next.js `15.5.18`, `eslint-config-next@15.5.18`, React `19.2.6` e React DOM `19.2.6` como salto intermediario validado. As versoes foram fixadas sem range em `package.json` para preservar reprodutibilidade do lockfile. Nao aplicar codemod enquanto typecheck, lint e build nao exigirem mudanca concreta.
+
+**Consequencias:** O frontend passa a rodar em Next 15/React 19 com build local aprovado e sem alterar contratos backend. `next lint` continua funcionando, mas fica deprecado e precisa ser substituido antes de Next 16. `npm audit --json` ainda aponta residual moderado no `postcss@8.4.31` embutido pelo Next, entao PWA/push real continuam aguardando novo ciclo de seguranca.
+
+## ADR-008 - M-02B usa Supabase Auth somente para sessao no browser
 
 **Data:** 2026-05-14
 **Status:** aceito

@@ -47,3 +47,11 @@ O fechamento de `/admin/insights` encontrou dois problemas distintos de publicac
 ## 2026-05-15 - Ruido de asset estatico tambem entra no fechamento
 
 O `404` de `favicon.ico` nao quebrava fluxo funcional, mas poluia o Network e podia mascarar falhas mais importantes durante smokes de producao. Para esse tipo de polish operacional, o caminho seguro e usar asset oficial existente, adicionar apenas o arquivo estatico necessario, validar build e smoke HTTP, e evitar transformar a correcao em ciclo de PWA/manifest/branding.
+
+## 2026-05-15 - Migracao major deve fechar tambem artefatos gerados
+
+Ao migrar de Next 14 para Next 15, o `next build` atualizou automaticamente `next-env.d.ts` para apontar para `./.next/types/routes.d.ts` e para a nova URL de documentacao TypeScript. Esse arquivo nao muda comportamento em runtime, mas faz parte do estado gerado esperado pelo tooling; deixar sem registrar faria todo build voltar a sujar a arvore. O padrao seguro e tratar esse tipo de mudanca como artefato de migracao, validar typecheck/build e registrar no LOG.
+
+## 2026-05-15 - Audit SCA pode continuar residual em dependencia embutida
+
+A migracao para Next `15.5.18` removeu o estado antigo de `next@14.2.35`, mas o `npm audit --json` ainda aponta 2 vulnerabilidades moderadas porque o Next empacota `postcss@8.4.31` internamente. Como o scanner sugere um fix automatico inadequado e nao ha alto/critico no relatorio atual, o fechamento correto e documentar o residual, evitar PWA/push real sobre essa superficie e acompanhar releases/advisories do Next em ciclo proprio.
