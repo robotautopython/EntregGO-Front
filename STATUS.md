@@ -14,7 +14,8 @@
 ## Proximas Tarefas
 
 - [ ] Criar suite de testes frontend quando houver componentes com comportamento.
-- [ ] Planejar pagamentos, documentos e entregas somente depois dos contratos backend e validadores especializados.
+- [ ] Planejar aceite, listagem/historico de entregas, realtime, push e cron somente depois dos contratos backend e validadores especializados.
+- [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 
 ## Concluido
@@ -45,10 +46,11 @@
 - [x] Auditoria de padronizacao executada (Camisa10 + Design Agent): acentuacao PT-BR corrigida em ComingSoonPanel, `/admin/insights` e mensagens de erro padrao; arquivos orfaos `PlaceholderPage` e `MotoboyHome` removidos do componentes/shared e componentes/motoboy.
 - [x] Correcao cirurgica de conformidade pos-layout: landing, loja e motoboy deixam claro que entrega, push, realtime e aceite concorrente ainda sao demonstrativos/planejados; `design.md` e `CONTRACTS.md` refletem `OperationalShell`, `ComingSoonPanel` e fluxos demo.
 - [x] Landing simplificada (Design Agent): removidas todas as mencoes a leilao, admin, timer/contagem, central e cobranca; HeroMockup deixou de usar `CountdownRing` e virou imagem estatica; RouteSteps reduzido a 2 papeis (loja->motoboy); FAQ reduzido a 4 perguntas; TrustSeals reduzido a 3 selos voltados ao usuario; CTABand passa a ter 1 CTA unico; logo aumentada no header (h-9/h-10 -> h-11/h-12) e footer (h-11 -> h-12 sm:h-14). Pasta `public/landing/` criada para receber `hero.webp`, `loja.webp` e `motoboy.webp`; ate la, os tres `<Image>` apontam para o logo oficial como placeholder neutro.
+- [x] M-04B implementado e validado no frontend: `/loja/nova-entrega` usa `POST /api/deliveries` com Bearer token de logista ativo, envia somente `destinationAddress` e `notes`, mostra loading/sucesso/erros estaveis, impede duplo envio e teve smoke autenticado controlado aprovado com usuarios ficticios e limpeza automatica.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou testes frontend.
+- Projeto ainda nao possui dashboards complexos, aceite concorrente, listagem/historico real de entregas, push real, realtime real, cron ou testes frontend.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
 - `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.

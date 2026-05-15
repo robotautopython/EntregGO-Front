@@ -25,7 +25,7 @@ export function LojaHome({ authContext }: LojaHomeProps) {
       <PageHeader
         eyebrow={`Olá, ${authContext.user.email.split('@')[0]}`}
         title="Sua central, em uma tela."
-        description="Veja a base de solicitação, status e histórico antes do backend de entregas real."
+        description="Crie solicitações reais de entrega e acompanhe os próximos blocos conforme os contratos forem liberados."
       />
 
       <Link
@@ -51,8 +51,8 @@ export function LojaHome({ authContext }: LojaHomeProps) {
               Solicitar nova entrega
             </h2>
             <p className="mt-2 max-w-md text-sm text-white/85">
-              Endereço de destino e observação em prévia visual. O envio real para motoboys
-              entra no próximo ciclo.
+              Endereço de destino e observação enviados pelo contrato real. Aceite e
+              notificação aos motoboys entram em ciclos próprios.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-md bg-asphalt-950 px-5 py-3 text-sm font-extrabold shadow-ink transition-colors group-hover:bg-asphalt-700">
@@ -147,8 +147,8 @@ export function LojaHome({ authContext }: LojaHomeProps) {
           <div className="text-sm text-brand-700">
             <p className="font-extrabold">Construindo este painel</p>
             <p className="mt-1 leading-6 text-brand-700/85">
-              A versão completa, com solicitação real e histórico, entra na próxima etapa. O
-              esqueleto, navegação e identidade já estão em pé.
+              A criação real de solicitação já está ligada ao backend. Histórico, aceite,
+              realtime e push continuam bloqueados até os próximos contratos.
             </p>
           </div>
         </div>

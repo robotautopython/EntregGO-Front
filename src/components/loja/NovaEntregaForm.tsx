@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Info, MapPin, Send } from 'lucide-react';
+import { ArrowRight, Info, Loader2, MapPin, Send } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
@@ -10,25 +10,53 @@ import { Field, Input, Textarea } from '@/components/ui/Field';
 
 import type { DeliveryDraft } from './delivery-types';
 
+export interface DeliverySubmitError {
+  title: string;
+  message: string;
+  details?: string[];
+}
+
 interface NovaEntregaFormProps {
   onSubmit: (draft: DeliveryDraft) => void;
   initialDraft?: DeliveryDraft;
+  isSubmitting?: boolean;
+  submitError?: DeliverySubmitError | null;
 }
 
-const MAX_NOTES = 200;
+const MAX_ADDRESS = 240;
+const MAX_NOTES = 500;
 
-export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps) {
+export function NovaEntregaForm({
+  onSubmit,
+  initialDraft,
+  isSubmitting = false,
+  submitError,
+}: NovaEntregaFormProps) {
   const [destination, setDestination] = useState(initialDraft?.destinationAddress ?? '');
-  const [details, setDetails] = useState(initialDraft?.destinationDetails ?? '');
   const [notes, setNotes] = useState(initialDraft?.notes ?? '');
+  const [destinationError, setDestinationError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!destination.trim()) return;
+    if (isSubmitting) return;
+
+    const trimmedDestination = destination.trim();
+    const trimmedNotes = notes.trim();
+
+    if (!trimmedDestination) {
+      setDestinationError('Informe o endereço de destino.');
+      return;
+    }
+
+    if (trimmedDestination.length > MAX_ADDRESS) {
+      setDestinationError(`Use no máximo ${MAX_ADDRESS} caracteres.`);
+      return;
+    }
+
+    setDestinationError(null);
     onSubmit({
-      destinationAddress: destination.trim(),
-      destinationDetails: details.trim() || undefined,
-      notes: notes.trim() || undefined,
+      destinationAddress: trimmedDestination,
+      notes: trimmedNotes || undefined,
     });
   }
 
@@ -40,7 +68,7 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
         </span>
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
-            Prévia de solicitação
+            Solicitação real
           </p>
           <h2 className="text-2xl font-black text-asphalt-950 sm:text-3xl">
             Para onde a entrega vai?
@@ -48,11 +76,25 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
         </div>
       </div>
 
+      {submitError ? (
+        <Alert tone="danger" title={submitError.title}>
+          <p>{submitError.message}</p>
+          {submitError.details?.length ? (
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {submitError.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          ) : null}
+        </Alert>
+      ) : null}
+
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <Field
           label="Endereço de destino"
           required
-          hint="Rua, número, bairro. O motoboy precisa achar na hora."
+          hint={`${destination.length}/${MAX_ADDRESS} caracteres — rua, número, bairro e complemento.`}
+          error={destinationError ?? undefined}
         >
           <div className="relative">
             <MapPin
@@ -64,32 +106,30 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
               required
               autoFocus
               autoComplete="street-address"
-              placeholder="Av. Brasil, 884"
+              placeholder="Av. Brasil, 884, Centro, Apto 51"
               className="pl-10"
+              maxLength={MAX_ADDRESS}
               value={destination}
-              onChange={(event) => setDestination(event.target.value)}
+              disabled={isSubmitting}
+              invalid={Boolean(destinationError)}
+              onChange={(event) => {
+                setDestination(event.target.value);
+                if (event.target.value.trim()) setDestinationError(null);
+              }}
             />
           </div>
         </Field>
 
-        <Field label="Complemento" hint="Apartamento, sala, ponto de referência (opcional).">
-          <Input
-            type="text"
-            placeholder="Apto 51 — Bloco B"
-            value={details}
-            onChange={(event) => setDetails(event.target.value)}
-          />
-        </Field>
-
         <Field
           label="Observação"
-          hint={`${notes.length}/${MAX_NOTES} caracteres — instruções pro motoboy.`}
+          hint={`${notes.length}/${MAX_NOTES} caracteres — instruções para a entrega.`}
         >
           <Textarea
             maxLength={MAX_NOTES}
             rows={3}
             placeholder="Ex: deixar com o porteiro. Sacola transparente. Pedido frio."
             value={notes}
+            disabled={isSubmitting}
             onChange={(event) => setNotes(event.target.value)}
           />
         </Field>
@@ -98,14 +138,15 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
           <div className="flex items-start gap-3 text-sm text-asphalt-950/75">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-route-600" aria-hidden="true" />
             <p>
-              Nesta prévia, o envio simula uma busca de <strong>60 segundos</strong>.
-              O disparo real para motoboys ainda depende do backend de entregas.
+              A criação usa o contrato real <strong>POST /api/deliveries</strong>. Aceite,
+              push, realtime, cancelamento e histórico ainda não fazem parte desta etapa.
             </p>
           </div>
         </div>
 
         <Alert tone="info" title="Sobre o endereço de coleta">
-          Na versão real, o endereço da loja acompanha a solicitação depois que o endpoint existir.
+          O backend identifica sua loja pela sessão autenticada. O formulário envia apenas
+          destino e observação.
         </Alert>
 
         <div className="flex flex-col gap-3 border-t border-paper-line pt-5 sm:flex-row sm:justify-end">
@@ -115,10 +156,19 @@ export function NovaEntregaForm({ onSubmit, initialDraft }: NovaEntregaFormProps
             size="xl"
             width="full"
             className="sm:w-auto"
-            disabled={!destination.trim()}
+            disabled={!destination.trim() || isSubmitting}
           >
-            Simular envio
-            <ArrowRight className="h-5 w-5" aria-hidden="true" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                Criando...
+              </>
+            ) : (
+              <>
+                Criar solicitação
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
+              </>
+            )}
           </Button>
         </div>
       </form>

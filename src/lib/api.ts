@@ -14,6 +14,7 @@ import type {
   StoreProfile,
   StoreRegistrationPayload,
 } from '@/types/auth';
+import type { CreateDeliveryRequestPayload, DeliveryRequest } from '@/types/delivery';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -49,6 +50,10 @@ function unwrapResponse<T>(response: ApiSuccess<T> | ApiFailure): T {
 }
 
 function mapAxiosError(error: unknown): never {
+  if (error instanceof ClientApiError) {
+    throw error;
+  }
+
   if (axios.isAxiosError<ApiFailure>(error) && error.response?.data?.success === false) {
     const apiError = error.response.data.error;
     throw new ClientApiError(apiError.code, apiError.message, apiError.details);
@@ -147,6 +152,26 @@ export async function getAdminInsights(accessToken: string) {
     assertApiUrlConfigured();
     const response = await api.get<ApiSuccess<AdminInsights> | ApiFailure>(
       '/api/admin/insights',
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function createDeliveryRequest(
+  accessToken: string,
+  payload: CreateDeliveryRequestPayload,
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.post<ApiSuccess<DeliveryRequest> | ApiFailure>(
+      '/api/deliveries',
+      payload,
       {
         headers: bearerHeaders(accessToken),
       },

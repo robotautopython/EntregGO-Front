@@ -10,7 +10,6 @@ export type DeliveryStatus =
 
 export interface DeliveryDraft {
   destinationAddress: string;
-  destinationDetails?: string;
   notes?: string;
 }
 

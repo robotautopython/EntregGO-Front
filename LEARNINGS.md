@@ -55,3 +55,15 @@ Ao migrar de Next 14 para Next 15, o `next build` atualizou automaticamente `nex
 ## 2026-05-15 - Audit SCA pode continuar residual em dependencia embutida
 
 A migracao para Next `15.5.18` removeu o estado antigo de `next@14.2.35`, mas o `npm audit --json` ainda aponta 2 vulnerabilidades moderadas porque o Next empacota `postcss@8.4.31` internamente. Como o scanner sugere um fix automatico inadequado e nao ha alto/critico no relatorio atual, o fechamento correto e documentar o residual, evitar PWA/push real sobre essa superficie e acompanhar releases/advisories do Next em ciclo proprio.
+
+## 2026-05-15 - Criacao persistida nao deve cair em estado demonstrativo
+
+Ao ligar `/loja/nova-entrega` ao `POST /api/deliveries`, o risco principal era criar uma linha real no backend e reutilizar o fluxo antigo de countdown/cancelamento/expiracao local. O padrao correto e separar sucesso persistido de demo visual: apos a API retornar `201`, a tela mostra confirmacao honesta e explicita que aceite, notificacao, realtime, cron e historico ainda nao existem. Isso evita que a UI prometa cancelamento ou expiracao que o backend ainda nao implementa.
+
+## 2026-05-15 - Erros tipados do client nao devem ser remapeados
+
+`assertApiUrlConfigured()` lanca `ClientApiError` antes da chamada Axios. O mapper de API precisa preservar esse erro tipado; caso contrario, codigos como `API_URL_MISSING` viram erro generico de request e a UI perde a mensagem operacional correta. O padrao seguro e checar `error instanceof ClientApiError` antes de tratar `axios.isAxiosError`.
+
+## 2026-05-15 - Smoke autenticado deve isolar ambiente e cache do Next
+
+O smoke M-04B precisou rodar com API local temporaria e `NEXT_PUBLIC_API_URL` de teste. Para evitar contaminar a build normal, o processo removeu apenas `.next` com checagem de caminho, limpou `NODE_PATH`/`NODE_ENV` do processo Next, executou `next build` + `next start` para o navegador e refez a build normal ao final. `next dev` nao foi usado no veredito porque falhou ao compilar `/loja/nova-entrega` por `require` em `tailwind.config.ts` em contexto ESM; isso deve ser tratado como manutencao separada se o fluxo de dev local precisar dessa rota.

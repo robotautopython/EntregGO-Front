@@ -35,17 +35,68 @@ Erro esperado:
 - Role: `admin`, `logista`, `motoboy`
 - Entrega: `aguardando`, `aceita`, `coletada`, `em_transito`, `entregue`, `expirada`, `cancelada`
 
-## Entregas loja/motoboy
+## Entregas M-04B
 
-As telas de loja e motoboy para nova entrega, fila, aceite, status e historico ainda sao fluxos visuais demonstrativos. Elas nao devem chamar endpoints de entrega, push, realtime, aceite concorrente ou historico real ate existirem contratos backend validados.
+### Criacao pela loja
+
+Tela: `/loja/nova-entrega`
+
+Uso permitido:
+- `POST /api/deliveries` com `Authorization: Bearer <access_token>`.
+- Apenas usuario de dominio `role=logista` e `status=ativo` deve chegar ao formulario funcional.
+- O payload enviado pelo frontend contem somente `destinationAddress` e `notes`.
+- `store_id` nunca e enviado pelo frontend; o backend deriva a loja a partir da sessao.
+- O frontend nao acessa `delivery_requests` diretamente. Escrita/leitura de dominio segue pela API backend.
+
+Body:
+
+```json
+{
+  "destinationAddress": "Endereco de destino",
+  "notes": "Observacao opcional"
+}
+```
+
+Resposta esperada:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "store_id": "uuid",
+    "destination_address": "Endereco de destino",
+    "notes": "Observacao opcional",
+    "status": "aguardando",
+    "courier_id": null,
+    "created_at": "2026-05-15T20:00:00.000Z",
+    "expires_at": "2026-05-15T20:01:00.000Z",
+    "accepted_at": null,
+    "collected_at": null,
+    "in_transit_at": null,
+    "delivered_at": null,
+    "updated_at": "2026-05-15T20:00:00.000Z"
+  },
+  "message": "Solicitacao de entrega criada"
+}
+```
+
+Erros tratados pela UI:
+- `VALIDATION_ERROR`: mostra erro estavel no formulario.
+- `USER_PENDING`: informa que o cadastro aguarda aprovacao.
+- `USER_BLOCKED`: informa conta bloqueada.
+- `FORBIDDEN_ROLE` e `STORE_PROFILE_REQUIRED`: mostram permissao negada para criar entrega.
+- `AUTH_REQUIRED`, `INVALID_TOKEN` e `DOMAIN_USER_NOT_FOUND`: mostram sessao invalida.
+- Falha de rede/timeout: mostra erro recuperavel e reabilita o botao.
 
 Fora do escopo atual:
-- envio real de solicitacao para motoboys;
+- envio/notificacao real para pool de motoboys;
 - Web Push/VAPID e Service Worker operacional;
 - assinatura Realtime para fila de entregas;
 - aceite concorrente com primeira aceitacao vencendo;
-- expiracao server-side de solicitacoes;
-- historicos reais de loja/motoboy.
+- cancelamento pela UI;
+- expiracao automatica por cron/job;
+- listagem, historico ou dashboard real de entregas para loja/motoboy/admin.
 
 ## Variaveis permitidas no frontend
 

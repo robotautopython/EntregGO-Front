@@ -78,7 +78,7 @@ export function SearchingState({
           </div>
           <RouteLine
             from={`${storeName} — ${storeAddress}`}
-            to={`${draft.destinationAddress}${draft.destinationDetails ? ` · ${draft.destinationDetails}` : ''}`}
+            to={draft.destinationAddress}
           />
           {draft.notes ? (
             <p className="mt-4 rounded-md border border-paper-line bg-white p-3 text-sm text-asphalt-950/75">
