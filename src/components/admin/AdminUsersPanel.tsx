@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Search,
   Unlock,
+  UserCheck,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -23,11 +24,13 @@ import {
   approveUser,
   blockUser,
   ClientApiError,
+  getAdminUserDetail,
   listAdminUsers,
   unblockUser,
 } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type {
+  AdminUserDetail,
   AdminUsersResult,
   AuthContext,
   DomainUser,
@@ -35,9 +38,18 @@ import type {
   UserStatus,
 } from '@/types/auth';
 
+import { UserDetailDrawer } from './UserDetailDrawer';
+
 interface AdminUsersPanelProps {
   authContext: AuthContext;
   accessToken: string;
+  preset?: {
+    title: string;
+    eyebrow: string;
+    description: string;
+    forcedRole?: UserRole;
+    forcedStatus?: UserStatus;
+  };
 }
 
 type Filters = {
@@ -89,14 +101,33 @@ function getAvailableActions(user: DomainUser, currentUserId: string | undefined
   return ['block'];
 }
 
-export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelProps) {
+const defaultPreset = {
+  title: 'Painel Admin',
+  eyebrow: 'Gestão da rede',
+  description:
+    'Cadastros, aprovações e bloqueios da central. Toque numa linha para abrir o perfil completo.',
+};
+
+export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsersPanelProps) {
+  const effectivePreset = preset ?? defaultPreset;
+  const forcedRole = preset?.forcedRole;
+  const forcedStatus = preset?.forcedStatus;
+
   const [users, setUsers] = useState<AdminUsersResult | null>(null);
-  const [filters, setFilters] = useState<Filters>({ role: '', status: '', search: '' });
+  const [filters, setFilters] = useState<Filters>({
+    role: forcedRole ?? '',
+    status: forcedStatus ?? '',
+    search: '',
+  });
   const [page, setPage] = useState(1);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<DomainUser | null>(null);
+  const [selectedUserDetail, setSelectedUserDetail] = useState<AdminUserDetail | null>(null);
+  const [isLoadingUserDetail, setIsLoadingUserDetail] = useState(false);
+  const [userDetailError, setUserDetailError] = useState<string | null>(null);
 
   const totalPages = useMemo(() => {
     if (!users?.pagination.total) return 1;
@@ -112,8 +143,8 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
         const result = await listAdminUsers(accessToken, {
           page: nextPage,
           limit: pageSize,
-          role: nextFilters.role || undefined,
-          status: nextFilters.status || undefined,
+          role: (forcedRole ?? nextFilters.role) || undefined,
+          status: (forcedStatus ?? nextFilters.status) || undefined,
           search: nextFilters.search.trim() || undefined,
         });
         if (result) setUsers(result);
@@ -128,13 +159,59 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
         setIsLoadingUsers(false);
       }
     },
-    [accessToken, filters, page],
+    [accessToken, filters, forcedRole, forcedStatus, page],
   );
 
   useEffect(() => {
-    void loadUsers(1, { role: '', status: '', search: '' });
+    void loadUsers(1, {
+      role: forcedRole ?? '',
+      status: forcedStatus ?? '',
+      search: '',
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [accessToken, forcedRole, forcedStatus]);
+
+  useEffect(() => {
+    if (!selectedUser) {
+      setSelectedUserDetail(null);
+      setUserDetailError(null);
+      setIsLoadingUserDetail(false);
+      return;
+    }
+
+    let cancelled = false;
+    const selectedUserId = selectedUser.id;
+    setSelectedUserDetail(null);
+    setUserDetailError(null);
+    setIsLoadingUserDetail(true);
+
+    async function loadUserDetail() {
+      try {
+        const detail = await getAdminUserDetail(accessToken, selectedUserId);
+        if (!cancelled && detail) {
+          setSelectedUserDetail(detail);
+        }
+      } catch (caughtError) {
+        if (cancelled) return;
+        if (caughtError instanceof ClientApiError) {
+          setUserDetailError(caughtError.message);
+          return;
+        }
+
+        setUserDetailError('Nao foi possivel carregar o perfil expandido.');
+      } finally {
+        if (!cancelled) {
+          setIsLoadingUserDetail(false);
+        }
+      }
+    }
+
+    void loadUserDetail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, selectedUser]);
 
   async function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -158,19 +235,32 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
     setSuccess(null);
 
     try {
+      let updated: DomainUser | undefined;
       if (action === 'approve') {
-        await approveUser(accessToken, user.id);
+        updated = (await approveUser(accessToken, user.id)) ?? undefined;
         setSuccess(`${user.email} aprovado.`);
       }
 
       if (action === 'block') {
-        await blockUser(accessToken, user.id);
+        updated = (await blockUser(accessToken, user.id)) ?? undefined;
         setSuccess(`${user.email} bloqueado.`);
       }
 
       if (action === 'unblock') {
-        await unblockUser(accessToken, user.id);
+        updated = (await unblockUser(accessToken, user.id)) ?? undefined;
         setSuccess(`${user.email} desbloqueado.`);
+      }
+
+      if (selectedUser?.id === user.id && updated) {
+        setSelectedUser(updated);
+        setSelectedUserDetail((current) =>
+          current
+            ? {
+                ...current,
+                user: updated,
+              }
+            : current,
+        );
       }
 
       await loadUsers(page, filters);
@@ -187,13 +277,15 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
   }
 
   const pendingCount = users?.items.filter((user) => user.status === 'pendente').length ?? 0;
+  const showRoleFilter = !forcedRole;
+  const showStatusFilter = !forcedStatus;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Gestão da rede"
-        title="Painel Admin"
-        description="Cadastros, aprovações e bloqueios da central. Aprovações pulsam na lista — entre na linha pra agir."
+        eyebrow={effectivePreset.eyebrow}
+        title={effectivePreset.title}
+        description={effectivePreset.description}
         actions={
           <Button
             variant="secondary"
@@ -211,12 +303,21 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
         }
       />
 
+      {(forcedRole || forcedStatus) && (
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-widest text-asphalt-950/55">
+          <UserCheck className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
+          Filtros fixos:
+          {forcedRole ? <Badge tone="brand">role · {roleLabels[forcedRole]}</Badge> : null}
+          {forcedStatus ? <Badge tone="warn">status · {forcedStatus}</Badge> : null}
+        </div>
+      )}
+
       <Card>
         <form
           className="grid gap-4 md:grid-cols-[1fr_180px_180px_auto] md:items-end"
           onSubmit={handleFilterSubmit}
         >
-          <Field label="Buscar por email">
+          <Field label="Buscar por email" className="md:col-span-1">
             <div className="relative">
               <Search
                 className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-asphalt-950/45"
@@ -234,41 +335,49 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
             </div>
           </Field>
 
-          <Field label="Perfil">
-            <select
-              className="h-12 w-full rounded-md border border-paper-line bg-white px-3 text-sm font-semibold outline-none transition-all duration-ui ease-ride focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-              value={filters.role}
-              onChange={(event) =>
-                setFilters((current) => ({
-                  ...current,
-                  role: event.target.value as Filters['role'],
-                }))
-              }
-            >
-              <option value="">Todos</option>
-              <option value="admin">Admin</option>
-              <option value="logista">Loja</option>
-              <option value="motoboy">Motoboy</option>
-            </select>
-          </Field>
+          {showRoleFilter ? (
+            <Field label="Perfil">
+              <select
+                className="h-12 w-full rounded-md border border-paper-line bg-white px-3 text-sm font-semibold outline-none transition-all duration-ui ease-ride focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                value={filters.role}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    role: event.target.value as Filters['role'],
+                  }))
+                }
+              >
+                <option value="">Todos</option>
+                <option value="admin">Admin</option>
+                <option value="logista">Loja</option>
+                <option value="motoboy">Motoboy</option>
+              </select>
+            </Field>
+          ) : (
+            <div aria-hidden="true" className="hidden md:block" />
+          )}
 
-          <Field label="Status">
-            <select
-              className="h-12 w-full rounded-md border border-paper-line bg-white px-3 text-sm font-semibold outline-none transition-all duration-ui ease-ride focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-              value={filters.status}
-              onChange={(event) =>
-                setFilters((current) => ({
-                  ...current,
-                  status: event.target.value as Filters['status'],
-                }))
-              }
-            >
-              <option value="">Todos</option>
-              <option value="pendente">Pendente</option>
-              <option value="ativo">Ativo</option>
-              <option value="bloqueado">Bloqueado</option>
-            </select>
-          </Field>
+          {showStatusFilter ? (
+            <Field label="Status">
+              <select
+                className="h-12 w-full rounded-md border border-paper-line bg-white px-3 text-sm font-semibold outline-none transition-all duration-ui ease-ride focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                value={filters.status}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    status: event.target.value as Filters['status'],
+                  }))
+                }
+              >
+                <option value="">Todos</option>
+                <option value="pendente">Pendente</option>
+                <option value="ativo">Ativo</option>
+                <option value="bloqueado">Bloqueado</option>
+              </select>
+            </Field>
+          ) : (
+            <div aria-hidden="true" className="hidden md:block" />
+          )}
 
           <Button type="submit" variant="dark" size="lg" disabled={isLoadingUsers}>
             {isLoadingUsers ? (
@@ -324,12 +433,15 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
             <tbody>
               {users?.items.map((user) => {
                 const isMe = user.id === authContext.user.id;
+                const isSelected = selectedUser?.id === user.id;
                 return (
                   <tr
                     key={user.id}
+                    onClick={() => setSelectedUser(user)}
                     className={cn(
-                      'border-b border-paper-line last:border-b-0 transition-colors hover:bg-paper',
+                      'cursor-pointer border-b border-paper-line last:border-b-0 transition-colors hover:bg-paper',
                       user.status === 'pendente' && 'bg-warn-50/40',
+                      isSelected && 'bg-brand-50/70',
                     )}
                   >
                     <td className="px-5 py-3 font-bold text-asphalt-950">{user.email}</td>
@@ -345,7 +457,10 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
                     <td className="px-5 py-3 font-mono text-xs text-asphalt-950/65">
                       {formatDate(user.approved_at)}
                     </td>
-                    <td className="px-5 py-3">
+                    <td
+                      className="px-5 py-3"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <div className="flex justify-end gap-2">
                         {isMe ? (
                           <Badge tone="paper">Sessão atual</Badge>
@@ -431,6 +546,17 @@ export function AdminUsersPanel({ authContext, accessToken }: AdminUsersPanelPro
           </div>
         </div>
       </Card>
+
+      <UserDetailDrawer
+        user={selectedUser}
+        detail={selectedUserDetail}
+        isLoadingDetail={isLoadingUserDetail}
+        detailError={userDetailError}
+        currentUserId={authContext.user.id}
+        activeAction={activeAction}
+        onClose={() => setSelectedUser(null)}
+        onAction={handleAction}
+      />
     </div>
   );
 }

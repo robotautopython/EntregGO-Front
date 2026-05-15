@@ -7,13 +7,13 @@ export default function AdminEntregasPage() {
   return (
     <OperationalShell role="admin" title="Entregas">
       <ComingSoonPanel
-        eyebrow="Operacao"
-        title="Entregas"
-        description="Painel futuro para acompanhar corridas, aceite, expiracao e status."
+        eyebrow="Operação"
+        title="Histórico de entregas da rede"
+        description="Lista de todas as solicitações criadas pelas lojas, com status, motoboy responsável e tempos. Depende de endpoint backend que ainda não existe."
         checkpoints={[
-          'Contrato backend antes da UI real',
-          'Aceite concorrente precisa de validacao de performance',
-          'Status devem ser consistentes com o schema Supabase',
+          'Endpoint GET /api/admin/deliveries não implementado ainda',
+          'Aceite concorrente exige Performance Validator antes da UI ligada',
+          'Status seguem o enum delivery_status já criado na M-01',
         ]}
       />
     </OperationalShell>

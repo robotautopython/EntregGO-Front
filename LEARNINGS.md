@@ -23,3 +23,19 @@ O frontend M-02B permite obter uma sessao real Supabase Auth pelo login, mas o s
 ## 2026-05-15 - Supabase query builder deve ser aguardado explicitamente
 
 No smoke do painel admin, tentar usar `.catch()` diretamente apos encadear um query builder Supabase (`service.from(...).delete().in(...)`) falhou porque o objeto ainda nao e uma Promise comum naquele ponto. O padrao seguro e atribuir `const result = await query` e entao verificar `result.error`, especialmente em blocos de limpeza que nao podem mascarar sobras temporarias.
+
+## 2026-05-15 - Placeholder honesto e melhor que simulacao de admin
+
+Na Track A do admin, o validator rejeitou KPIs, documentos regulados e pagamentos funcionais porque os contratos backend e validacoes ainda nao existem. O caminho correto foi entregar estrutura real apenas sobre endpoints existentes e usar placeholders que dizem exatamente qual endpoint e qual validador faltam. Isso preserva confianca do operador e evita UI enganosa, especialmente em documentos LGPD e marcacao de pagamento.
+
+## 2026-05-15 - Drawer deve consumir detalhe expandido sem reabrir documentos
+
+Com `GET /api/admin/users/:id` disponivel no backend, o proximo patch de frontend pode enriquecer a aba Perfil com dados de loja/motoboy. Esse consumo nao libera documentos, fotos, pagamentos ou historico: estes continuam exigindo endpoints proprios e validadores especializados. A integracao deve tratar loading/erro do drawer sem duplicar a listagem admin.
+
+## 2026-05-15 - Detalhe expandido no drawer deve ser efemero
+
+O drawer admin passou a buscar `GET /api/admin/users/:id` ao selecionar uma linha, mas o perfil expandido fica apenas em estado React e e limpo ao fechar/trocar usuario. Esse padrao evita persistir PII administrativa em storage local, preserva a listagem paginada como fonte base e permite fallback visual quando o detalhe falha.
+
+## 2026-05-15 - Insights admin devem espelhar exatamente o contrato
+
+Mesmo com endpoint real, o painel de insights nao deve inventar campos para "enriquecer" a tela. Como `GET /api/admin/insights` retorna apenas agregados e pendentes sem PII, a UI deve exibir role, status, datas e contagens, deixando nomes, emails, perfis, documentos e qualquer ranking para contratos futuros validados.

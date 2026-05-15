@@ -77,3 +77,37 @@ O frontend nao cria usuarios diretamente no Supabase Auth e nao escreve em tabel
 Tela: `/aguardando-aprovacao`
 
 Consulta a sessao Supabase Auth local e chama `/api/auth/me` quando houver access token.
+
+## Admin M-03/F7 Track A + Insights
+
+Telas:
+- `/admin`
+- `/admin/usuarios`
+- `/admin/lojas`
+- `/admin/motoboys`
+- `/admin/aprovacoes`
+- `/admin/insights`
+
+Uso permitido:
+- `GET /api/admin/users?page=1&limit=20&role=logista&status=pendente&search=email`
+- `GET /api/admin/users/:id`
+- `GET /api/admin/insights`
+- `PATCH /api/admin/users/:id/approve`
+- `PATCH /api/admin/users/:id/block`
+- `PATCH /api/admin/users/:id/unblock`
+
+O drawer admin consome `GET /api/admin/users/:id` para enriquecer a aba Perfil com dados administrativos sanitizados de loja/motoboy. As abas de documentos, entregas, pagamento e notas continuam estruturais e nao devem chamar endpoints inexistentes.
+
+`/admin/insights` consome `GET /api/admin/insights` com Bearer token de admin ativo. A pagina exibe apenas campos do contrato: contagens por `role/status`, lojas e motoboys ativos, `latest_pending_users.items` limitado pelo backend e `generated_at`. Campos de PII como email, nomes, endereco, perfis e documentos nao fazem parte desta tela.
+
+Campos proibidos no drawer enquanto nao houver pipeline de Storage validado:
+- `logo_url`
+- `bike_photo_url`
+- `license_photo_url`
+
+Contratos backend esperados para proximos ciclos, ainda ausentes:
+- `GET /api/admin/users/:id/deliveries?page=1`
+- `GET /api/admin/payments`
+- `PATCH /api/admin/payments/:id/mark-paid`
+- signed URLs para documentos em Storage
+- tabela/endpoint de `admin_notes`

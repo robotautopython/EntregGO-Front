@@ -7,13 +7,13 @@ export default function AdminPagamentosPage() {
   return (
     <OperationalShell role="admin" title="Pagamentos">
       <ComingSoonPanel
-        eyebrow="Operacao"
-        title="Pagamentos"
-        description="Area reservada para controles internos de pagamento e conciliacao."
+        eyebrow="Operação"
+        title="Controle de pagamentos"
+        description="Tabela com status, vencimento e ação 'Marcar como pago'. Schema já existe (M-01 criou public.payments), mas controllers no backend ainda não."
         checkpoints={[
-          'Validar LGPD e dados financeiros antes de implementar',
-          'Manter dados financeiros fora de logs',
-          'Definir contrato backend antes da tela operacional',
+          'Endpoints GET /api/admin/payments e PATCH /api/admin/payments/:id/mark-paid não existem ainda',
+          'Marcar como pago exige auditoria de quem marcou (Security Validator)',
+          'Listagem precisa de paginação e índices revisados (Performance Validator)',
         ]}
       />
     </OperationalShell>

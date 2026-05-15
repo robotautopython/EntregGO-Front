@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 import type {
+  AdminInsights,
+  AdminUserDetail,
   AdminUsersQuery,
   AdminUsersResult,
   ApiFailure,
@@ -117,6 +119,38 @@ export async function listAdminUsers(accessToken: string, query: AdminUsersQuery
         search: query.search || undefined,
       },
     });
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function getAdminUserDetail(accessToken: string, userId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminUserDetail> | ApiFailure>(
+      `/api/admin/users/${userId}`,
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function getAdminInsights(accessToken: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminInsights> | ApiFailure>(
+      '/api/admin/insights',
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
 
     return unwrapResponse(response.data);
   } catch (error) {

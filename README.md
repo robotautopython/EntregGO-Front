@@ -4,7 +4,7 @@ Frontend web do EntregGO, responsavel pela landing page, paineis de admin, loja 
 
 ## Estado atual
 
-Fase de fundacao tecnica com auth/cadastro minimo e direcao visual inicial. Este repositorio possui manifest, dependencias, Next.js, TypeScript, Tailwind, App Router, landing page de entrada, rotas de login/cadastro/status e paineis placeholder. Ainda nao possui dashboards, push real, realtime real ou suite de testes.
+Fase de fundacao/auth-operacao com auth/cadastro minimo, direcao visual inicial e painel admin operacional sobre os contratos backend M-02A/Track B. O admin lista usuarios, aprova/bloqueia/desbloqueia, possui paginas segmentadas por papel/status, drawer com perfil expandido sanitizado e insights minimos via `GET /api/admin/insights`. Ainda nao possui dashboards complexos, push real, realtime real ou suite de testes.
 
 ## Responsabilidades
 
@@ -23,7 +23,9 @@ Documento base: `design.md`.
 
 ## Fora da fundacao atual
 
-- Implementar push real, realtime real ou dashboard.
+- Implementar push real, realtime real ou dashboard complexo.
+- Exibir documentos/CNH/fotos sem pipeline backend de Storage com signed URLs e Security Validator.
+- Marcar pagamentos como pagos sem endpoints backend, auditoria e persistencia.
 - Inserir secrets reais ou variaveis privadas.
 
 ## Comandos
@@ -35,4 +37,4 @@ Documento base: `design.md`.
 
 ## Proximo passo
 
-Planejar migracao segura de Next.js para versao corrigida, validar RLS com sessao real apos rotacao de secrets e evoluir o layout dos fluxos internos sem sair do escopo sensivel.
+Pagamentos, documentos e historico de entregas dependem de endpoints backend e validadores especializados antes de virar UI funcional. Dashboards mais ricos devem passar por Performance Validator antes de novas agregacoes, cache, polling ou listas grandes.

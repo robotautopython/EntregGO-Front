@@ -1,21 +1,29 @@
 'use client';
 
-import { ComingSoonPanel } from '@/components/shared/ComingSoonPanel';
+import { AdminUsersPanel } from '@/components/admin/AdminUsersPanel';
 import { OperationalShell } from '@/components/shell/OperationalShell';
 
 export default function AdminAprovacoesPage() {
   return (
-    <OperationalShell role="admin" title="Aprovacoes">
-      <ComingSoonPanel
-        eyebrow="Central"
-        title="Aprovacoes"
-        description="Fila dedicada para revisar cadastros pendentes de lojas e motoboys."
-        checkpoints={[
-          'Reaproveitar as acoes admin ja existentes',
-          'Manter paginacao e filtros antes de volume real',
-          'Registrar auditoria de aprovacao no backend',
-        ]}
-      />
+    <OperationalShell
+      role="admin"
+      title="Central · Aprovações"
+      searchPlaceholder="Buscar email pendente..."
+      showSearch
+    >
+      {({ authContext, accessToken }) => (
+        <AdminUsersPanel
+          authContext={authContext}
+          accessToken={accessToken}
+          preset={{
+            title: 'Aprovações pendentes',
+            eyebrow: 'Central',
+            description:
+              'Fila dedicada de cadastros aguardando revisão. Cada linha tem ações inline para aprovar ou bloquear.',
+            forcedStatus: 'pendente',
+          }}
+        />
+      )}
     </OperationalShell>
   );
 }

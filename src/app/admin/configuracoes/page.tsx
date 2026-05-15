@@ -5,15 +5,15 @@ import { OperationalShell } from '@/components/shell/OperationalShell';
 
 export default function AdminConfiguracoesPage() {
   return (
-    <OperationalShell role="admin" title="Configuracoes">
+    <OperationalShell role="admin" title="Configurações">
       <ComingSoonPanel
         eyebrow="Sistema"
-        title="Configuracoes"
-        description="Ajustes operacionais da central serao definidos em ciclo proprio."
+        title="Configurações"
+        description="Ajustes operacionais da central — política de aprovação, valores padrão, integrações — serão definidos em ciclo próprio."
         checkpoints={[
-          'Nao expor secrets no frontend',
-          'Separar configuracoes publicas de privadas',
-          'Validar permissoes antes de qualquer acao sensivel',
+          'Nenhum secret no frontend (ADR-002)',
+          'Separar configurações públicas de privadas',
+          'Validar permissões antes de qualquer ação sensível',
         ]}
       />
     </OperationalShell>

@@ -7,12 +7,21 @@ export default function AdminUsuariosPage() {
   return (
     <OperationalShell
       role="admin"
-      title="Usuarios"
-      searchPlaceholder="Buscar email, loja, motoboy..."
+      title="Central · Usuários"
+      searchPlaceholder="Buscar por email..."
       showSearch
     >
       {({ authContext, accessToken }) => (
-        <AdminUsersPanel authContext={authContext} accessToken={accessToken} />
+        <AdminUsersPanel
+          authContext={authContext}
+          accessToken={accessToken}
+          preset={{
+            title: 'Todos os usuários',
+            eyebrow: 'Cadastros',
+            description:
+              'Lista completa com filtros por perfil e status. Toque numa linha para abrir o perfil detalhado.',
+          }}
+        />
       )}
     </OperationalShell>
   );
