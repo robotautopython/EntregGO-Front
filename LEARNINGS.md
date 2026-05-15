@@ -43,3 +43,7 @@ Mesmo com endpoint real, o painel de insights nao deve inventar campos para "enr
 ## 2026-05-15 - Smoke de deploy precisa separar stale front e stale back
 
 O fechamento de `/admin/insights` encontrou dois problemas distintos de publicacao: frontend stale ainda mostrando placeholder e backend stale retornando `404` para a rota nova. O padrao de smoke pos-deploy deve validar, nessa ordem, bundle frontend contendo a chamada esperada, backend sem token retornando `401 AUTH_REQUIRED`, e sessao admin ativa retornando `200` com UI renderizada. Evidencias de Network devem registrar apenas URL, metodo e status; tokens, cookies e headers sensiveis ficam fora do relatorio.
+
+## 2026-05-15 - Ruido de asset estatico tambem entra no fechamento
+
+O `404` de `favicon.ico` nao quebrava fluxo funcional, mas poluia o Network e podia mascarar falhas mais importantes durante smokes de producao. Para esse tipo de polish operacional, o caminho seguro e usar asset oficial existente, adicionar apenas o arquivo estatico necessario, validar build e smoke HTTP, e evitar transformar a correcao em ciclo de PWA/manifest/branding.

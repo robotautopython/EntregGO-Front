@@ -124,3 +124,13 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado com ressalvas operacionais
 
 **Validacoes:** Chamada sem token ao backend retornou `401 AUTH_REQUIRED`, confirmando rota protegida. Chamada autenticada no navegador do operador retornou `200`, sem compartilhamento de tokens, cookies ou headers sensiveis. A tela nao exibiu `Area reservada`, `Metricas de operacao entram depois...`, `Evitar dashboard fake...` ou `ComingSoonPanel`. Smoke de vazio nao executado porque nao havia dataset seguro naturalmente zerado em producao. Estado de falha foi observado no incidente real anterior de deploy stale, com `Falha ao carregar` e `Tentar novamente`; bloqueio reversivel via DevTools nao foi executado pelo Codex porque a sessao logada estava apenas no navegador do operador. Regressao basica parcial: `/admin` e a navegacao admin foram observadas em producao; acoes destrutivas e logout nao foram executados.
+
+## 2026-05-15 - FAVICON PRODUCAO CORRIGIDO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Adicionado `public/favicon.ico` a partir do simbolo oficial existente em `public/brand/entreggo-logo-transparent.png`, sem dependencia nova e sem alterar layout, manifest, auth, API, rotas admin ou backend. O objetivo foi remover o `404` de favicon observado no smoke pos-deploy de `/admin/insights`.
+**Arquivos modificados:** `public/favicon.ico`, `STATUS.md`, `LOG.md`, `LEARNINGS.md`
+**Agentes utilizados:** Camisa10, PromptRefiner, ImpactValidator, TestEngineer, Documentador
+**Status:** fechado em producao
+
+**Validacoes:** Antes do patch, `https://entreggo.vercel.app/favicon.ico` retornava `404`. Localmente, `npm run typecheck`, `npm run lint`, `npm test --if-present` e `npm run build` passaram; `http://127.0.0.1:3010/favicon.ico` retornou `200` e `/admin/insights` retornou `200`. Apos push do commit `587af96`, o auto-deploy da Vercel passou a servir `https://entreggo.vercel.app/favicon.ico` com `200` e `/admin/insights` continuou retornando `200`.
