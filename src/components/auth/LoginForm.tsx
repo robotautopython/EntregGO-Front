@@ -19,10 +19,6 @@ const initialState: FormState = {
 };
 
 function getDestination(authContext: AuthContext) {
-  if (authContext.user.status !== 'ativo') {
-    return `/aguardando-aprovacao?status=${authContext.user.status}`;
-  }
-
   if (authContext.user.role === 'admin') {
     return '/admin';
   }
@@ -75,7 +71,7 @@ export function LoginForm() {
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="space-y-1">
         <h2 className="text-xl font-semibold text-gray-950">Entrar</h2>
-        <p className="text-sm text-gray-600">Use a conta aprovada no EntregGO.</p>
+        <p className="text-sm text-gray-600">Use sua conta do EntregGO.</p>
       </div>
 
       <label className="block space-y-2 text-sm font-medium text-gray-800">
