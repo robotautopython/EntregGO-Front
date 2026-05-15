@@ -38,6 +38,7 @@
 - [x] Backend Track B inicial disponivel: `GET /api/admin/users/:id` retorna perfil administrativo sanitizado sem campos de Storage/documentos.
 - [x] Drawer admin integrado ao `GET /api/admin/users/:id`, exibindo perfil expandido sanitizado de loja/motoboy sem liberar documentos/pagamentos.
 - [x] `/admin/insights` integrado ao backend real `GET /api/admin/insights`, sem mocks, exibindo apenas agregados e pendentes previstos no contrato.
+- [x] Smoke pos-deploy final de `/admin/insights` aprovado em producao contra backend real: frontend `93d0175`, backend `b34f30d`, chamada autenticada `200` e UI renderizando dados reais.
 
 ## Bloqueios
 

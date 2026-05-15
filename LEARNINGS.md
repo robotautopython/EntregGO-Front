@@ -39,3 +39,7 @@ O drawer admin passou a buscar `GET /api/admin/users/:id` ao selecionar uma linh
 ## 2026-05-15 - Insights admin devem espelhar exatamente o contrato
 
 Mesmo com endpoint real, o painel de insights nao deve inventar campos para "enriquecer" a tela. Como `GET /api/admin/insights` retorna apenas agregados e pendentes sem PII, a UI deve exibir role, status, datas e contagens, deixando nomes, emails, perfis, documentos e qualquer ranking para contratos futuros validados.
+
+## 2026-05-15 - Smoke de deploy precisa separar stale front e stale back
+
+O fechamento de `/admin/insights` encontrou dois problemas distintos de publicacao: frontend stale ainda mostrando placeholder e backend stale retornando `404` para a rota nova. O padrao de smoke pos-deploy deve validar, nessa ordem, bundle frontend contendo a chamada esperada, backend sem token retornando `401 AUTH_REQUIRED`, e sessao admin ativa retornando `200` com UI renderizada. Evidencias de Network devem registrar apenas URL, metodo e status; tokens, cookies e headers sensiveis ficam fora do relatorio.

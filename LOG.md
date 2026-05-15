@@ -115,3 +115,12 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado localmente apos validacoes
 
 **Validacoes:** Frontend `npm run typecheck`, `npm run lint`, `npm test --if-present` e `npm run build` passaram. Build gerou 24 rotas. Browser local em `http://127.0.0.1:3002/admin/insights` abriu sem o texto antigo do placeholder; sem sessao admin real disponivel no navegador, a verificacao visual ficou limitada ao shell/guard de auth.
+
+## 2026-05-15 - SMOKE POS-DEPLOY ADMIN INSIGHTS APROVADO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O deploy frontend `https://entreggo.vercel.app` no commit `93d0175` foi validado contra o backend `https://entreggoback.vercel.app` no commit `b34f30d`. Primeiro foi confirmado que o bundle publicado contem `/api/admin/insights`; depois, em sessao real de admin ativo no navegador do operador, a pagina `/admin/insights` chamou `GET https://entreggoback.vercel.app/api/admin/insights` e recebeu `200`. A UI renderizou `Insights da central`, cards de usuarios, lojas ativas, motoboys ativos e informacoes do contrato, sem o placeholder antigo.
+**Agentes utilizados:** Camisa10, PromptRefiner, ImpactValidator, TestEngineer, Documentador
+**Status:** fechado com ressalvas operacionais
+
+**Validacoes:** Chamada sem token ao backend retornou `401 AUTH_REQUIRED`, confirmando rota protegida. Chamada autenticada no navegador do operador retornou `200`, sem compartilhamento de tokens, cookies ou headers sensiveis. A tela nao exibiu `Area reservada`, `Metricas de operacao entram depois...`, `Evitar dashboard fake...` ou `ComingSoonPanel`. Smoke de vazio nao executado porque nao havia dataset seguro naturalmente zerado em producao. Estado de falha foi observado no incidente real anterior de deploy stale, com `Falha ao carregar` e `Tentar novamente`; bloqueio reversivel via DevTools nao foi executado pelo Codex porque a sessao logada estava apenas no navegador do operador. Regressao basica parcial: `/admin` e a navegacao admin foram observadas em producao; acoes destrutivas e logout nao foram executados.
