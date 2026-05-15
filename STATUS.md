@@ -9,6 +9,7 @@
 ## Em Andamento
 
 - [ ] Manter abas de documentos, entregas, pagamento e notas como placeholders honestos ate existirem endpoints reais.
+- [ ] Receber 3 imagens reais em `public/landing/` (hero.webp 4:3, loja.webp 4:5, motoboy.webp 4:5) e trocar os `src` em HeroMockup, StorePitch e CourierPitch. Hoje os 3 `<Image>` apontam para `public/brand/entreggo-logo-transparent.png` como placeholder neutro.
 
 ## Proximas Tarefas
 
@@ -43,6 +44,7 @@
 - [x] Migracao segura validada para Next.js `15.5.18`, `eslint-config-next@15.5.18`, React `19.2.6` e React DOM `19.2.6`, sem codemod e sem feature nova.
 - [x] Auditoria de padronizacao executada (Camisa10 + Design Agent): acentuacao PT-BR corrigida em ComingSoonPanel, `/admin/insights` e mensagens de erro padrao; arquivos orfaos `PlaceholderPage` e `MotoboyHome` removidos do componentes/shared e componentes/motoboy.
 - [x] Correcao cirurgica de conformidade pos-layout: landing, loja e motoboy deixam claro que entrega, push, realtime e aceite concorrente ainda sao demonstrativos/planejados; `design.md` e `CONTRACTS.md` refletem `OperationalShell`, `ComingSoonPanel` e fluxos demo.
+- [x] Landing simplificada (Design Agent): removidas todas as mencoes a leilao, admin, timer/contagem, central e cobranca; HeroMockup deixou de usar `CountdownRing` e virou imagem estatica; RouteSteps reduzido a 2 papeis (loja->motoboy); FAQ reduzido a 4 perguntas; TrustSeals reduzido a 3 selos voltados ao usuario; CTABand passa a ter 1 CTA unico; logo aumentada no header (h-9/h-10 -> h-11/h-12) e footer (h-11 -> h-12 sm:h-14). Pasta `public/landing/` criada para receber `hero.webp`, `loja.webp` e `motoboy.webp`; ate la, os tres `<Image>` apontam para o logo oficial como placeholder neutro.
 
 ## Bloqueios
 

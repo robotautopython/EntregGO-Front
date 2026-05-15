@@ -1,31 +1,27 @@
-import { Bell, Lock, ShieldCheck, Smartphone } from 'lucide-react';
+import { ShieldCheck, Smartphone, UserCheck } from 'lucide-react';
 
 import { Container } from '@/components/ui/Container';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
+// DESIGN AGENT: trust seals reduzidos a 3, com linguagem voltada ao usuário.
+// Removidos RLS, signed URLs, Web Push, VAPID e referências a validadores.
 const seals = [
   {
-    icon: ShieldCheck,
+    icon: UserCheck,
     title: 'Cadastro com aprovação',
-    description: 'Toda loja e motoboy passa pelos olhos da central antes de operar.',
+    description: 'Cada loja e cada motoboy passa por uma conferência antes de operar.',
     accent: 'from-brand-500 to-brand-700',
   },
   {
-    icon: Lock,
-    title: 'Dados protegidos pela API',
-    description: 'O front nunca conversa direto com o banco. Tudo via backend com RLS.',
+    icon: Smartphone,
+    title: 'Funciona no celular',
+    description: 'Abra direto no navegador — sem precisar baixar nada na loja de apps.',
     accent: 'from-route-500 to-route-700',
   },
   {
-    icon: Bell,
-    title: 'Web Push planejado',
-    description: 'Som, vibração e VAPID entram só após backend, service worker e Security Validator.',
-    accent: 'from-signal-500 to-warn-700',
-  },
-  {
-    icon: Smartphone,
-    title: 'Base PWA preparada',
-    description: 'Manifest já existe; experiência offline e push real ficam para ciclo próprio.',
+    icon: ShieldCheck,
+    title: 'Sem instalação',
+    description: 'É só criar conta, entrar e usar. Toda a operação roda direto pelo site.',
     accent: 'from-success-500 to-success-700',
   },
 ];
@@ -40,27 +36,23 @@ export function TrustSeals() {
       <Container>
         <div className="mb-12 text-center">
           <SectionEyebrow tone="brand" className="mx-auto inline-block">
-            Confiança operacional
+            Por que EntregGO
           </SectionEyebrow>
           <h2
             id="confianca-titulo"
             className="mx-auto mt-3 max-w-3xl text-3xl font-black text-asphalt-950 sm:text-4xl"
           >
-            Quatro decisões que mantêm a central de pé.
+            Simples de começar, simples de usar.
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-asphalt-950/70">
-            Não é atalho de marketing — é o mapa do que já opera e do que só entra depois
-            dos validadores certos.
-          </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           {seals.map((seal) => {
             const Icon = seal.icon;
             return (
               <div
                 key={seal.title}
-                className="group relative overflow-hidden rounded-lg border border-paper-line bg-paper p-5 transition-all duration-ride ease-ride hover:-translate-y-1 hover:border-brand-200 hover:shadow-card"
+                className="group relative overflow-hidden rounded-lg border border-paper-line bg-paper p-6 transition-all duration-ride ease-ride hover:-translate-y-1 hover:border-brand-200 hover:shadow-card"
               >
                 <span
                   aria-hidden="true"

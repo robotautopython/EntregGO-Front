@@ -7,30 +7,25 @@ import { Container } from '@/components/ui/Container';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { cn } from '@/lib/cn';
 
+// DESIGN AGENT: FAQ reduzido a 4 perguntas voltadas ao usuário final.
+// Removidas perguntas sobre timer, leilão, push real, validadores e mecânica
+// interna de aceite concorrente.
 const faqs = [
   {
-    q: 'Tem cobrança automática ou taxa por corrida?',
-    a: 'Não. A EntregGO é uma central de operação — a relação financeira fica direta entre você e a central, sem gateway integrado nem cobrança automática no app.',
+    q: 'Tem custo pra usar?',
+    a: 'O cadastro é gratuito. Qualquer combinado financeiro entre sua loja e os motoboys é feito fora do app, do jeito que vocês preferirem.',
   },
   {
-    q: 'Funciona no celular como app?',
-    a: 'A base PWA/manifest já existe. Notificações com som e vibração ainda dependem do ciclo de Web Push real com backend, service worker e validação de segurança.',
+    q: 'Funciona no celular?',
+    a: 'Sim. A EntregGO abre direto no navegador do seu celular, sem precisar instalar nada da loja de apps.',
   },
   {
-    q: 'Quanto tempo demora a aprovação?',
-    a: 'Depende da central. Em geral horas. Enquanto isso, sua conta fica em "aguardando aprovação" e você não consegue operar — é proposital, para garantir verificação real.',
-  },
-  {
-    q: 'Como o motoboy recebe as solicitações?',
-    a: 'Nesta fundação, o painel do motoboy mostra uma simulação do fluxo. O recebimento real por push/realtime e o primeiro aceite entram em ciclo backend separado.',
-  },
-  {
-    q: 'E se nenhum motoboy aceitar?',
-    a: 'A interface demonstra um timer de 60 segundos. A expiração real e o retry operacional dependem do endpoint de entregas e do validador de performance.',
+    q: 'Como começo?',
+    a: 'Clique em "Cadastrar minha loja" ou "Quero ser motoboy", preencha os dados e aguarde a aprovação. Assim que liberado, você já pode operar.',
   },
   {
     q: 'Posso me cadastrar como loja e motoboy ao mesmo tempo?',
-    a: 'Cada conta tem um papel. Se você atua nos dois, use emails diferentes — assim cada painel fica limpo e a aprovação acontece separada.',
+    a: 'Cada conta tem um papel. Se você atua nos dois, use emails diferentes — assim cada painel fica organizado.',
   },
 ];
 

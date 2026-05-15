@@ -1,9 +1,12 @@
-import { ArrowRight, MessageCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 
 import { ButtonLink } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 
+// DESIGN AGENT: CTA único e direto. Removido o botão "Falar com a central" e a
+// menção a "Pedido real e aceite entram depois, em ciclo validado". Foco em
+// converter loja ou motoboy direto para o cadastro.
 export function CTABand() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 py-20 text-white sm:py-24">
@@ -21,7 +24,7 @@ export function CTABand() {
         src="/brand/entreggo-logo-on-dark.png"
         width={1731}
         height={908}
-        className="pointer-events-none absolute -bottom-10 -left-16 hidden w-[520px] max-w-none select-none opacity-[0.10] sm:block"
+        className="pointer-events-none absolute -bottom-10 -left-16 hidden w-[560px] max-w-none select-none opacity-[0.12] sm:block"
       />
 
       <Container className="relative">
@@ -32,11 +35,11 @@ export function CTABand() {
               Pronto pra acelerar
             </p>
             <h2 className="mt-4 text-3xl font-black leading-tight sm:text-5xl">
-              Pronto para sair do balcão?
+              Comece em poucos minutos.
             </h2>
             <p className="mt-4 max-w-xl text-base leading-7 text-white/85">
-              Cadastre sua loja ou sua moto. A central confere os dados e libera o acesso.
-              Pedido real e aceite entram depois, em ciclo validado.
+              Cadastre sua loja ou sua moto. Em seguida você já tem acesso ao painel pra
+              começar a operar.
             </p>
           </div>
 
@@ -49,15 +52,6 @@ export function CTABand() {
             >
               Começar cadastro
               <ArrowRight className="h-5 w-5" aria-hidden="true" />
-            </ButtonLink>
-            <ButtonLink
-              href="mailto:suporte@ent.app.br"
-              variant="ghost"
-              size="xl"
-              className="w-full bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/15 sm:w-auto"
-            >
-              <MessageCircle className="h-5 w-5" aria-hidden="true" />
-              Falar com a central
             </ButtonLink>
           </div>
         </div>

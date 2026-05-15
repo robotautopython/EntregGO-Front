@@ -1,15 +1,29 @@
-import { ArrowRight, Bell, Bike, CheckCircle2, Power } from 'lucide-react';
+import { ArrowRight, Bell, Bike, CheckCircle2 } from 'lucide-react';
+import Image from 'next/image';
 
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
+// DESIGN AGENT: substituído o mockup do painel motoboy por uma foto real.
+// Removidas as menções a "primeiro toque vence", "primeiro aceite ganha",
+// "disputa concorrente" e "backend validado". 3 benefícios diretos pro motoboy.
 const benefits = [
-  'Fica online quando quiser, sem turno obrigatório',
-  'Tela preparada para notificações futuras',
-  'Aceite em um toque demonstrado sem disputa real ainda',
-  'Cadastro inicial; documentos entram só com pipeline validado',
+  {
+    icon: Bell,
+    title: 'Avisos no seu celular',
+    description: 'Quando uma loja chamar, você recebe o aviso na hora.',
+  },
+  {
+    icon: Bike,
+    title: 'Você decide quando aparecer',
+    description: 'Fica online quando quiser. Sem turno, sem hora marcada.',
+  },
+  {
+    icon: CheckCircle2,
+    title: 'Aceite e siga',
+    description: 'Toque em aceitar, vai até a loja, entrega e marca como concluída.',
+  },
 ];
 
 export function CourierPitch() {
@@ -32,26 +46,33 @@ export function CourierPitch() {
               className="text-3xl font-black leading-tight sm:text-5xl"
             >
               Sua moto, suas regras —{' '}
-              <span className="text-brand-400">a central mostra como vai te chamar.</span>
+              <span className="text-brand-400">corridas perto de você.</span>
             </h2>
             <p className="max-w-xl text-base leading-7 text-white/75">
-              Você decide quando aparecer. Nesta fase, o painel demonstra a experiência de
-              solicitação e aceite; push real e concorrência entram depois do backend validado.
+              A EntregGO avisa quando aparecer uma entrega na sua região. Você aceita, pega
+              o pedido na loja e segue até o cliente.
             </p>
 
             <ul className="grid gap-3">
-              {benefits.map((benefit) => (
-                <li
-                  key={benefit}
-                  className="flex items-start gap-3 rounded-md border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold backdrop-blur"
-                >
-                  <CheckCircle2
-                    className="h-5 w-5 shrink-0 text-brand-400"
-                    aria-hidden="true"
-                  />
-                  <span>{benefit}</span>
-                </li>
-              ))}
+              {benefits.map((benefit) => {
+                const Icon = benefit.icon;
+                return (
+                  <li
+                    key={benefit.title}
+                    className="flex items-start gap-3 rounded-md border border-white/10 bg-white/5 px-4 py-3 backdrop-blur"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-500/20 text-brand-300">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <p className="text-base font-extrabold text-white">{benefit.title}</p>
+                      <p className="mt-0.5 text-sm font-medium text-white/70">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
 
             <div className="pt-2">
@@ -67,54 +88,15 @@ export function CourierPitch() {
               aria-hidden="true"
               className="absolute -inset-6 -z-10 rounded-2xl bg-brand-500/20 blur-3xl"
             />
-            <div className="relative mx-auto w-full max-w-sm rounded-2xl border border-white/10 bg-asphalt-900 p-5 shadow-ink">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-md bg-brand-500 text-white">
-                    <Bike className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="text-xs text-white/60">Você</p>
-                    <p className="text-base font-extrabold">João, 2.500m</p>
-                  </div>
-                </div>
-                <Badge tone="success" pulsing className="border-white/10 bg-success-500/15 text-success-50">
-                  online
-                </Badge>
-              </div>
-
-              <button
-                type="button"
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-brand-500 px-4 py-4 text-base font-extrabold shadow-pop transition-all hover:bg-brand-600"
-              >
-                <Power className="h-5 w-5" aria-hidden="true" />
-                Online · Prévia de corridas
-              </button>
-
-              <div className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4">
-                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-brand-300">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-                    Solicitação demo
-                  </span>
-                  <span className="text-white/60">há 4s</span>
-                </div>
-                <p className="mt-2 text-base font-extrabold">Açaí da Esquina</p>
-                <p className="text-sm text-white/70">→ Av. Brasil, 884 — Apto 51</p>
-                <div className="mt-4 grid grid-cols-5 gap-2">
-                  <button
-                    type="button"
-                    className="col-span-2 rounded-md border border-white/15 px-3 py-3 text-sm font-bold text-white/80 hover:bg-white/5"
-                  >
-                    Recusar
-                  </button>
-                  <button
-                    type="button"
-                    className="col-span-3 rounded-md bg-brand-500 px-3 py-3 text-sm font-extrabold text-white shadow-pop hover:bg-brand-600"
-                  >
-                    Aceitar
-                  </button>
-                </div>
+            <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-asphalt-900 p-3 shadow-ink">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-asphalt-800">
+                <Image
+                  alt="Motoboy EntregGO pronto para sair com o pedido"
+                  src="/landing/motoboy.webp"
+                  fill
+                  sizes="(min-width: 1024px) 460px, (min-width: 640px) 70vw, 100vw"
+                  className="object-cover"
+                />
               </div>
             </div>
           </div>

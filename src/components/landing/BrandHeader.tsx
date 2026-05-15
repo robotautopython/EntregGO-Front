@@ -45,13 +45,15 @@ export function BrandHeader() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
         <Link href="/" aria-label="EntregGO inicio" className="group inline-flex items-center">
+          {/* DESIGN AGENT: logo aumentada (h-9/h-10 → h-11/h-12) sem ultrapassar
+              os 64px do header. Mantém o hover micro-translate. */}
           <Image
             alt="EntregGO"
             src="/brand/entreggo-logo-transparent.png"
             width={1731}
             height={908}
             priority
-            className="h-9 w-auto transition-transform duration-ride ease-ride group-hover:-translate-y-0.5 sm:h-10"
+            className="h-11 w-auto transition-transform duration-ride ease-ride group-hover:-translate-y-0.5 sm:h-12"
           />
         </Link>
 

@@ -1,36 +1,31 @@
-import { Bike, ShieldCheck, Store } from 'lucide-react';
+import { Bike, Store } from 'lucide-react';
 
 import { Container } from '@/components/ui/Container';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
+// DESIGN AGENT: reduzido para 2 papéis (Loja → Motoboy). O passo "Admin
+// governa" saiu — quem entra na landing é loja ou motoboy. Texto simplificado
+// sem mencionar timer, push, aceite concorrente ou backend.
 const steps = [
   {
     icon: Store,
-    title: 'Loja solicita',
+    title: 'A loja chama',
     description:
-      'Endereço e observação já têm fluxo visual. O envio real para motoboys fica para o backend de entregas.',
+      'Você abre o pedido na sua loja com endereço e observação. Em segundos, o pedido sai pra rede.',
     accent: 'brand' as const,
   },
   {
     icon: Bike,
-    title: 'Motoboy aceita',
+    title: 'O motoboy aceita e entrega',
     description:
-      'A tela mostra a experiência planejada de aceite; push, realtime e disputa concorrente ainda não estão ativos.',
+      'Um motoboy próximo recebe o aviso, aceita e segue até o cliente. Você acompanha o status até o fim.',
     accent: 'route' as const,
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Admin governa',
-    description:
-      'Aprova cadastros, controla bloqueios e acompanha entregas. Antes da rua, a central.',
-    accent: 'asphalt' as const,
   },
 ];
 
 const accentMap = {
   brand: 'bg-brand-50 text-brand-600 ring-brand-200',
   route: 'bg-route-50 text-route-600 ring-route-200',
-  asphalt: 'bg-asphalt-950 text-white ring-asphalt-700',
 };
 
 export function RouteSteps() {
@@ -43,17 +38,17 @@ export function RouteSteps() {
       <Container>
         <div className="mb-12 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
-            <SectionEyebrow tone="route">Rota do sistema</SectionEyebrow>
+            <SectionEyebrow tone="route">Como funciona</SectionEyebrow>
             <h2
               id="rota-do-sistema"
               className="max-w-3xl text-3xl font-black text-asphalt-950 sm:text-5xl"
             >
-              Três papéis, um fluxo que cabe na palma da mão.
+              Dois passos. Sem complicação.
             </h2>
           </div>
           <p className="max-w-md text-base leading-7 text-asphalt-950/70">
-            A base real cobre cadastro, aprovação e admin. Pedido, push e aceite concorrente
-            ficam como fluxo demonstrativo até o backend próprio.
+            A EntregGO existe pra ser direta: a loja pede, o motoboy entrega. Você acompanha
+            o caminho na tela.
           </p>
         </div>
 
@@ -65,9 +60,9 @@ export function RouteSteps() {
             preserveAspectRatio="none"
           >
             <line
-              x1="100"
+              x1="200"
               y1="6"
-              x2="1100"
+              x2="1000"
               y2="6"
               stroke="#ff5a0a"
               strokeWidth="3"
@@ -76,7 +71,7 @@ export function RouteSteps() {
             />
           </svg>
 
-          <div className="relative grid gap-6 lg:grid-cols-3">
+          <div className="relative grid gap-6 lg:grid-cols-2">
             {steps.map((step, index) => {
               const Icon = step.icon;
               return (

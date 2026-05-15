@@ -1,30 +1,28 @@
-import { ArrowRight, Clock3, History, Package, Wallet } from 'lucide-react';
+import { ArrowRight, Bike, History, Package } from 'lucide-react';
+import Image from 'next/image';
 
-import { BoxMark } from '@/components/brand/BoxMark';
 import { ButtonLink } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
+// DESIGN AGENT: substituído o mockup (BoxMark + recibo) por uma foto real.
+// Features simplificadas — removidos "Timer de 60 segundos" e "Relação direta
+// com a central". Restam 3 benefícios concretos pro logista, sem jargão.
 const features = [
   {
     icon: Package,
-    title: '1 clique para solicitar',
-    description: 'Endereço + observação em fluxo visual, sem envio real ainda.',
+    title: 'Pedido em 1 toque',
+    description: 'Você coloca o endereço, o pedido sai. Sem cadastro do cliente.',
   },
   {
-    icon: Clock3,
-    title: 'Timer de 60 segundos',
-    description: 'A interface demonstra a contagem; expiração real depende do backend.',
+    icon: Bike,
+    title: 'Vários motoboys conectados',
+    description: 'Sua loja chama a rede inteira de uma vez — quem estiver mais perto pega.',
   },
   {
     icon: History,
-    title: 'Histórico planejado',
-    description: 'A estrutura visual está pronta para receber entregas reais depois.',
-  },
-  {
-    icon: Wallet,
-    title: 'Relação direta com a central',
-    description: 'Sem cobrança automática. Pagamento combinado fora do app.',
+    title: 'Acompanhe cada entrega',
+    description: 'Status atualizado na tela: aceito, coletou, em trânsito, entregue.',
   },
 ];
 
@@ -38,28 +36,15 @@ export function StorePitch() {
       <Container>
         <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="relative order-2 lg:order-1">
-            <div className="relative mx-auto max-w-md rounded-2xl border border-paper-line bg-white p-8 shadow-card">
-              <div className="flex items-center justify-center">
-                <BoxMark size={180} />
-              </div>
-              <div className="mt-6 rounded-lg bg-paper-deep p-4">
-                <p className="font-mono text-xs font-bold uppercase tracking-widest text-brand-700">
-                  prévia da loja
-                </p>
-                <div className="mt-3 space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-asphalt-950/70">Pedido</span>
-                    <span className="font-bold text-asphalt-950">#3421</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-asphalt-950/70">Destino</span>
-                    <span className="font-bold text-asphalt-950">Av. Brasil, 884</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-asphalt-950/70">Status</span>
-                    <span className="font-bold text-success-700">Demo</span>
-                  </div>
-                </div>
+            <div className="relative mx-auto max-w-md overflow-hidden rounded-2xl border border-paper-line bg-white p-3 shadow-card">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-paper">
+                <Image
+                  alt="Atendente da loja preparando o pedido para o motoboy"
+                  src="/landing/loja.webp"
+                  fill
+                  sizes="(min-width: 1024px) 460px, (min-width: 640px) 70vw, 100vw"
+                  className="object-cover"
+                />
               </div>
             </div>
             <span
@@ -74,11 +59,11 @@ export function StorePitch() {
               id="para-lojas-titulo"
               className="text-3xl font-black leading-tight text-asphalt-950 sm:text-5xl"
             >
-              Sai do balcão sem perder o ritmo da operação.
+              Sua loja entrega sem complicação.
             </h2>
             <p className="max-w-xl text-base leading-7 text-asphalt-950/75">
-              A loja entra, cadastra, e o admin libera. A área operacional já mostra a rota
-              esperada; chamada real, histórico e status dependem do próximo backend.
+              Cadastre sua loja, abra o pedido e pronto. A rede inteira recebe o aviso e quem
+              estiver disponível pega a corrida.
             </p>
 
             <ul className="grid gap-4 sm:grid-cols-2">

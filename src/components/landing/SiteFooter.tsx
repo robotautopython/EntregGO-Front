@@ -46,17 +46,18 @@ export function SiteFooter() {
         <div className="grid gap-10 lg:grid-cols-[1.2fr_2fr]">
           <div>
             <Link href="/" aria-label="EntregGO inicio" className="inline-flex">
+              {/* DESIGN AGENT: logo footer aumentada (h-11 → h-12 sm:h-14). */}
               <Image
                 alt="EntregGO"
                 src="/brand/entreggo-logo-on-dark.png"
                 width={1731}
                 height={908}
-                className="h-11 w-auto"
+                className="h-12 w-auto sm:h-14"
               />
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-6 text-white/65">
-              Central de entregas sob demanda em construção segura. Cadastros e admin já operam;
-              entregas reais entram em ciclo próprio.
+              Sua loja conectada a motoboys da região. Você pede, ele aceita,
+              o cliente recebe.
             </p>
           </div>
 
@@ -84,7 +85,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/55 sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} EntregGO · Energia de rua, controle de central.</p>
+          <p>© {new Date().getFullYear()} EntregGO · Pedidos saindo da sua loja em minutos.</p>
           <p className="font-mono uppercase tracking-widest">v0.1 · build edge</p>
         </div>
       </Container>
