@@ -8,13 +8,13 @@ import { OperationalShell } from '@/components/shell/OperationalShell';
 export default function MotoboyPage() {
   return (
     <OperationalShell role="motoboy" title="Corridas">
-      {({ authContext }) => (
+      {({ authContext, accessToken }) => (
         <Suspense
           fallback={
             <p className="text-sm text-asphalt-950/60">Carregando central...</p>
           }
         >
-          <CourierHomeFlow authContext={authContext} />
+          <CourierHomeFlow authContext={authContext} accessToken={accessToken} />
         </Suspense>
       )}
     </OperationalShell>

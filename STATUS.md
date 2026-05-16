@@ -13,8 +13,8 @@
 
 ## Proximas Tarefas
 
-- [ ] Criar suite de testes frontend quando houver componentes com comportamento.
-- [ ] Planejar aceite, detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
+- [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
+- [ ] Planejar transicoes pos-aceite do motoboy (coletada/em_transito/entregue), detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
 - [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] (Backlog) Nome/dados da loja na visao do motoboy: depende de novo contrato backend e ciclo de aceite com SecurityValidator (ver Bloqueios).
@@ -53,21 +53,23 @@
 - [x] M-05 frontend implementado: `/loja/historico` consome `GET /api/deliveries` via Bearer token do `OperationalShell` (`listMyDeliveries` em `src/lib/api.ts`), com estados loading/erro recuperavel/vazio honesto/lista paginada real, filtro por status do contrato e paginacao real; mock `sampleHistory` e enum divergente removidos de `delivery-types.ts`; sem `supabase.from`, sem leitura direta de `delivery_requests`, sem busca textual, filtro por data ou dados de motoboy; `typecheck`, `lint`, `build`, `test --if-present` e `git diff --check` passaram.
 - [x] M-05 validada pos-deploy em producao: backend `f30bfc7` e frontend `6833695` publicados; smoke publico confirmou `GET`/`POST /api/deliveries` sem token com `401 AUTH_REQUIRED` e `/loja/historico` com `200`; smoke autenticado contra producao validou listagem real da loja, isolamento multi-tenant, filtro, paginacao, validacoes negativas, ausencia de `store_id`/`courier_id` e cleanup completo, sem SQL/migration/RLS/grants/policies nem exposicao de secrets.
 - [x] Cirurgico admin: `AdminUsersPanel` ganhou a coluna `Loja` consumindo `store_name` de `GET /api/admin/users` (tipo `AdminUserListItem`), sem chamar o detalhe por linha (sem N+1) e sem campos de Storage/PII; `typecheck`, `lint`, `build`, `test --if-present` e `git diff --check` passaram. Publicado em producao (frontend `506c740`, backend `946d84d`); smoke publico confirmou `/admin/usuarios` `200` e bundle com `store_name`.
+- [x] Fatia 1 do aceite do motoboy documentada no frontend sem UI real: `CONTRACTS.md` registra `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept`, erros e politica de PII; `CorridaAtiva.tsx` permanece mock e nenhum client/componente foi ligado ao backend. Gates ImpactValidator + SecurityValidator + PerformanceValidator aprovados no ciclo cross-stack; frontend `typecheck`, `lint`, `build` e `npm test --if-present` passaram.
+- [x] Fatia 1 UI real do motoboy implementada: `/motoboy` (sem query) renderiza `FilaDisponivel` consumindo `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` via Bearer token do `OperationalShell`; client `listAvailableDeliveries`/`acceptDelivery` e tipos `AvailableDeliveryItem`/`AvailableDeliveriesResult`/`AvailableDeliveriesQuery`/`AcceptedDelivery`. Estados loading/erro recuperavel/vazio honesto/lista paginada real, botao "Atualizar" manual (sem polling), aceite com lock anti duplo-clique, tratamento de `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND`/`COURIER_OFFLINE` e demais erros, confirmacao estatica pos-aceite. `CorridaAtiva.tsx` permanece mock isolado por `?demo=`. PII mantida (`store.name`/`store.address`; `courier_id` nao exibido). Runner Vitest+RTL introduzido com 25 testes. Gates ImpactValidator + SecurityValidator + PerformanceValidator aprovados antes de codar; `typecheck`, `lint`, `build`, `test` (25/25) e `git diff --check` passaram.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, aceite concorrente, push real, realtime real, cron ou testes frontend. O historico real da loja ja existe (M-05); aceite, detalhe unico, busca textual, filtro por data e dados de motoboy seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05) e a UI real de descoberta/aceite do motoboy (Fatia 1) ja existem; detalhe unico, busca textual, filtro por data, cancelamento e status pos-aceite (coletada/em_transito/entregue) seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
 - `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
-- Visao de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock; exibir nome/dados reais da loja ao motoboy depende de novo contrato backend e ciclo dedicado de aceite com SecurityValidator (PII/contrato entre atores). Nao tratar como ajuste de UI.
+- Visao de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock e so aparece no fluxo demo (`?demo=`); a UI real de descoberta/aceite (`FilaDisponivel.tsx`) ja esta no caminho padrao. Transicoes pos-aceite reais (coletada/em_transito/entregue) continuam bloqueadas ate contrato backend e ciclo dedicado.
 
 ## Saude do Projeto
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** inexistente
+**Testes:** Vitest + Testing Library (25 testes; `npm test`)
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4

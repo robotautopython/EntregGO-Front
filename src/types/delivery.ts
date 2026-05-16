@@ -56,3 +56,40 @@ export interface ListMyDeliveriesQuery {
   limit?: number;
   status?: DeliveryRequestStatus;
 }
+
+export interface AvailableDeliveryStore {
+  name: string;
+  address: string;
+}
+
+export interface AvailableDeliveryItem {
+  id: string;
+  status: 'aguardando';
+  created_at: string;
+  expires_at: string;
+  store: AvailableDeliveryStore;
+}
+
+export interface AvailableDeliveriesQuery {
+  page?: number;
+  limit?: number;
+}
+
+export interface AvailableDeliveriesResult {
+  items: AvailableDeliveryItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export interface AcceptedDelivery {
+  id: string;
+  status: DeliveryRequestStatus;
+  courier_id: string;
+  accepted_at: string;
+  created_at: string;
+  expires_at: string;
+  store: AvailableDeliveryStore;
+}

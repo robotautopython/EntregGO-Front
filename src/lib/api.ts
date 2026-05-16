@@ -15,6 +15,9 @@ import type {
   StoreRegistrationPayload,
 } from '@/types/auth';
 import type {
+  AcceptedDelivery,
+  AvailableDeliveriesQuery,
+  AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
   DeliveryRequest,
   ListMyDeliveriesQuery,
@@ -200,6 +203,46 @@ export async function listMyDeliveries(accessToken: string, query: ListMyDeliver
           limit: query.limit,
           status: query.status || undefined,
         },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listAvailableDeliveries(
+  accessToken: string,
+  query: AvailableDeliveriesQuery = {},
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AvailableDeliveriesResult> | ApiFailure>(
+      '/api/deliveries/available',
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+        },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function acceptDelivery(accessToken: string, deliveryId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.post<ApiSuccess<AcceptedDelivery> | ApiFailure>(
+      `/api/deliveries/${deliveryId}/accept`,
+      undefined,
+      {
+        headers: bearerHeaders(accessToken),
       },
     );
 

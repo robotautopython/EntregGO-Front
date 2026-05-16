@@ -147,10 +147,118 @@ Estados de UI:
 - lista paginada real agrupada por dia, com filtro por status e navegacao Anterior/Proxima; resumo sempre rotulado como "nesta pagina"/"no total" a partir de `pagination`, sem agregado fake.
 
 Fora do escopo atual (M-05):
-- aceite, realtime, push, cron, cancelamento, expiracao;
+- aceite no historico da loja, realtime, push, cron, cancelamento, expiracao;
 - detalhe unico, busca textual, filtro por data;
 - qualquer dado de motoboy (a tela informa explicitamente que nao mostra motoboy);
 - historico admin/dashboard real.
+
+## Entregas Fatia 1 - Motoboy
+
+Status frontend nesta fatia: UI real de descoberta e aceite implementada. `src/components/motoboy/FilaDisponivel.tsx` consome `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` via Bearer token do `OperationalShell`. `src/components/motoboy/CorridaAtiva.tsx` permanece mock e so e renderizado no fluxo demo (`?demo=ativo`/`?demo=solicitacao`); mock e dado real nunca coexistem na mesma arvore. Realtime, push, cron, expiracao automatica, cancelamento e status pos-aceite seguem fora de escopo.
+
+Tela: `/motoboy` (padrao, sem query). Client API em `src/lib/api.ts`: `listAvailableDeliveries(accessToken, { page, limit })` e `acceptDelivery(accessToken, id)`. Tipos em `src/types/delivery.ts`: `AvailableDeliveryItem`, `AvailableDeliveriesQuery`, `AvailableDeliveriesResult`, `AcceptedDelivery`.
+
+Estados de UI:
+- loading: spinner enquanto busca a fila;
+- vazio honesto: "Nenhuma entrega disponivel agora." + aviso explicito de que a lista nao atualiza sozinha (sem realtime);
+- erro recuperavel: `Alert` com "Tentar novamente" mapeando `ALREADY_ACCEPTED`, `DELIVERY_EXPIRED`, `DELIVERY_NOT_FOUND`, `COURIER_OFFLINE`, `COURIER_PROFILE_REQUIRED`, `USER_PENDING`, `USER_BLOCKED`, `FORBIDDEN_ROLE`, `AUTH_REQUIRED`, `INVALID_TOKEN`, `DOMAIN_USER_NOT_FOUND`, `API_URL_MISSING` e falha de rede;
+- lista paginada real (limit fixo 20) com `Anterior`/`Proxima` a partir de `pagination`, resumo "nesta pagina"/"no total";
+- atualizacao manual via botao "Atualizar"; nao ha polling automatico nem `setInterval` no caminho real;
+- aceite: botao por item com lock de estado (`acceptingId`) que desabilita todos os botoes enquanto um aceite esta em voo (anti duplo-clique e anti aceite paralelo); `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND` removem o item e recarregam a lista;
+- sucesso: o item sai da lista e a tela exibe confirmacao estatica com `store.name`/`store.address` da resposta; nao ha navegacao para fluxo de corrida.
+
+PII preservada: a UI le e renderiza apenas `store.name` e `store.address`. `destination_address`, `notes`, `store_id`, `owner_name`, `logo_url`, `description` nao sao recebidos no contrato; `courier_id` retornado no aceite nao e exibido.
+
+### Descoberta de entregas disponiveis
+
+Contrato backend:
+- `GET /api/deliveries/available` com `Authorization: Bearer <access_token>`.
+- Apenas usuario de dominio `role=motoboy` e `status=ativo`, com perfil `couriers` e `is_online=true`.
+- Query permitida: `page` (>=1, default 1) e `limit` (1..50, default 20). Qualquer outro parametro gera `VALIDATION_ERROR`.
+- A resposta lista somente entregas `status='aguardando'`, `courier_id is null` e `expires_at > now()`, filtradas no backend via service role.
+- O backend traz `stores(name,address)` no mesmo select; nao ha chamada por item nem acesso direto ao Supabase pelo frontend.
+
+Resposta esperada:
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "uuid",
+        "status": "aguardando",
+        "created_at": "2026-05-16T12:00:00.000Z",
+        "expires_at": "2026-05-16T12:01:00.000Z",
+        "store": {
+          "name": "Nome da loja",
+          "address": "Endereco operacional da loja"
+        }
+      }
+    ],
+    "pagination": { "page": 1, "limit": 20, "total": 1 }
+  },
+  "message": "Entregas disponiveis encontradas"
+}
+```
+
+Campos que o motoboy nao recebe neste endpoint:
+- `store_id`
+- `courier_id`
+- `destination_address`
+- `notes`
+- `owner_name`
+- `logo_url`
+- `description`
+- qualquer PII fora de `store.name` e `store.address`
+
+### Aceite de entrega
+
+Contrato backend:
+- `POST /api/deliveries/:id/accept` com `Authorization: Bearer <access_token>`.
+- Mesmos guards da descoberta.
+- Aceite atomico/idempotente no backend: update condicional por `id`, `status='aguardando'`, `courier_id is null` e `expires_at > now()`.
+- Re-aceite pelo mesmo motoboy retorna `200` com estado atual.
+
+Resposta esperada:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "status": "aceita",
+    "courier_id": "uuid",
+    "accepted_at": "2026-05-16T12:00:20.000Z",
+    "created_at": "2026-05-16T12:00:00.000Z",
+    "expires_at": "2026-05-16T12:01:00.000Z",
+    "store": {
+      "name": "Nome da loja",
+      "address": "Endereco operacional da loja"
+    }
+  },
+  "message": "Entrega aceita"
+}
+```
+
+Erros esperados:
+- `AUTH_REQUIRED`, `INVALID_TOKEN`, `DOMAIN_USER_NOT_FOUND`
+- `USER_PENDING`, `USER_BLOCKED`, `FORBIDDEN_ROLE`
+- `COURIER_PROFILE_REQUIRED`, `COURIER_OFFLINE`
+- `VALIDATION_ERROR`
+- `DELIVERY_NOT_FOUND`
+- `ALREADY_ACCEPTED`
+- `DELIVERY_EXPIRED`
+- `DELIVERY_AVAILABLE_LIST_FAILED`, `DELIVERY_ACCEPT_FAILED`
+
+Fora desta fatia no frontend:
+- UI real do motoboy para fila/aceite;
+- Realtime/Supabase subscription;
+- Web Push/VAPID/Service Worker operacional;
+- cron/expiracao automatica;
+- cancelamento;
+- transicoes pos-aceite (`coletada`, `em_transito`, `entregue`);
+- pagamentos, Storage, historico admin e historico do motoboy.
 
 ## Variaveis permitidas no frontend
 

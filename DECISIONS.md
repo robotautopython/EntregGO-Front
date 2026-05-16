@@ -87,3 +87,25 @@
 **Decisao:** O frontend usa `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` somente para Supabase Auth no browser. Cadastro de loja/motoboy passa pela API backend; `/api/auth/me` recebe o access token da sessao como Bearer para carregar o usuario de dominio.
 
 **Consequencias:** Service role, JWT secret, senha de banco e VAPID private key permanecem fora do frontend. A anon key continua publica e depende de RLS; smoke real de policies com usuario autenticado deve usar dados ficticios e plano de limpeza em ciclo de hardening.
+
+## ADR-009 - Fatia 1 do aceite documentada sem UI real do motoboy
+
+**Data:** 2026-05-16
+**Status:** aceito
+
+**Contexto:** O backend passou a expor `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` para descoberta e aceite atomico do motoboy. A tela do motoboy ainda tem `CorridaAtiva.tsx` mockada, e liberar UI real agora puxaria realtime, push, estado offline/online operacional, expiracao visual e transicoes pos-aceite.
+
+**Decisao:** Nesta fatia, o frontend atualiza somente `CONTRACTS.md` para registrar os dois endpoints novos, erros e politica de PII. Nenhum client em `src/lib/api.ts`, tipo runtime, componente, rota ou UI de motoboy sera ligado ao backend ainda. O motoboy podera ver no contrato apenas `store.name` e `store.address`; `destination_address`, `notes`, `store_id`, `courier_id` na descoberta e demais PII continuam fora da UI.
+
+**Consequencias:** O deploy frontend permanece compativel e sem mudanca funcional. A proxima fatia de UI deve revalidar SecurityValidator e PerformanceValidator antes de conectar fila/aceite real, principalmente por envolver PII entre atores, listas de entregas, realtime/push e experiencia concorrente.
+
+## ADR-010 - Fatia 1 UI real do motoboy com separacao mock/real por query
+
+**Data:** 2026-05-16
+**Status:** aceito
+
+**Contexto:** O backend da Fatia 1 ja expunha `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` e o ADR-009 deixou o frontend apenas em contrato. Era necessario entregar a primeira UI real de descoberta/aceite sem puxar realtime, push, cron, online/offline operacional ou transicoes pos-aceite, e sem misturar o mock de corrida com dado real.
+
+**Decisao:** Implementar `src/components/motoboy/FilaDisponivel.tsx` espelhando o padrao de `HistoricoEntregas.tsx` (loading, erro recuperavel, vazio honesto, paginacao real). `CourierHomeFlow.tsx` virou um seletor: sem query renderiza a UI real (`FilaDisponivel`); com `?demo=ativo`/`?demo=solicitacao` renderiza o fluxo mock isolado (`CourierDemoFlow`, antigo corpo do componente, incluindo `CorridaAtiva`/`SolicitacaoCard`/`PushPrimeSheet`). Mock e dado real nunca coexistem na mesma arvore React. Atualizacao da fila e manual via botao "Atualizar"; nenhum `setInterval`/polling no caminho real. Aceite usa lock `acceptingId` (anti duplo-clique e anti aceite paralelo) e trata `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND` removendo o item e recarregando. Sucesso mostra confirmacao estatica, sem navegar para corrida. O runner de testes escolhido foi Vitest + Testing Library (jsdom), compativel com Next 15/React 19, com 25 testes cobrindo `mapCourierError`, `FilaDisponivel` e o client de API.
+
+**Consequencias:** O motoboy passa a ver e aceitar entregas reais consumindo apenas REST com Bearer token, sem acesso direto ao Supabase e sem PII alem de `store.name`/`store.address` (`courier_id` retornado no aceite nao e exibido). `CorridaAtiva.tsx` e `courier-types.ts` permanecem mock intocados, agora alcancaveis so via `?demo=`. O frontend ganha sua primeira suite de testes automatizada (`npm test`). Transicoes pos-aceite (coletada/em_transito/entregue), realtime, push, cron, cancelamento, online/offline operacional e historico do motoboy seguem fora de escopo e exigem contrato backend e novos gates.

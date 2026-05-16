@@ -18,11 +18,29 @@ import {
   type RideStatus,
   sampleStores,
 } from './courier-types';
+import { FilaDisponivel } from './FilaDisponivel';
 import { PushPrimeSheet } from './PushPrimeSheet';
 import { SolicitacaoCard } from './SolicitacaoCard';
 
 interface CourierHomeFlowProps {
   authContext: AuthContext;
+  accessToken: string;
+}
+
+interface CourierDemoFlowProps {
+  authContext: AuthContext;
+}
+
+export function CourierHomeFlow({ authContext, accessToken }: CourierHomeFlowProps) {
+  const searchParams = useSearchParams();
+  const demo = searchParams.get('demo');
+  const demoMode = demo === 'ativo' || demo === 'solicitacao';
+
+  if (demoMode) {
+    return <CourierDemoFlow authContext={authContext} />;
+  }
+
+  return <FilaDisponivel accessToken={accessToken} />;
 }
 
 function newRequest(index: number, fingerprint: string): IncomingRequest {
@@ -42,7 +60,7 @@ function newRequest(index: number, fingerprint: string): IncomingRequest {
 const REQUEST_EXPIRY_MS = 60_000;
 const SPAWN_INTERVAL_MS = 18_000;
 
-export function CourierHomeFlow({ authContext }: CourierHomeFlowProps) {
+function CourierDemoFlow({ authContext }: CourierDemoFlowProps) {
   const searchParams = useSearchParams();
   const [online, setOnline] = useState(false);
   const [queue, setQueue] = useState<IncomingRequest[]>([]);

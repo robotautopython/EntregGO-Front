@@ -113,3 +113,25 @@ Historico real da loja entregue alinhado ao contrato, sem `supabase.from`, sem l
 ## 2026-05-16 - Confirmar contrato antes de culpar a UI
 
 A queixa "nome da loja nao aparece" parecia bug de frontend, mas o drawer admin (`UserDetailDrawer.tsx:355`) ja exibe `profile.name` e o backend de detalhe ja entrega o campo. A lacuna real esta no contrato de listagem `GET /api/admin/users`, que so traz `DomainUser`. Padrao: antes de alterar o componente, rastrear o endpoint/contrato que alimenta o campo; incluir campo em endpoint de listagem e mudanca de contrato (ImpactValidator + PerformanceValidator por risco N+1), nao ajuste cosmetico. Expor dado de um ator a outro (loja -> motoboy, hoje mock em `CorridaAtiva.tsx`) e sempre gate de SecurityValidator e ciclo dedicado.
+
+## 2026-05-16 - Separar mock e dado real por branch de rota, nao por estado compartilhado
+
+**Tipo:** Padrao
+**Fase:** fundacao/auth-operacao
+**Contexto:** Fatia 1 ligou a UI real do motoboy mantendo o fluxo demo (`CorridaAtiva`/`SolicitacaoCard`/`PushPrimeSheet`) ainda usado pela landing/onboarding via `?demo=`.
+
+### O que aconteceu
+A tentativa inicial de fazer early-return da UI real antes dos hooks do fluxo demo violaria as regras de hooks do React (chamadas condicionais). Misturar os dois fluxos no mesmo componente tambem arriscaria o mock spawnar `setInterval` no caminho real.
+
+### Como foi resolvido
+`CourierHomeFlow` virou um seletor fino: le `?demo=` e renderiza `CourierDemoFlow` (antigo corpo, com todos os hooks do mock) OU `FilaDisponivel` (UI real). Cada caminho e um componente separado, entao os hooks de cada um so montam quando aquele caminho esta ativo. Mock e dado real nunca coexistem na arvore.
+
+### O que fazer diferente da proxima vez
+Para conviver mock e real sem violar hooks nem vazar timers, separar em componentes distintos e escolher por branch de rota/query no topo, em vez de tentar ramificar dentro de um unico componente cheio de hooks.
+
+### Impacto no projeto
+UI real de descoberta/aceite entregue sem remover o mock (ainda referenciado pela landing) e sem polling invisivel no caminho real. Primeira suite de testes do frontend (Vitest+RTL) introduzida; `actionError` deixou de ser limpo dentro de `load()` para que avisos de `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED` sobrevivam ao reload disparado pelo proprio erro.
+
+## 2026-05-16 - Contrato novo nao obriga UI imediata
+
+A Fatia 1 do aceite do motoboy entregou contratos backend reais para descoberta e aceite, mas o frontend permaneceu somente em documentacao. Esse foi o corte correto porque conectar `CorridaAtiva.tsx` ao backend puxaria fila real, online/offline operacional, realtime/push, expiracao visual, concorrencia de aceite e PII entre loja e motoboy. Padrao: quando o backend abre um contrato sensivel, registrar shape, erros e campos proibidos em `CONTRACTS.md`, mas so ligar UI em fatia propria com SecurityValidator e PerformanceValidator novamente.

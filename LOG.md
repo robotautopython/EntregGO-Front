@@ -286,3 +286,34 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado em producao com ressalva de smoke autenticado
 
 **Validacoes:** `/admin/usuarios` -> `200`; o chunk compartilhado publicado `87-*.js` contem `store_name`, a coluna `Loja` e `api/admin/users`, confirmando o deploy. Backend `GET /api/admin/users` sem token -> `401 AUTH_REQUIRED` e `GET /api/health` -> `200`. A verificacao autenticada da coluna preenchida por sessao admin real depende do gate de credencial da M-05 e nao foi executada para nao expor secret/token/header. Sem `supabase.from`, sem SQL/migration/RLS. Motoboy segue backlog do ciclo de aceite com SecurityValidator.
+
+## 2026-05-16 - FATIA 1 ACEITE MOTOBOY DOCUMENTADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O frontend foi atualizado apenas como contrato/documentacao para a Fatia 1 do aceite do motoboy. `CONTRACTS.md` passou a registrar `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept`, os erros esperados, a regra de PII do motoboy (`store.name` e `store.address` permitidos; nunca `destination_address`, `notes`, `store_id`, `owner_name`, `logo_url`, `description`) e o que continua fora. `DECISIONS.md` recebeu ADR propria para documentar que `CorridaAtiva.tsx` permanece mock e nenhum client, tipo runtime, rota ou UI real foi ligado nesta fatia.
+**Arquivos modificados:** `CONTRACTS.md`, `STATUS.md`, `LOG.md`, `DECISIONS.md`, `LEARNINGS.md`
+**Arquivos de UI preservados:** `src/components/motoboy/CorridaAtiva.tsx`, `src/lib/api.ts`, `src/types/delivery.ts`
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente como documentacao frontend; backend implementado no repo `EntregGO-Back`
+
+**Gates:** ImpactValidator aprovado (front sem runtime novo, contrato cross-stack documentado); SecurityValidator aprovado (nenhum secret, nenhum Supabase direto, PII proibida explicitada); PerformanceValidator aprovado (sem UI/lista/polling/realtime no frontend nesta fatia; riscos de lista/concorrencia tratados no backend).
+
+**Validacoes:** Frontend `npm run typecheck`, `npm run lint`, `npm run build` e `npm test --if-present` passaram. Backend `npm run typecheck`, `npm test` (65), `npm run lint` e `npm run build` passaram no ciclo correspondente. `git diff --check` passou nos dois repositorios. Nenhum SQL, migration, RLS, grant ou policy foi criado, executado ou alterado. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+**Fora do escopo:** UI real do motoboy para fila/aceite, realtime, push/Web Push/VAPID, cron/expiracao automatica, cancelamento, transicoes pos-aceite, pagamentos, Storage, historico admin e historico do motoboy.
+
+## 2026-05-16 - FATIA 1 UI REAL DO MOTOBOY (DESCOBERTA + ACEITE)
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada a primeira UI real do motoboy. `/motoboy` sem query passou a renderizar `FilaDisponivel`, que consome `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` via Bearer token do `OperationalShell`. `CourierHomeFlow` virou seletor: sem query usa a UI real; com `?demo=ativo`/`?demo=solicitacao` usa o fluxo mock isolado (`CourierDemoFlow`, antigo corpo, com `CorridaAtiva`/`SolicitacaoCard`/`PushPrimeSheet`). A fila tem loading, erro recuperavel mapeado, vazio honesto, paginacao real (limit 20), botao "Atualizar" manual (sem polling/`setInterval`), aceite com lock anti duplo-clique, tratamento de `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND` (remove item + recarrega) e confirmacao estatica pos-aceite sem navegar para corrida. Introduzida a primeira suite de testes do frontend (Vitest + Testing Library + jsdom) com 25 testes.
+**Arquivos criados:** `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/__tests__/FilaDisponivel.test.tsx`, `src/components/motoboy/__tests__/mapCourierError.test.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `vitest.config.ts`, `vitest.setup.ts`, `vitest-env.d.ts`
+**Arquivos modificados:** `src/types/delivery.ts`, `src/lib/api.ts`, `src/components/motoboy/CourierHomeFlow.tsx`, `src/app/motoboy/page.tsx`, `package.json`, `package-lock.json`, `CONTRACTS.md`, `STATUS.md`, `DECISIONS.md`, `LOG.md`, `LEARNINGS.md`
+**Arquivos de mock preservados:** `src/components/motoboy/CorridaAtiva.tsx`, `src/components/motoboy/courier-types.ts`, `src/components/motoboy/SolicitacaoCard.tsx`, `src/components/motoboy/PushPrimeSheet.tsx`
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente; deploy e smoke autenticado pendentes
+
+**Gates (aprovados antes de codar):** ImpactValidator aprovado (mudancas em `delivery.ts`/`api.ts` aditivas, sem regressao nas telas/contratos da loja, sem backend novo). SecurityValidator aprovado (somente REST com Bearer do fluxo existente, sem `supabase.from`, sem secret em codigo/log, PII restrita a `store.name`/`store.address`, `courier_id` nao exibido). PerformanceValidator aprovado (lista paginada limit 20, sem polling/`setInterval` no caminho real, payload curto, sem N+1; aceite e chamada unica).
+
+**Validacoes:** `npm run typecheck` ✓, `npm run lint` ✓ (sem warnings; aviso esperado de `next lint` deprecado), `npm run build` ✓ (24 rotas estaticas, `/motoboy` 10.8 kB), `npm test` ✓ (25/25 em 3 arquivos), `git diff --check` ✓ (apenas avisos LF/CRLF, sem erro de whitespace). Nenhum SQL/migration/RLS/grant/policy criado ou alterado. Nenhum secret, token, cookie ou header sensivel impresso. Backend nao foi alterado.
+
+**Fora do escopo:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), realtime, push/Web Push/VAPID, cron/expiracao automatica, cancelamento, online/offline operacional, pagamentos, Storage, historico admin e historico do motoboy.
