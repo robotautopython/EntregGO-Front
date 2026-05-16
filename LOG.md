@@ -237,3 +237,14 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado em producao
 
 **Validacoes:** Smoke autenticado de producao retornou `201`, `success=true`, `destination_address=null`, `status=aguardando`, `courier_id=null` e `store_id` derivado da sessao. O payload enviado nao continha string vazia, `store_id`, `status` nem `courier_id`; as chaves enviadas foram `[]`. Cleanup retornou `completed`. Nenhum SQL adicional foi executado. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+## 2026-05-15 - M-05 FRONTEND HISTORICO REAL DA LOJA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** A tela `/loja/historico` deixou de usar o mock `sampleHistory` e passou a consumir `GET /api/deliveries`. Foi criado o client `listMyDeliveries(accessToken, query)` em `src/lib/api.ts`, os tipos `StoreDeliveryListItem`/`StoreDeliveryListResult`/`ListMyDeliveriesQuery` em `src/types/delivery.ts` (status unificado com o contrato real `DeliveryRequestStatus`), e a pagina passou a usar o render-prop do `OperationalShell` para obter o Bearer token, igual a `/loja/nova-entrega`. O componente `HistoricoEntregas` foi reescrito com estados de loading, erro recuperavel (com "Tentar novamente" e mapeamento de codigos), vazio honesto e lista paginada real agrupada por dia, filtro por status do contrato (server-side via query) e paginacao Anterior/Proxima usando `pagination`. Os cards de metricas que fingiam agregado total foram removidos; o resumo agora e rotulado como "nesta pagina"/"no total" a partir do `pagination` real. O mock `sampleHistory`, o enum divergente de status e os helpers so usados pelo historico foram removidos de `src/components/loja/delivery-types.ts`, preservando `DeliveryFlowState`/`DeliveryDraft`/`AcceptedDelivery`/`DeliveryStatus` ainda usados pelos placeholders de aceite. Nenhum `supabase.from` e nenhuma leitura direta de `delivery_requests` foi adicionada. Aceite, realtime, push, cron, cancelamento, expiracao, detalhe unico, busca textual, filtro por data e dados de motoboy seguem fora de escopo.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `src/types/delivery.ts`, `src/lib/api.ts`, `src/components/loja/delivery-types.ts`, `src/components/loja/HistoricoEntregas.tsx`, `src/app/loja/historico/page.tsx`, `CONTRACTS.md`, `README.md`, `STATUS.md`, `LOG.md`, `LEARNINGS.md`
+**Agentes utilizados:** Camisa10, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente; smoke autenticado real e deploy pendentes
+
+**Validacoes:** `npm run typecheck`, `npm run lint` (sem warnings/erros apos limpar deps de useMemo), `npm run build` (build estatico OK) e `git diff --check` passaram. `npm test --if-present` nao executou suite porque o frontend ainda nao tem testes. Nenhum acesso direto ao Supabase foi adicionado; toda leitura de dominio passa pela API backend.

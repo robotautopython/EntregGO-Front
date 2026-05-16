@@ -88,3 +88,24 @@ Sempre que um campo vira opcional no contrato, revisar tambem disabled state, re
 
 ### Impacto no projeto
 O frontend ficou alinhado ao backend sem acessar `delivery_requests` diretamente e sem liberar aceite, push, realtime, cron, historico, cancelamento ou expiracao.
+
+## 2026-05-15 - Trocar mock por contrato real exige podar UI que o contrato nao entrega
+
+**Tipo:** Padrao
+**Fase:** fundacao/auth-operacao
+**Contexto:** M-05 substituiu o historico mockado da loja por `GET /api/deliveries`.
+
+### O que aconteceu
+A UI mockada tinha busca textual por destino/motoboy, coluna de motoboy e cards de agregado total. O contrato M-05 nao entrega `courier_id`, nao suporta busca textual e so retorna `pagination` da pagina/filtro atual. Manter esses elementos criaria UI que finge dados inexistentes.
+
+### Por que aconteceu
+Mocks costumam exibir mais do que o backend real expoe. Trocar o data source sem revisar a UI propaga campos fantasma e metricas falsas.
+
+### Como foi resolvido
+Removidos busca textual e exibicao de motoboy; o resumo passou a ser rotulado como "nesta pagina"/"no total" usando o `pagination` real, sem agregado inventado. O mock `sampleHistory` e o enum divergente foram apagados de `delivery-types.ts`, mantendo apenas os tipos ainda usados por outros fluxos placeholder.
+
+### O que fazer diferente da proxima vez
+Ao integrar um endpoint real numa tela antes mockada, listar cada elemento da UI e confirmar se o contrato realmente fornece aquele dado; remover ou rotular honestamente o que nao for entregue antes de chamar a tela de pronta.
+
+### Impacto no projeto
+Historico real da loja entregue alinhado ao contrato, sem `supabase.from`, sem leitura direta de `delivery_requests`, sem dados de motoboy e sem metrica falsa; aceite, realtime, push, cron, detalhe unico, busca textual e filtro por data seguem fora de escopo.

@@ -4,7 +4,7 @@ Frontend web do EntregGO, responsavel pela landing page, paineis de admin, loja 
 
 ## Estado atual
 
-Fase de fundacao/auth-operacao com Next.js `15.5.18`, React `19.2.6`, auth/cadastro minimo, direcao visual inicial, painel admin operacional sobre os contratos backend M-02A/Track B e criacao de entrega pela loja via `POST /api/deliveries` com endereco de destino opcional. O admin lista usuarios, aprova/bloqueia/desbloqueia, possui paginas segmentadas por papel/status, drawer com perfil expandido sanitizado e insights minimos via `GET /api/admin/insights`. `/admin` e `/admin/aprovacoes` existem apenas como redirects para a rota canonica de usuarios. Ainda nao possui dashboards complexos, aceite concorrente, historico real de entregas, push real, realtime real ou suite de testes.
+Fase de fundacao/auth-operacao com Next.js `15.5.18`, React `19.2.6`, auth/cadastro minimo, direcao visual inicial, painel admin operacional sobre os contratos backend M-02A/Track B e criacao de entrega pela loja via `POST /api/deliveries` com endereco de destino opcional. O admin lista usuarios, aprova/bloqueia/desbloqueia, possui paginas segmentadas por papel/status, drawer com perfil expandido sanitizado e insights minimos via `GET /api/admin/insights`. `/admin` e `/admin/aprovacoes` existem apenas como redirects para a rota canonica de usuarios. A loja tem historico real em `/loja/historico` consumindo `GET /api/deliveries` (M-05) com Bearer token do `OperationalShell`, paginacao, filtro por status e estados loading/erro/vazio, sem `supabase.from` e sem dados de motoboy. Ainda nao possui dashboards complexos, aceite concorrente, push real, realtime real ou suite de testes.
 
 ## Responsabilidades
 

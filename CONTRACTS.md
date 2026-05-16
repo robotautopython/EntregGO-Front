@@ -98,7 +98,59 @@ Fora do escopo atual:
 - aceite concorrente com primeira aceitacao vencendo;
 - cancelamento pela UI;
 - expiracao automatica por cron/job;
-- listagem, historico ou dashboard real de entregas para loja/motoboy/admin.
+- dashboard real de entregas para motoboy/admin.
+
+## Entregas M-05
+
+### Historico real da loja
+
+Tela: `/loja/historico`
+
+Uso permitido:
+- `GET /api/deliveries` com `Authorization: Bearer <access_token>` obtido do `OperationalShell` (mesmo padrao de `/loja/nova-entrega`).
+- Client API `listMyDeliveries(accessToken, query)` em `src/lib/api.ts`.
+- Query enviada: `page`, `limit` (fixo 20) e `status` opcional do contrato; nenhum outro parametro.
+- `store_id` nunca e enviado; o backend deriva a loja da sessao e nao retorna `store_id`/`courier_id`.
+- O frontend nao acessa `delivery_requests` nem usa `supabase.from`.
+
+Resposta consumida:
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": "uuid",
+        "destination_address": null,
+        "notes": "Observacao opcional",
+        "status": "aguardando",
+        "created_at": "2026-05-15T20:00:00.000Z",
+        "expires_at": "2026-05-15T20:01:00.000Z",
+        "accepted_at": null,
+        "collected_at": null,
+        "in_transit_at": null,
+        "delivered_at": null,
+        "updated_at": "2026-05-15T20:00:00.000Z"
+      }
+    ],
+    "pagination": { "page": 1, "limit": 20, "total": 1 }
+  },
+  "message": "Entregas encontradas"
+}
+```
+
+Estados de UI:
+- loading: spinner enquanto busca;
+- erro recuperavel: alerta com botao "Tentar novamente" (mapeia `USER_PENDING`, `USER_BLOCKED`, `FORBIDDEN_ROLE`, `STORE_PROFILE_REQUIRED`, `AUTH_REQUIRED`, `INVALID_TOKEN`, `DOMAIN_USER_NOT_FOUND`, `API_URL_MISSING` e falha de rede);
+- vazio honesto: mensagem clara, sem dados falsos;
+- lista paginada real agrupada por dia, com filtro por status e navegacao Anterior/Proxima; resumo sempre rotulado como "nesta pagina"/"no total" a partir de `pagination`, sem agregado fake.
+
+Fora do escopo atual (M-05):
+- aceite, realtime, push, cron, cancelamento, expiracao;
+- detalhe unico, busca textual, filtro por data;
+- qualquer dado de motoboy (a tela informa explicitamente que nao mostra motoboy);
+- historico admin/dashboard real.
 
 ## Variaveis permitidas no frontend
 

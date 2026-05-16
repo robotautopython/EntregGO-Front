@@ -49,10 +49,11 @@
 - [x] M-04B implementado e validado no frontend: `/loja/nova-entrega` usa `POST /api/deliveries` com Bearer token de logista ativo, envia somente `destinationAddress` e `notes`, mostra loading/sucesso/erros estaveis, impede duplo envio e teve smoke autenticado controlado aprovado com usuarios ficticios e limpeza automatica.
 - [x] M-04C frontend ajustado ao contrato opcional: `/loja/nova-entrega` permite criar solicitacao sem endereco, monta payload minimo sem strings vazias e preserva os bloqueios de aceite, realtime, push, cron, historico, cancelamento e expiracao.
 - [x] M-04C validada pos-deploy em producao: smoke publico confirmou `401 AUTH_REQUIRED` sem token, rota `/loja/nova-entrega` `200` e bundle com payload minimo; smoke autenticado criou entrega com payload `{}`, `destination_address=null`, `status=aguardando`, `courier_id=null` e cleanup completo, sem SQL adicional nem exposicao de secrets.
+- [x] M-05 frontend implementado: `/loja/historico` consome `GET /api/deliveries` via Bearer token do `OperationalShell` (`listMyDeliveries` em `src/lib/api.ts`), com estados loading/erro recuperavel/vazio honesto/lista paginada real, filtro por status do contrato e paginacao real; mock `sampleHistory` e enum divergente removidos de `delivery-types.ts`; sem `supabase.from`, sem leitura direta de `delivery_requests`, sem busca textual, filtro por data ou dados de motoboy; `typecheck`, `lint`, `build`, `test --if-present` e `git diff --check` passaram.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, aceite concorrente, listagem/historico real de entregas, push real, realtime real, cron ou testes frontend.
+- Projeto ainda nao possui dashboards complexos, aceite concorrente, push real, realtime real, cron ou testes frontend. O historico real da loja ja existe (M-05); aceite, detalhe unico, busca textual, filtro por data e dados de motoboy seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
 - `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.
