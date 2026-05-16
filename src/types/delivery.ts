@@ -27,3 +27,32 @@ export interface DeliveryRequest {
   delivered_at: string | null;
   updated_at: string;
 }
+
+export interface StoreDeliveryListItem {
+  id: string;
+  destination_address: string | null;
+  notes: string | null;
+  status: DeliveryRequestStatus;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+  collected_at: string | null;
+  in_transit_at: string | null;
+  delivered_at: string | null;
+  updated_at: string;
+}
+
+export interface StoreDeliveryListResult {
+  items: StoreDeliveryListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export interface ListMyDeliveriesQuery {
+  page?: number;
+  limit?: number;
+  status?: DeliveryRequestStatus;
+}

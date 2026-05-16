@@ -14,7 +14,12 @@ import type {
   StoreProfile,
   StoreRegistrationPayload,
 } from '@/types/auth';
-import type { CreateDeliveryRequestPayload, DeliveryRequest } from '@/types/delivery';
+import type {
+  CreateDeliveryRequestPayload,
+  DeliveryRequest,
+  ListMyDeliveriesQuery,
+  StoreDeliveryListResult,
+} from '@/types/delivery';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -174,6 +179,27 @@ export async function createDeliveryRequest(
       payload,
       {
         headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listMyDeliveries(accessToken: string, query: ListMyDeliveriesQuery = {}) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<StoreDeliveryListResult> | ApiFailure>(
+      '/api/deliveries',
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+          status: query.status || undefined,
+        },
       },
     );
 

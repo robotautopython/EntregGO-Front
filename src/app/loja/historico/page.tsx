@@ -6,7 +6,7 @@ import { OperationalShell } from '@/components/shell/OperationalShell';
 export default function LojaHistoricoPage() {
   return (
     <OperationalShell role="logista" title="Histórico">
-      <HistoricoEntregas />
+      {({ accessToken }) => <HistoricoEntregas accessToken={accessToken} />}
     </OperationalShell>
   );
 }
