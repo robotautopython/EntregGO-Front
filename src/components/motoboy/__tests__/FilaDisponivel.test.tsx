@@ -61,10 +61,63 @@ describe('FilaDisponivel', () => {
   it('renders only store name/address and no third-party PII', async () => {
     listMock.mockResolvedValue(makeResult());
     const { container } = render(<FilaDisponivel accessToken="tok" />);
-    expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
+    expect(await screen.findByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Loja Alpha')).toBeInTheDocument();
     expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
     const html = container.innerHTML;
     expect(html).not.toMatch(/destination_address|notes|store_id|courier_id/);
+  });
+
+  it('keeps the store requester visible without rendering a missing address', async () => {
+    listMock.mockResolvedValue(
+      makeResult({
+        items: [
+          {
+            id: 'd1',
+            status: 'aguardando',
+            created_at: '2026-05-16T12:00:00.000Z',
+            expires_at: '2026-05-16T12:01:00.000Z',
+            store: { name: 'Loja Sem Endereco', address: '' },
+          },
+        ],
+      }),
+    );
+
+    const { container } = render(<FilaDisponivel accessToken="tok" />);
+
+    expect(await screen.findByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Loja Sem Endereco')).toBeInTheDocument();
+    expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
+    expect(container.innerHTML).not.toMatch(/destination_address|notes|store_id|courier_id/);
+  });
+
+  it('does not render an address line on the fallback accepted state when it is absent', async () => {
+    listMock.mockResolvedValue(makeResult());
+    acceptMock.mockResolvedValue({
+      id: 'd1',
+      status: 'aceita',
+      courier_id: 'me',
+      accepted_at: '2026-05-16T12:00:20.000Z',
+      created_at: '2026-05-16T12:00:00.000Z',
+      expires_at: '2026-05-16T12:01:00.000Z',
+      store: { name: 'Loja Sem Endereco', address: '   ' },
+    });
+
+    render(<FilaDisponivel accessToken="tok" />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Aceitar entrega' }));
+
+    expect(await screen.findByText('Entrega aceita')).toBeInTheDocument();
+    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Loja Sem Endereco')).toBeInTheDocument();
+    expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
+  });
+
+  it('renders a provided store address in the available queue', async () => {
+    listMock.mockResolvedValue(makeResult());
+    render(<FilaDisponivel accessToken="tok" />);
+    expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
+    expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
   });
 
   it('Atualizar triggers a fresh request', async () => {

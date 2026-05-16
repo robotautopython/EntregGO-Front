@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 
 import { PageHeader } from '@/components/shell/PageHeader';
-import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -82,7 +81,6 @@ export function CorridaAtivaReal({
   onRefresh,
   onStatusChange,
 }: CorridaAtivaRealProps) {
-  const hasDestination = Boolean(delivery.destination_address?.trim());
   const config = statusConfig[delivery.status];
   const StatusIcon = config.icon;
   const ActionIcon = config.actionIcon;
@@ -105,6 +103,9 @@ export function CorridaAtivaReal({
             </span>
             <div className="min-w-0">
               <Badge tone="success">{config.badge}</Badge>
+              <p className="mt-2 text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                Loja solicitante
+              </p>
               <h2 className="mt-2 text-2xl font-black text-asphalt-950">
                 {delivery.store.name}
               </h2>
@@ -168,13 +169,6 @@ export function CorridaAtivaReal({
           <p className="mt-1 text-base font-bold text-asphalt-950">{delivery.notes}</p>
         </Card>
       ) : null}
-
-      {!hasDestination ? (
-        <Alert tone="info" title="Destino nao informado">
-          A loja nao informou endereco de destino nesta solicitacao. Combine a proxima etapa com
-          a central fora do app.
-        </Alert>
-      ) : null}
     </section>
   );
 }
@@ -187,6 +181,12 @@ interface AddressCardProps {
 }
 
 function AddressCard({ icon: Icon, label, title, address }: AddressCardProps) {
+  const normalizedAddress = address?.trim();
+
+  if (!normalizedAddress) {
+    return null;
+  }
+
   return (
     <Card variant="white" className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -200,25 +200,17 @@ function AddressCard({ icon: Icon, label, title, address }: AddressCardProps) {
           <p className="text-base font-extrabold text-asphalt-950">{title}</p>
         </div>
       </div>
-      {address ? (
-        <>
-          <p className="text-sm font-semibold leading-6 text-asphalt-950/75">{address}</p>
-          <a
-            href={mapsUrl(address)}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-paper-line bg-paper px-4 text-sm font-extrabold text-asphalt-950 transition-colors hover:border-brand-300 hover:bg-paper-deep"
-          >
-            <MapPin className="h-4 w-4" aria-hidden="true" />
-            Abrir no mapa
-            <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
-          </a>
-        </>
-      ) : (
-        <p className="text-sm font-semibold leading-6 text-asphalt-950/65">
-          Endereco nao informado.
-        </p>
-      )}
+      <p className="text-sm font-semibold leading-6 text-asphalt-950/75">{normalizedAddress}</p>
+      <a
+        href={mapsUrl(normalizedAddress)}
+        target="_blank"
+        rel="noreferrer noopener"
+        className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-paper-line bg-paper px-4 text-sm font-extrabold text-asphalt-950 transition-colors hover:border-brand-300 hover:bg-paper-deep"
+      >
+        <MapPin className="h-4 w-4" aria-hidden="true" />
+        Abrir no mapa
+        <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+      </a>
     </Card>
   );
 }

@@ -116,11 +116,46 @@ describe('MotoboyRealFlow', () => {
     const { container } = render(<MotoboyRealFlow accessToken="tok" />);
 
     expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
+    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
     expect(screen.getAllByText('Loja Alpha').length).toBeGreaterThan(0);
     expect(screen.getByText('Rua Destino, 50')).toBeInTheDocument();
     expect(screen.getByText('Levar na portaria')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirmar coleta' })).toBeInTheDocument();
     expect(container.innerHTML).not.toMatch(/store_id|courier_id|collected_at|in_transit_at|delivered_at/);
+  });
+
+  it('does not render destination placeholders when destination address is absent', async () => {
+    activeMock.mockResolvedValue({
+      ...activeDelivery,
+      destination_address: null,
+      notes: null,
+    });
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
+    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getAllByText('Loja Alpha').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Destino nao informado/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Entrega$/)).not.toBeInTheDocument();
+  });
+
+  it('does not render map actions when every address is absent', async () => {
+    activeMock.mockResolvedValue({
+      ...activeDelivery,
+      destination_address: '   ',
+      notes: null,
+      store: { name: 'Loja Sem Endereco', address: '' },
+    });
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
+    expect(screen.getByText('Loja Sem Endereco')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Abrir no mapa/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Destino nao informado/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
   });
 
   it('loads the real active delivery after a successful accept', async () => {

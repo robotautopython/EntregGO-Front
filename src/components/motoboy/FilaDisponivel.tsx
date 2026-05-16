@@ -214,13 +214,21 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
             </span>
             <div className="min-w-0">
               <Badge tone="success">Aceita</Badge>
+              <p className="mt-2 text-[10px] font-extrabold uppercase tracking-widest text-success-700">
+                Loja solicitante
+              </p>
               <h2 className="mt-2 text-2xl font-black text-asphalt-950">
                 {accepted.store.name}
               </h2>
-              <p className="mt-1 inline-flex items-start gap-1.5 text-sm font-semibold text-asphalt-950/70">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-success-700" aria-hidden="true" />
-                {accepted.store.address}
-              </p>
+              {accepted.store.address.trim() ? (
+                <p className="mt-1 inline-flex items-start gap-1.5 text-sm font-semibold text-asphalt-950/70">
+                  <MapPin
+                    className="mt-0.5 h-4 w-4 shrink-0 text-success-700"
+                    aria-hidden="true"
+                  />
+                  {accepted.store.address}
+                </p>
+              ) : null}
               <p className="mt-3 text-xs font-bold text-asphalt-950/55">
                 Aceita em {formatInstant(accepted.accepted_at)} • expira em{' '}
                 {formatInstant(accepted.expires_at)}
@@ -315,16 +323,21 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
                         <Store className="h-5 w-5" aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-700">
+                          Loja solicitante
+                        </p>
                         <p className="truncate text-base font-extrabold text-asphalt-950">
                           {item.store.name}
                         </p>
-                        <p className="mt-0.5 inline-flex items-start gap-1.5 text-sm font-semibold text-asphalt-950/65">
-                          <MapPin
-                            className="mt-0.5 h-4 w-4 shrink-0 text-brand-600"
-                            aria-hidden="true"
-                          />
-                          {item.store.address}
-                        </p>
+                        {item.store.address.trim() ? (
+                          <p className="mt-0.5 inline-flex items-start gap-1.5 text-sm font-semibold text-asphalt-950/65">
+                            <MapPin
+                              className="mt-0.5 h-4 w-4 shrink-0 text-brand-600"
+                              aria-hidden="true"
+                            />
+                            {item.store.address}
+                          </p>
+                        ) : null}
                       </div>
                       <Badge tone="warn">Aguardando</Badge>
                     </div>
