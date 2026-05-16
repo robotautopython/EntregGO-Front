@@ -277,3 +277,12 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado localmente; deploy pendente
 
 **Validacoes:** `npm run typecheck`, `npm run lint` (sem warnings), `npm run build` (rotas admin geradas), `npm test --if-present` (sem suite no frontend) e `git diff --check` passaram. Tipo base `DomainUser` preservado; `AdminUserListItem` isola o campo so na listagem. Nenhum secret/token/header exposto.
+
+## 2026-05-16 - CIRURGICO ADMIN POS-DEPLOY
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Frontend publicado (`6833695..506c740`) apos o backend (`f30bfc7..946d84d`), ambos `0 0` com `origin/main`. Smoke publico confirmou `/admin/usuarios` `200` e o bundle publicado contendo o codigo M-cirurgico.
+**Agentes utilizados:** Camisa10, TestEngineer, FinalValidator, Documentador
+**Status:** fechado em producao com ressalva de smoke autenticado
+
+**Validacoes:** `/admin/usuarios` -> `200`; o chunk compartilhado publicado `87-*.js` contem `store_name`, a coluna `Loja` e `api/admin/users`, confirmando o deploy. Backend `GET /api/admin/users` sem token -> `401 AUTH_REQUIRED` e `GET /api/health` -> `200`. A verificacao autenticada da coluna preenchida por sessao admin real depende do gate de credencial da M-05 e nao foi executada para nao expor secret/token/header. Sem `supabase.from`, sem SQL/migration/RLS. Motoboy segue backlog do ciclo de aceite com SecurityValidator.
