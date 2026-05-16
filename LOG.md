@@ -267,3 +267,13 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Decisao de escopo:** Admin = correcao cirurgica em ciclo proprio (causa provavel: contrato de listagem nao traz o nome), com ImpactValidator + PerformanceValidator e sem N+1. Motoboy = backlog para o ciclo de aceite com SecurityValidator (PII/contrato entre atores). Sem SQL, migration ou RLS.
 **Agentes utilizados:** Camisa10, ImpactValidator (planejado), Documentador
 **Status:** diagnostico registrado; sem codigo
+
+## 2026-05-16 - CIRURGICO ADMIN: COLUNA LOJA NA LISTAGEM
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** `AdminUsersPanel` passou a exibir a coluna `Loja` consumindo `store_name` do contrato estendido `GET /api/admin/users` (novo tipo `AdminUserListItem = DomainUser + store_name: string | null` em `src/types/auth.ts`). A celula mostra `store_name` ou `—` quando `null` (`admin`/`motoboy`). Nao ha chamada ao detalhe por linha (sem N+1), nenhum `supabase.from`, nenhum campo de Storage/PII novo. O backend resolveu o campo via embed 1:1 do PostgREST na mesma query (ciclo backend correspondente no LOG do repo `EntregGO-Back`). Motoboy permanece backlog.
+**Arquivos modificados:** `src/types/auth.ts`, `src/components/admin/AdminUsersPanel.tsx`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, ImpactValidator, PerformanceValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente; deploy pendente
+
+**Validacoes:** `npm run typecheck`, `npm run lint` (sem warnings), `npm run build` (rotas admin geradas), `npm test --if-present` (sem suite no frontend) e `git diff --check` passaram. Tipo base `DomainUser` preservado; `AdminUserListItem` isola o campo so na listagem. Nenhum secret/token/header exposto.

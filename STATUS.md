@@ -17,7 +17,7 @@
 - [ ] Planejar aceite, detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
 - [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
-- [ ] Cirurgico admin: exibir nome da loja na listagem (`AdminUsersPanel`), dependente de `GET /api/admin/users` passar a retornar nome/identificador da loja por linha (sem N+1). O drawer ja exibe `profile.name`. Coordenar com contrato backend; ImpactValidator + PerformanceValidator. Diagnostico em LOG 2026-05-16.
+- [ ] (Backlog) Nome/dados da loja na visao do motoboy: depende de novo contrato backend e ciclo de aceite com SecurityValidator (ver Bloqueios).
 
 ## Concluido
 
@@ -52,6 +52,7 @@
 - [x] M-04C validada pos-deploy em producao: smoke publico confirmou `401 AUTH_REQUIRED` sem token, rota `/loja/nova-entrega` `200` e bundle com payload minimo; smoke autenticado criou entrega com payload `{}`, `destination_address=null`, `status=aguardando`, `courier_id=null` e cleanup completo, sem SQL adicional nem exposicao de secrets.
 - [x] M-05 frontend implementado: `/loja/historico` consome `GET /api/deliveries` via Bearer token do `OperationalShell` (`listMyDeliveries` em `src/lib/api.ts`), com estados loading/erro recuperavel/vazio honesto/lista paginada real, filtro por status do contrato e paginacao real; mock `sampleHistory` e enum divergente removidos de `delivery-types.ts`; sem `supabase.from`, sem leitura direta de `delivery_requests`, sem busca textual, filtro por data ou dados de motoboy; `typecheck`, `lint`, `build`, `test --if-present` e `git diff --check` passaram.
 - [x] M-05 validada pos-deploy em producao: backend `f30bfc7` e frontend `6833695` publicados; smoke publico confirmou `GET`/`POST /api/deliveries` sem token com `401 AUTH_REQUIRED` e `/loja/historico` com `200`; smoke autenticado contra producao validou listagem real da loja, isolamento multi-tenant, filtro, paginacao, validacoes negativas, ausencia de `store_id`/`courier_id` e cleanup completo, sem SQL/migration/RLS/grants/policies nem exposicao de secrets.
+- [x] Cirurgico admin: `AdminUsersPanel` ganhou a coluna `Loja` consumindo `store_name` de `GET /api/admin/users` (tipo `AdminUserListItem`), sem chamar o detalhe por linha (sem N+1) e sem campos de Storage/PII; `typecheck`, `lint`, `build`, `test --if-present` e `git diff --check` passaram.
 
 ## Bloqueios
 
