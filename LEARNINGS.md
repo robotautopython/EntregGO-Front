@@ -153,3 +153,21 @@ Quando uma acao muda permissao de leitura, fazer uma nova leitura no contrato au
 
 ### Impacto no projeto
 Destino/notas aparecem apenas na corrida aceita real, sem mexer no mock, sem polling e sem criar transicoes falsas.
+
+## 2026-05-16 - Guard offline precisa virar estado antes de erro
+
+**Tipo:** Padrao
+**Fase:** fundacao/auth-operacao
+**Contexto:** Fatia 3 do motoboy, status operacional real.
+
+### O que aconteceu
+`/motoboy` chamava `/api/deliveries/active` logo ao montar. Quando o motoboy estava offline, o backend retornava `COURIER_OFFLINE`, que a UI mostrava como erro recuperavel. O erro era tecnicamente correto, mas ruim como experiencia porque offline e um estado esperado.
+
+### Como foi resolvido
+`MotoboyRealFlow` passou a consultar `GET /api/couriers/me/status` antes de entregas. Se `is_online=false`, a tela nao chama corrida ativa nem fila e mostra o controle "Ficar online". Ao ligar, chama `PATCH /api/couriers/me/status` e so entao entra no fluxo de corrida/fila.
+
+### O que fazer diferente da proxima vez
+Quando um endpoint falha por uma guard que representa estado operacional esperado, criar uma consulta de estado antes de chamar o endpoint protegido. Erro fica para falhas excepcionais; estado fica na UI principal.
+
+### Impacto no projeto
+O motoboy deixa de ver `COURIER_OFFLINE` como falha de producao e passa a controlar a disponibilidade real sem Supabase direto, sem `courier_id`, sem PII nova e sem polling.

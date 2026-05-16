@@ -147,3 +147,8 @@ export interface CourierProfile {
   created_at: string;
   updated_at: string;
 }
+
+export interface CourierOperationalStatus {
+  is_online: boolean;
+  updated_at: string;
+}

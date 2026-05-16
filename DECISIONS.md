@@ -120,3 +120,14 @@
 **Decisao:** Criar um fluxo real separado (`MotoboyRealFlow` + `CorridaAtivaReal`). `/motoboy` sem query consulta `GET /api/deliveries/active` antes da fila; se houver corrida aceita, mostra a tela real somente leitura. Se nao houver, mostra `FilaDisponivel`. Apos `acceptDelivery`, a fila chama o parent para recarregar `GET /api/deliveries/active` e usar a fonte de verdade do backend para destino/notas. `CorridaAtiva.tsx`, `courier-types.ts`, `SolicitacaoCard` e `PushPrimeSheet` seguem isolados no demo por `?demo=`.
 
 **Consequencias:** A UI pos-aceite passa a exibir dados reais permitidos (`destination_address`/`notes`) apenas quando o backend confirma a corrida atribuida. Nao ha polling, realtime, push, cancelamento ou botoes de status. A separacao evita que o mock de transicoes contamine o caminho real e deixa as proximas mutacoes para um contrato backend proprio.
+
+## ADR-012 - Status operacional antes de corrida/fila
+
+**Data:** 2026-05-16
+**Status:** aceito
+
+**Contexto:** O caminho real `/motoboy` dependia de endpoints que exigem `couriers.is_online=true`, mas o motoboy nasce offline e nao havia controle real para mudar esse estado. Chamar `/api/deliveries/active` offline gera `COURIER_OFFLINE` por design.
+
+**Decisao:** `MotoboyRealFlow` passa a consultar `GET /api/couriers/me/status` antes de qualquer endpoint de entregas. Quando offline, renderiza apenas o controle de status e um estado honesto, sem chamar corrida ativa nem fila. `PATCH /api/couriers/me/status` liga/desliga o status; ao ficar online, a tela carrega corrida ativa e depois fila se necessario. O fluxo demo por `?demo=` permanece isolado.
+
+**Consequencias:** O erro de producao deixa de aparecer como falha recuperavel de entregas e vira estado operacional claro. O frontend continua sem Supabase direto, sem `courier_id`, sem PII nova e sem polling/realtime/push. Localizacao, raio, historico de presenca e transicoes de entrega continuam fora de escopo.

@@ -262,7 +262,7 @@ Fora desta fatia no frontend:
 
 ## Entregas Fatia 2 - Motoboy
 
-Status frontend nesta fatia: `/motoboy` consulta primeiro `GET /api/deliveries/active`. Se houver corrida ativa, renderiza `CorridaAtivaReal` em modo somente leitura. Se nao houver, renderiza `FilaDisponivel`. Apos um aceite bem-sucedido, o frontend consulta novamente `GET /api/deliveries/active` e troca a confirmacao estatica pela tela real da corrida aceita. `CorridaAtiva.tsx` permanece mock e so aparece em `?demo=ativo`/`?demo=solicitacao`.
+Status frontend nesta fatia: `/motoboy` consulta primeiro o status operacional da Fatia 3. Quando o motoboy esta online, consulta `GET /api/deliveries/active`. Se houver corrida ativa, renderiza `CorridaAtivaReal` em modo somente leitura. Se nao houver, renderiza `FilaDisponivel`. Apos um aceite bem-sucedido, o frontend consulta novamente `GET /api/deliveries/active` e troca a confirmacao estatica pela tela real da corrida aceita. `CorridaAtiva.tsx` permanece mock e so aparece em `?demo=ativo`/`?demo=solicitacao`.
 
 Tela: `/motoboy` (padrao, sem query). Client API em `src/lib/api.ts`: `getActiveDelivery(accessToken)`. Tipo em `src/types/delivery.ts`: `ActiveDelivery`.
 
@@ -313,6 +313,51 @@ Fora desta fatia:
 - cron/expiracao automatica;
 - historico do motoboy;
 - historico admin, pagamentos, Storage/documentos.
+
+## Motoboy Fatia 3 - Status operacional online/offline
+
+Status frontend nesta fatia: `/motoboy` usa `GET /api/couriers/me/status` antes de qualquer chamada de entrega. Se `is_online=false`, renderiza controle "Ficar online" e estado honesto offline; nesse estado nao chama `GET /api/deliveries/active` nem `GET /api/deliveries/available`. Ao ficar online, chama `PATCH /api/couriers/me/status`, entao carrega corrida ativa e, se necessario, a fila. Ao ficar offline, limpa corrida/fila/erros ativos e pausa carregamentos. O fluxo demo `?demo=` permanece isolado.
+
+Tela: `/motoboy` (padrao, sem query). Client API em `src/lib/api.ts`: `getCourierStatus(accessToken)` e `updateCourierStatus(accessToken, isOnline)`. Tipo em `src/types/auth.ts`: `CourierOperationalStatus`.
+
+Contrato consumido:
+- `GET /api/couriers/me/status` com `Authorization: Bearer <access_token>`.
+- `PATCH /api/couriers/me/status` com `Authorization: Bearer <access_token>` e body strict `{ "isOnline": true }`.
+- Apenas usuario de dominio `role=motoboy` e `status=ativo`, com perfil `couriers`.
+- O backend deriva `couriers.user_id` pela sessao; o frontend nunca envia `courier_id`.
+
+Resposta esperada:
+
+```json
+{
+  "success": true,
+  "data": {
+    "is_online": true,
+    "updated_at": "2026-05-16T12:01:00.000Z"
+  },
+  "message": "Status operacional atualizado"
+}
+```
+
+Estados de UI:
+- loading inicial: verifica status operacional antes de abrir corrida/fila;
+- offline: mostra controle de status e aviso de que o app nao consulta corrida ativa nem fila;
+- online: mostra controle de status e segue para corrida ativa/fila;
+- erro recuperavel no status: alerta com "Tentar novamente" quando nao ha status carregado; erro de atualizacao preserva a tela atual;
+- sem polling, `setInterval`, realtime, push ou acesso direto ao Supabase.
+
+PII preservada:
+- a resposta de status contem somente `is_online` e `updated_at`;
+- a UI nao recebe nem renderiza `id`, `user_id`, `full_name`, documentos, Storage, dados de loja ou entregas neste contrato.
+
+Fora desta fatia:
+- geolocalizacao/GPS;
+- disponibilidade por raio;
+- historico de presenca;
+- realtime/push/Web Push/VAPID;
+- cron;
+- transicoes `coletada`, `em_transito`, `entregue`;
+- cancelamento, pagamentos, Storage/documentos.
 
 ## Variaveis permitidas no frontend
 

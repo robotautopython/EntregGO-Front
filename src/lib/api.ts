@@ -9,6 +9,7 @@ import type {
   ApiSuccess,
   AuthContext,
   CourierProfile,
+  CourierOperationalStatus,
   CourierRegistrationPayload,
   RegistrationResult,
   StoreProfile,
@@ -258,6 +259,41 @@ export async function getActiveDelivery(accessToken: string) {
     assertApiUrlConfigured();
     const response = await api.get<ApiSuccess<ActiveDelivery | null> | ApiFailure>(
       '/api/deliveries/active',
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function getCourierStatus(accessToken: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<CourierOperationalStatus> | ApiFailure>(
+      '/api/couriers/me/status',
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function updateCourierStatus(accessToken: string, isOnline: boolean) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.patch<ApiSuccess<CourierOperationalStatus> | ApiFailure>(
+      '/api/couriers/me/status',
+      {
+        isOnline,
+      },
       {
         headers: bearerHeaders(accessToken),
       },

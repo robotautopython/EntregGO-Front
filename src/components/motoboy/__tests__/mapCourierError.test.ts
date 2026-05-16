@@ -16,6 +16,7 @@ describe('mapCourierError', () => {
     ['DELIVERY_EXPIRED', 'Entrega expirou'],
     ['DELIVERY_NOT_FOUND', 'Entrega indisponível'],
     ['COURIER_OFFLINE', 'Você está offline'],
+    ['COURIER_STATUS_UPDATE_FAILED', 'Status não atualizado'],
     ['COURIER_PROFILE_REQUIRED', 'Perfil de motoboy necessário'],
     ['USER_PENDING', 'Cadastro aguardando aprovação'],
     ['USER_BLOCKED', 'Conta bloqueada'],

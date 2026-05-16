@@ -74,6 +74,11 @@ export function mapCourierError(error: unknown): CourierError {
         title: 'Você está offline',
         message: 'Fique online para ver e aceitar entregas disponíveis.',
       };
+    case 'COURIER_STATUS_UPDATE_FAILED':
+      return {
+        title: 'Status não atualizado',
+        message: 'Não foi possível alterar seu status agora. Tente novamente.',
+      };
     case 'COURIER_PROFILE_REQUIRED':
       return {
         title: 'Perfil de motoboy necessário',

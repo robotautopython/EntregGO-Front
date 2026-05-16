@@ -360,3 +360,17 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes pos-deploy:** Smoke publico confirmou `/motoboy` -> `200`, bundle publicado contendo `/api/deliveries/active` e `GET /api/deliveries/active` sem token -> `401 AUTH_REQUIRED`. Smoke autenticado confirmou que o motoboy dono ve sua corrida `aceita` em modo somente leitura, outro motoboy recebe `data: null`, offline/pendente/bloqueado/role errado sao negados e a politica de PII foi preservada: pre-aceite somente `store.name`/`store.address`; pos-aceite `destination_address`/`notes` apenas para o courier atribuido. Cleanup retornou `completed`. Nenhum SQL, migration, RLS, grant ou policy foi executado ou alterado.
 
 **Fora do escopo preservado:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), cancelamento, realtime, push/Web Push/VAPID, cron/expiracao automatica, online/offline operacional, historico do motoboy, historico admin, pagamentos e Storage.
+
+## 2026-05-16 - FATIA 3 UI REAL STATUS OPERACIONAL DO MOTOBOY
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a UI real de online/offline. `MotoboyRealFlow` passou a consultar `GET /api/couriers/me/status` antes de chamar qualquer endpoint de entregas. Quando `is_online=false`, renderiza controle "Ficar online" e estado honesto sem chamar `/api/deliveries/active` nem `/api/deliveries/available`. Ao ficar online, chama `PATCH /api/couriers/me/status`, carrega corrida ativa e, se nao houver, a fila. Ao ficar offline, limpa corrida/fila/erros ativos e pausa carregamentos. O demo por `?demo=` permanece isolado.
+**Arquivos modificados:** `src/types/auth.ts`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/components/motoboy/MotoboyRealFlow.tsx`, `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `src/components/motoboy/__tests__/mapCourierError.test.ts`, `CONTRACTS.md`, `STATUS.md`, `DECISIONS.md`, `LOG.md`, `LEARNINGS.md`
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, TestEngineer, Documentador
+**Status:** fechado localmente; deploy/smoke de producao pendentes
+
+**Gates:** ImpactValidator aprovado (mudanca aditiva, fluxo demo preservado, Fatias 1/2 consumidas sem quebrar contrato); SecurityValidator aprovado (sem Supabase direto, sem `courier_id`, Bearer token existente, resposta de status sem PII, sem logs sensiveis).
+
+**Validacoes:** Frontend `npm run typecheck` passou. Frontend `npm test` passou com 5 arquivos e 36 testes. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+**Fora do escopo:** geolocalizacao/GPS, disponibilidade por raio, historico de presenca, realtime, push/Web Push/VAPID, cron, transicoes pos-aceite, cancelamento, pagamentos, Storage e documentos.

@@ -2,9 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getMock = vi.fn();
 const postMock = vi.fn();
+const patchMock = vi.fn();
 
 vi.mock('axios', () => {
-  const create = vi.fn(() => ({ get: getMock, post: postMock }));
+  const create = vi.fn(() => ({ get: getMock, post: postMock, patch: patchMock }));
   return {
     default: { create, isAxiosError: () => false },
     isAxiosError: () => false,
@@ -63,5 +64,39 @@ describe('getActiveDelivery', () => {
     expect(getMock).toHaveBeenCalledWith('/api/deliveries/active', {
       headers: { Authorization: 'Bearer tok-123' },
     });
+  });
+});
+
+describe('getCourierStatus', () => {
+  it('gets the courier operational status with the Bearer token and no params', async () => {
+    const { getCourierStatus } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { is_online: false, updated_at: '2026-05-16T12:00:00.000Z' } },
+    });
+
+    await getCourierStatus('tok-123');
+
+    expect(getMock).toHaveBeenCalledWith('/api/couriers/me/status', {
+      headers: { Authorization: 'Bearer tok-123' },
+    });
+  });
+});
+
+describe('updateCourierStatus', () => {
+  it('patches the courier operational status with strict body and Bearer token', async () => {
+    const { updateCourierStatus } = await import('@/lib/api');
+    patchMock.mockResolvedValue({
+      data: { success: true, data: { is_online: true, updated_at: '2026-05-16T12:01:00.000Z' } },
+    });
+
+    await updateCourierStatus('tok-123', true);
+
+    expect(patchMock).toHaveBeenCalledWith(
+      '/api/couriers/me/status',
+      { isOnline: true },
+      {
+        headers: { Authorization: 'Bearer tok-123' },
+      },
+    );
   });
 });
