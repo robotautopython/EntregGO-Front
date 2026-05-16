@@ -317,3 +317,16 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes:** `npm run typecheck` ✓, `npm run lint` ✓ (sem warnings; aviso esperado de `next lint` deprecado), `npm run build` ✓ (24 rotas estaticas, `/motoboy` 10.8 kB), `npm test` ✓ (25/25 em 3 arquivos), `git diff --check` ✓ (apenas avisos LF/CRLF, sem erro de whitespace). Nenhum SQL/migration/RLS/grant/policy criado ou alterado. Nenhum secret, token, cookie ou header sensivel impresso. Backend nao foi alterado.
 
 **Fora do escopo:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), realtime, push/Web Push/VAPID, cron/expiracao automatica, cancelamento, online/offline operacional, pagamentos, Storage, historico admin e historico do motoboy.
+
+## 2026-05-16 - FATIA 1 MOTOBOY POS-DEPLOY PRODUCAO APROVADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** A UI real do motoboy foi validada em producao contra frontend `https://entreggo.vercel.app` no commit `7db7fad` e backend `https://entreggoback.vercel.app` no commit `f5ab8d8`. O primeiro smoke publico havia mostrado backend stale (`404` nos endpoints); depois do deploy backend, o smoke publico passou e o smoke autenticado foi executado com usuarios/perfis/entregas ficticios temporarios e cleanup em `finally`, sem imprimir token, cookie, header ou secret.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, TestEngineer, SecurityValidator, PerformanceValidator, FinalValidator, Documentador
+**Status:** fechado em producao
+
+**Validacoes:** Smoke publico confirmou `GET /api/deliveries/available` sem token -> `401 AUTH_REQUIRED`, `POST /api/deliveries/:id/accept` sem token -> `401 AUTH_REQUIRED`, `/motoboy` -> `200` e bundle publicado contendo `/api/deliveries/available`. Smoke autenticado confirmou listagem sem `destination_address`, `notes`, `store_id` ou `courier_id`, expondo somente `store.name` e `store.address` como dados da loja; aceite concorrente com um sucesso e um `ALREADY_ACCEPTED`; aceite expirado com `DELIVERY_EXPIRED`; resposta pos-aceite estatica em `status=aceita`, sem transicao para corrida; negacoes para motoboy offline, pendente, bloqueado e role errado. Cleanup retornou `completed`. Nenhum SQL, migration, RLS, grant ou policy foi executado ou alterado.
+
+**Fora do escopo preservado:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), realtime, push/Web Push/VAPID, cron/expiracao automatica, cancelamento, online/offline operacional, pagamentos, Storage, historico admin e historico do motoboy.
