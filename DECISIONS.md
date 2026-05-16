@@ -131,3 +131,14 @@
 **Decisao:** `MotoboyRealFlow` passa a consultar `GET /api/couriers/me/status` antes de qualquer endpoint de entregas. Quando offline, renderiza apenas o controle de status e um estado honesto, sem chamar corrida ativa nem fila. `PATCH /api/couriers/me/status` liga/desliga o status; ao ficar online, a tela carrega corrida ativa e depois fila se necessario. O fluxo demo por `?demo=` permanece isolado.
 
 **Consequencias:** O erro de producao deixa de aparecer como falha recuperavel de entregas e vira estado operacional claro. O frontend continua sem Supabase direto, sem `courier_id`, sem PII nova e sem polling/realtime/push. Localizacao, raio, historico de presenca e transicoes de entrega continuam fora de escopo.
+
+## ADR-013 - Transicoes pos-aceite reais no fluxo do motoboy
+
+**Data:** 2026-05-16
+**Status:** aceito
+
+**Contexto:** O backend passou a expor `PATCH /api/deliveries/:id/status` para avancar a corrida atribuida em `aceita -> coletada -> em_transito -> entregue`. A UI real ja separava `CorridaAtivaReal` do mock `CorridaAtiva.tsx`, evitando misturar botoes demo com dados de producao.
+
+**Decisao:** Ligar `CorridaAtivaReal` ao novo client `updateDeliveryStatus`, exibindo uma unica proxima acao por status ativo: "Confirmar coleta", "Iniciar transito" ou "Concluir entrega". Durante a requisicao, os botoes de acao/atualizacao ficam desabilitados para evitar duplo PATCH. Em `coletada` e `em_transito`, a corrida em tela e atualizada pelo retorno sanitizado; em `entregue`, a corrida sai da tela ativa e o fluxo volta para a fila real. O demo por `?demo=` permanece isolado.
+
+**Consequencias:** O caminho padrao `/motoboy` passa a cobrir descoberta, aceite, leitura ativa, online/offline e transicoes pos-aceite via REST. Nao ha polling, realtime, push, cron, cancelamento, GPS, historico ou acesso direto ao Supabase. A UI continua sem enviar ou renderizar `courier_id`, `store_id`, timestamps de transicao, Storage/documentos ou dados sensiveis.

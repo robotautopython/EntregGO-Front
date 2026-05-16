@@ -79,6 +79,16 @@ export function mapCourierError(error: unknown): CourierError {
         title: 'Status não atualizado',
         message: 'Não foi possível alterar seu status agora. Tente novamente.',
       };
+    case 'DELIVERY_STATUS_UPDATE_FAILED':
+      return {
+        title: 'Status da entrega nao atualizado',
+        message: 'Nao foi possivel avancar a entrega agora. Tente novamente.',
+      };
+    case 'INVALID_DELIVERY_TRANSITION':
+      return {
+        title: 'Etapa invalida',
+        message: 'Atualize a corrida e tente avancar novamente.',
+      };
     case 'COURIER_PROFILE_REQUIRED':
       return {
         title: 'Perfil de motoboy necessário',

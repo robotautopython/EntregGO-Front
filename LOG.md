@@ -388,3 +388,17 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes pos-deploy:** Smoke publico confirmou `/motoboy` -> `200`, bundle publicado contendo `/api/couriers/me/status`, `GET /api/couriers/me/status` sem token -> `401 AUTH_REQUIRED` e `PATCH /api/couriers/me/status` sem token -> `401 AUTH_REQUIRED`. Smoke autenticado confirmou motoboy ativo iniciando `is_online=false`, resposta de status somente `{ is_online, updated_at }`, `/api/deliveries/active` negado offline com `COURIER_OFFLINE`, `PATCH { isOnline: true }` retornando `is_online=true`, `/api/deliveries/active` online retornando a fixture aceita, `PATCH { isOnline: false }` retornando `is_online=false`, payloads com `courier_id`, `user_id`, `is_online` ou campo extra retornando `VALIDATION_ERROR`, role errada retornando `FORBIDDEN_ROLE`, pendente retornando `USER_PENDING` e bloqueado retornando `USER_BLOCKED`. No browser autenticado em producao, antes de clicar em "Ficar online", os recursos observados tinham `/api/couriers/me/status` e zero chamadas a `/api/deliveries/active` ou `/api/deliveries/available`; apos o clique, a UI exibiu "Corrida aceita" e chamou `/api/deliveries/active`. Cleanup retornou `completed`.
 
 **Fora do escopo preservado:** SQL/migration/RLS/grants/policies, PII nova, Supabase direto no frontend, realtime, push/Web Push/VAPID, polling, cron, geolocalizacao/GPS, disponibilidade por raio, historico de presenca, transicoes pos-aceite, cancelamento, pagamentos, Storage e documentos.
+
+## 2026-05-16 - FATIA 4A UI REAL TRANSICOES POS-ACEITE
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a UI minima para transicoes pos-aceite no caminho real `/motoboy`. `src/lib/api.ts` ganhou `updateDeliveryStatus(accessToken, deliveryId, status)` consumindo `PATCH /api/deliveries/:id/status` com Bearer token e body `{ status }`. `ActiveDelivery` passou a aceitar `aceita|coletada|em_transito`. `CorridaAtivaReal` mostra a proxima acao por status, bloqueia duplo clique durante a requisicao e mantem "Atualizar" manual. `MotoboyRealFlow` atualiza a corrida em `coletada`/`em_transito` e remove a ativa quando o backend retorna `entregue`, voltando para a fila real.
+**Arquivos modificados:** `src/lib/api.ts`, `src/types/delivery.ts`, `src/components/motoboy/MotoboyRealFlow.tsx`, `src/components/motoboy/CorridaAtivaReal.tsx`, `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `src/lib/__tests__/api.deliveries.test.ts`, `CONTRACTS.md`, `STATUS.md`, `DECISIONS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer
+**Status:** fechado localmente; deploy/smoke de producao pendentes
+
+**Gates pre-codigo:** ImpactValidator/Cetico, SecurityValidator, PerformanceValidator e TestEngineer aprovaram a fatia com ressalvas de escopo, PII, sem polling/cache e cobertura de testes.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (5 arquivos, 41 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 107 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+**Fora do escopo:** Supabase direto no frontend, realtime, push/Web Push/VAPID, polling, cron, cancelamento, historico do motoboy, historico admin, pagamentos, Storage/documentos, geolocalizacao/GPS e disponibilidade por raio.

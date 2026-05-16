@@ -67,6 +67,25 @@ describe('getActiveDelivery', () => {
   });
 });
 
+describe('updateDeliveryStatus', () => {
+  it('patches the delivery status with a strict body and Bearer token', async () => {
+    const { updateDeliveryStatus } = await import('@/lib/api');
+    patchMock.mockResolvedValue({
+      data: { success: true, data: { id: 'd1', status: 'coletada' } },
+    });
+
+    await updateDeliveryStatus('tok-123', 'd1', 'coletada');
+
+    expect(patchMock).toHaveBeenCalledWith(
+      '/api/deliveries/d1/status',
+      { status: 'coletada' },
+      {
+        headers: { Authorization: 'Bearer tok-123' },
+      },
+    );
+  });
+});
+
 describe('getCourierStatus', () => {
   it('gets the courier operational status with the Bearer token and no params', async () => {
     const { getCourierStatus } = await import('@/lib/api');

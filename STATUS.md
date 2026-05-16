@@ -14,10 +14,10 @@
 ## Proximas Tarefas
 
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
-- [ ] Planejar transicoes pos-aceite do motoboy (coletada/em_transito/entregue), detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
+- [ ] Planejar detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
 - [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
-- [ ] Planejar dados e acoes de transicao do motoboy (coleta/transito/entrega) somente com novo contrato backend e validadores.
+- [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
 
 ## Concluido
 
@@ -60,21 +60,22 @@
 - [x] Fatia 2 UI real do motoboy validada pos-deploy em producao: frontend `53a8e72` e backend `af4d0df`; smoke publico confirmou `/motoboy` `200`, bundle com `/api/deliveries/active` e backend sem token com `401 AUTH_REQUIRED`; smoke autenticado confirmou corrida ativa somente do courier dono, outro motoboy com `data: null`, negacoes de offline/pendente/bloqueado/role errado, PII pre-aceite limitada a `store.name`/`store.address`, destino/observacao apenas pos-aceite e cleanup completo.
 - [x] Fatia 3 UI real do motoboy implementada localmente: `/motoboy` consulta `GET /api/couriers/me/status` antes de entregas; offline mostra controle "Ficar online" e nao chama `/api/deliveries/active` nem `/api/deliveries/available`; online chama corrida ativa e depois fila; `PATCH /api/couriers/me/status` liga/desliga o status real. Sem `courier_id` no client, sem PII nova, sem Supabase direto, sem polling/realtime/push. Testes frontend passaram com 36/36 durante a implementacao.
 - [x] Fatia 3 UI real do motoboy validada pos-deploy em producao: frontend `3201d77` e backend `001a1c6`; smoke publico confirmou `/motoboy` `200`, bundle com `/api/couriers/me/status` e backend sem token com `401 AUTH_REQUIRED` em `GET`/`PATCH /api/couriers/me/status`. Smoke autenticado com motoboy ficticio offline confirmou que a UI renderiza "Ficar online" sem chamar `/api/deliveries/active` nem `/api/deliveries/available`; apos o clique, chamou `/api/deliveries/active` e exibiu "Corrida aceita". API smoke confirmou `PATCH true/false`, resposta `{ is_online, updated_at }`, payloads proibidos com `VALIDATION_ERROR`, role errada/pendente/bloqueado negados e cleanup completo.
+- [x] Fatia 4A UI real do motoboy implementada localmente: `CorridaAtivaReal` passou a exibir a proxima acao real por status (`Confirmar coleta`, `Iniciar transito`, `Concluir entrega`) consumindo `PATCH /api/deliveries/:id/status` via `updateDeliveryStatus`. A UI bloqueia duplo clique durante a transicao, atualiza a corrida em `coletada`/`em_transito` e remove a corrida ativa ao receber `entregue`, voltando para a fila. Sem `courier_id`/`store_id` no client, sem timestamps de transicao, sem Supabase direto, sem polling/realtime/push. `typecheck`, `test` (41), `lint`, `build` e `git diff --check` passaram.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida aceita (Fatia 2) e o status online/offline real (Fatia 3) ja existem; detalhe unico, busca textual, filtro por data, cancelamento e status pos-aceite (coletada/em_transito/entregue) seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3) e transicoes pos-aceite REST (Fatia 4A) ja existem; detalhe unico, busca textual, filtro por data e cancelamento seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
 - `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
-- Visao demo de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock e so aparece no fluxo demo (`?demo=`); a UI real de descoberta/aceite e leitura pos-aceite (`FilaDisponivel.tsx`/`CorridaAtivaReal.tsx`) ja esta no caminho padrao. Transicoes pos-aceite reais (coletada/em_transito/entregue) continuam bloqueadas ate contrato backend e ciclo dedicado.
+- Visao demo de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock e so aparece no fluxo demo (`?demo=`); a UI real de descoberta/aceite, leitura pos-aceite e transicoes REST (`FilaDisponivel.tsx`/`CorridaAtivaReal.tsx`) ja esta no caminho padrao.
 
 ## Saude do Projeto
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (36 testes; `npm test`)
+**Testes:** Vitest + Testing Library (41 testes; `npm test`)
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4

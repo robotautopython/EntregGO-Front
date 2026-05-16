@@ -7,9 +7,14 @@ import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { getActiveDelivery, getCourierStatus, updateCourierStatus } from '@/lib/api';
+import {
+  getActiveDelivery,
+  getCourierStatus,
+  updateCourierStatus,
+  updateDeliveryStatus,
+} from '@/lib/api';
 import type { CourierOperationalStatus } from '@/types/auth';
-import type { ActiveDelivery } from '@/types/delivery';
+import type { ActiveDelivery, DeliveryTransitionStatus } from '@/types/delivery';
 
 import { CorridaAtivaReal } from './CorridaAtivaReal';
 import { FilaDisponivel, mapCourierError, type CourierError } from './FilaDisponivel';
@@ -27,11 +32,14 @@ export function MotoboyRealFlow({ accessToken }: MotoboyRealFlowProps) {
   const [activeDelivery, setActiveDelivery] = useState<ActiveDelivery | null>(null);
   const [isCheckingActive, setIsCheckingActive] = useState(false);
   const [activeError, setActiveError] = useState<CourierError | null>(null);
+  const [isUpdatingDeliveryStatus, setIsUpdatingDeliveryStatus] = useState(false);
+  const [deliveryStatusError, setDeliveryStatusError] = useState<CourierError | null>(null);
 
   const clearActiveState = useCallback(() => {
     activeLoadId.current += 1;
     setActiveDelivery(null);
     setActiveError(null);
+    setDeliveryStatusError(null);
     setIsCheckingActive(false);
   }, []);
 
@@ -60,6 +68,7 @@ export function MotoboyRealFlow({ accessToken }: MotoboyRealFlowProps) {
     activeLoadId.current = loadId;
     setIsCheckingActive(true);
     setActiveError(null);
+    setDeliveryStatusError(null);
     try {
       const data = await getActiveDelivery(accessToken);
       if (loadId === activeLoadId.current) {
@@ -76,6 +85,38 @@ export function MotoboyRealFlow({ accessToken }: MotoboyRealFlowProps) {
       }
     }
   }, [accessToken]);
+
+  const handleDeliveryStatusChange = useCallback(
+    async (status: DeliveryTransitionStatus) => {
+      if (isUpdatingDeliveryStatus || !activeDelivery) return;
+
+      setIsUpdatingDeliveryStatus(true);
+      setDeliveryStatusError(null);
+      try {
+        const data = await updateDeliveryStatus(accessToken, activeDelivery.id, status);
+        if (data.status === 'entregue') {
+          setActiveDelivery(null);
+          return;
+        }
+
+        setActiveDelivery({
+          id: data.id,
+          destination_address: data.destination_address,
+          notes: data.notes,
+          status: data.status,
+          accepted_at: data.accepted_at,
+          created_at: data.created_at,
+          expires_at: data.expires_at,
+          store: data.store,
+        });
+      } catch (caught) {
+        setDeliveryStatusError(mapCourierError(caught));
+      } finally {
+        setIsUpdatingDeliveryStatus(false);
+      }
+    },
+    [accessToken, activeDelivery, isUpdatingDeliveryStatus],
+  );
 
   useEffect(() => {
     void loadStatus();
@@ -247,10 +288,17 @@ export function MotoboyRealFlow({ accessToken }: MotoboyRealFlowProps) {
             onChange={(value) => void handleStatusChange(value)}
           />
         ) : null}
+        {deliveryStatusError ? (
+          <Alert tone="danger" title={deliveryStatusError.title}>
+            {deliveryStatusError.message}
+          </Alert>
+        ) : null}
         <CorridaAtivaReal
           delivery={activeDelivery}
           isRefreshing={isCheckingActive}
+          isUpdatingStatus={isUpdatingDeliveryStatus}
           onRefresh={() => void loadActiveDelivery()}
+          onStatusChange={(nextStatus) => void handleDeliveryStatusChange(nextStatus)}
         />
       </div>
     );

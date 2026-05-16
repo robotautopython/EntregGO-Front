@@ -16,6 +16,7 @@ vi.mock('@/lib/api', async () => {
     ClientApiError: actual.ClientApiError,
     getCourierStatus: vi.fn(),
     updateCourierStatus: vi.fn(),
+    updateDeliveryStatus: vi.fn(),
     getActiveDelivery: vi.fn(),
     listAvailableDeliveries: vi.fn(),
     acceptDelivery: vi.fn(),
@@ -28,12 +29,14 @@ import {
   getCourierStatus,
   listAvailableDeliveries,
   updateCourierStatus,
+  updateDeliveryStatus,
 } from '@/lib/api';
 
 import { MotoboyRealFlow } from '../MotoboyRealFlow';
 
 const statusMock = vi.mocked(getCourierStatus);
 const updateStatusMock = vi.mocked(updateCourierStatus);
+const updateDeliveryStatusMock = vi.mocked(updateDeliveryStatus);
 const activeMock = vi.mocked(getActiveDelivery);
 const listMock = vi.mocked(listAvailableDeliveries);
 const acceptMock = vi.mocked(acceptDelivery);
@@ -107,16 +110,16 @@ describe('MotoboyRealFlow', () => {
     expect(listMock).toHaveBeenCalledWith('tok', { page: 1, limit: 20 });
   });
 
-  it('renders the active delivery read-only when one exists', async () => {
+  it('renders the active delivery with the next transition action when one exists', async () => {
     activeMock.mockResolvedValue(activeDelivery);
 
     const { container } = render(<MotoboyRealFlow accessToken="tok" />);
 
-    expect(await screen.findByRole('heading', { name: 'Corrida aceita' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
     expect(screen.getAllByText('Loja Alpha').length).toBeGreaterThan(0);
     expect(screen.getByText('Rua Destino, 50')).toBeInTheDocument();
     expect(screen.getByText('Levar na portaria')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Cheguei|transito|Entreguei|Concluir/i })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Confirmar coleta' })).toBeInTheDocument();
     expect(container.innerHTML).not.toMatch(/store_id|courier_id|collected_at|in_transit_at|delivered_at/);
   });
 
@@ -129,9 +132,85 @@ describe('MotoboyRealFlow', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Aceitar entrega' }));
 
-    expect(await screen.findByRole('heading', { name: 'Corrida aceita' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
     expect(screen.getByText('Rua Destino, 50')).toBeInTheDocument();
     await waitFor(() => expect(activeMock).toHaveBeenCalledTimes(2));
+  });
+
+  it('advances the active delivery status and shows the next action', async () => {
+    activeMock.mockResolvedValue(activeDelivery);
+    updateDeliveryStatusMock.mockResolvedValue({
+      ...activeDelivery,
+      status: 'coletada',
+    });
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Confirmar coleta' }));
+
+    expect(updateDeliveryStatusMock).toHaveBeenCalledWith('tok', activeDelivery.id, 'coletada');
+    expect(await screen.findByText('Coletada')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Iniciar transito' })).toBeInTheDocument();
+  });
+
+  it('blocks double-click while a delivery status transition is pending', async () => {
+    activeMock.mockResolvedValue(activeDelivery);
+    let resolveUpdate!: (value: Awaited<ReturnType<typeof updateDeliveryStatus>>) => void;
+    updateDeliveryStatusMock.mockReturnValue(
+      new Promise<Awaited<ReturnType<typeof updateDeliveryStatus>>>((resolve) => {
+        resolveUpdate = resolve;
+      }),
+    );
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    const btn = await screen.findByRole('button', { name: 'Confirmar coleta' });
+    await userEvent.click(btn);
+    await userEvent.click(btn).catch(() => {});
+
+    expect(updateDeliveryStatusMock).toHaveBeenCalledTimes(1);
+    resolveUpdate({
+      ...activeDelivery,
+      status: 'coletada',
+    });
+    expect(await screen.findByText('Coletada')).toBeInTheDocument();
+  });
+
+  it('removes the active delivery after concluding it', async () => {
+    activeMock.mockResolvedValue({
+      ...activeDelivery,
+      status: 'em_transito',
+    });
+    updateDeliveryStatusMock.mockResolvedValue({
+      ...activeDelivery,
+      status: 'entregue',
+    });
+    listMock.mockResolvedValue({
+      items: [],
+      pagination: { page: 1, limit: 20, total: 0 },
+    });
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Concluir entrega' }));
+
+    expect(updateDeliveryStatusMock).toHaveBeenCalledWith('tok', activeDelivery.id, 'entregue');
+    expect(await screen.findByText(/Nenhuma entrega/i)).toBeInTheDocument();
+  });
+
+  it('shows a recoverable delivery-status error', async () => {
+    activeMock.mockResolvedValue(activeDelivery);
+    updateDeliveryStatusMock.mockRejectedValue(
+      new ClientApiError('INVALID_DELIVERY_TRANSITION', 'srv'),
+    );
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Confirmar coleta' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(within(alert).getByText(/Etapa invalida/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirmar coleta' })).toBeInTheDocument();
   });
 
   it('shows a recoverable active-delivery error', async () => {

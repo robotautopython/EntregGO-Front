@@ -94,11 +94,25 @@ export interface AcceptedDelivery {
   store: AvailableDeliveryStore;
 }
 
+export type ActiveDeliveryStatus = 'aceita' | 'coletada' | 'em_transito';
+export type DeliveryTransitionStatus = 'coletada' | 'em_transito' | 'entregue';
+
 export interface ActiveDelivery {
   id: string;
   destination_address: string | null;
   notes: string | null;
-  status: 'aceita';
+  status: ActiveDeliveryStatus;
+  accepted_at: string | null;
+  created_at: string;
+  expires_at: string;
+  store: AvailableDeliveryStore;
+}
+
+export interface DeliveryStatusUpdateResult {
+  id: string;
+  destination_address: string | null;
+  notes: string | null;
+  status: ActiveDeliveryStatus | 'entregue';
   accepted_at: string | null;
   created_at: string;
   expires_at: string;

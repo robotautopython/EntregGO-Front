@@ -21,6 +21,8 @@ import type {
   AvailableDeliveriesQuery,
   AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
+  DeliveryStatusUpdateResult,
+  DeliveryTransitionStatus,
   DeliveryRequest,
   ListMyDeliveriesQuery,
   StoreDeliveryListResult,
@@ -259,6 +261,27 @@ export async function getActiveDelivery(accessToken: string) {
     assertApiUrlConfigured();
     const response = await api.get<ApiSuccess<ActiveDelivery | null> | ApiFailure>(
       '/api/deliveries/active',
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function updateDeliveryStatus(
+  accessToken: string,
+  deliveryId: string,
+  status: DeliveryTransitionStatus,
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.patch<ApiSuccess<DeliveryStatusUpdateResult> | ApiFailure>(
+      `/api/deliveries/${deliveryId}/status`,
+      { status },
       {
         headers: bearerHeaders(accessToken),
       },

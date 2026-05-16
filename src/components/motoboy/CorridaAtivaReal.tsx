@@ -1,18 +1,29 @@
 'use client';
 
-import { ExternalLink, Loader2, MapPin, Navigation, PackageCheck, RefreshCw, Store } from 'lucide-react';
+import {
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  MapPin,
+  Navigation,
+  PackageCheck,
+  RefreshCw,
+  Store,
+} from 'lucide-react';
 
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import type { ActiveDelivery } from '@/types/delivery';
+import type { ActiveDelivery, DeliveryTransitionStatus } from '@/types/delivery';
 
 interface CorridaAtivaRealProps {
   delivery: ActiveDelivery;
   isRefreshing?: boolean;
+  isUpdatingStatus?: boolean;
   onRefresh: () => void;
+  onStatusChange: (status: DeliveryTransitionStatus) => void;
 }
 
 const timeFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -31,29 +42,69 @@ function mapsUrl(address: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
+const statusConfig = {
+  aceita: {
+    badge: 'Aceita',
+    cardClass: 'border-success-500/30 bg-success-50',
+    icon: PackageCheck,
+    iconClass: 'bg-success-500',
+    actionLabel: 'Confirmar coleta',
+    actionStatus: 'coletada',
+    actionIcon: PackageCheck,
+    actionVariant: 'success',
+  },
+  coletada: {
+    badge: 'Coletada',
+    cardClass: 'border-route-500/30 bg-route-50',
+    icon: PackageCheck,
+    iconClass: 'bg-route-500',
+    actionLabel: 'Iniciar transito',
+    actionStatus: 'em_transito',
+    actionIcon: Navigation,
+    actionVariant: 'primary',
+  },
+  em_transito: {
+    badge: 'Em transito',
+    cardClass: 'border-brand-500/30 bg-brand-50',
+    icon: Navigation,
+    iconClass: 'bg-brand-500',
+    actionLabel: 'Concluir entrega',
+    actionStatus: 'entregue',
+    actionIcon: CheckCircle2,
+    actionVariant: 'dark',
+  },
+} as const;
+
 export function CorridaAtivaReal({
   delivery,
   isRefreshing = false,
+  isUpdatingStatus = false,
   onRefresh,
+  onStatusChange,
 }: CorridaAtivaRealProps) {
   const hasDestination = Boolean(delivery.destination_address?.trim());
+  const config = statusConfig[delivery.status];
+  const StatusIcon = config.icon;
+  const ActionIcon = config.actionIcon;
 
   return (
     <section className="space-y-6 animate-fade-in">
       <PageHeader
         eyebrow="Operacao"
-        title="Corrida aceita"
-        description="Dados reais da entrega assumida. Atualizacoes de status entram em ciclos proprios."
+        title="Corrida em andamento"
+        description="Dados reais da entrega assumida pelo seu perfil."
       />
 
-      <Card variant="white" className="border-success-500/30 bg-success-50">
+      <Card variant="white" className={config.cardClass}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-success-500 text-white shadow-pop">
-              <PackageCheck className="h-6 w-6" aria-hidden="true" />
+            <span
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-white shadow-pop ${config.iconClass}`}
+            >
+              <StatusIcon className="h-6 w-6" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <Badge tone="success">Aceita</Badge>
+              <Badge tone="success">{config.badge}</Badge>
               <h2 className="mt-2 text-2xl font-black text-asphalt-950">
                 {delivery.store.name}
               </h2>
@@ -63,14 +114,34 @@ export function CorridaAtivaReal({
               </p>
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={onRefresh} disabled={isRefreshing}>
-            {isRefreshing ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            ) : (
-              <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            )}
-            Atualizar
-          </Button>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Button
+              variant={config.actionVariant}
+              size="sm"
+              onClick={() => onStatusChange(config.actionStatus)}
+              disabled={isRefreshing || isUpdatingStatus}
+            >
+              {isUpdatingStatus ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <ActionIcon className="h-4 w-4" aria-hidden="true" />
+              )}
+              {config.actionLabel}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onRefresh}
+              disabled={isRefreshing || isUpdatingStatus}
+            >
+              {isRefreshing ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              )}
+              Atualizar
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -101,14 +172,9 @@ export function CorridaAtivaReal({
       {!hasDestination ? (
         <Alert tone="info" title="Destino nao informado">
           A loja nao informou endereco de destino nesta solicitacao. Combine a proxima etapa com
-          a central fora do app nesta fatia.
+          a central fora do app.
         </Alert>
       ) : null}
-
-      <Alert tone="info" title="Somente leitura nesta fatia">
-        Coleta, transito, entrega, cancelamento, notificacoes e tempo real ainda nao fazem parte
-        deste fluxo.
-      </Alert>
     </section>
   );
 }
