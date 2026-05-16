@@ -57,21 +57,22 @@
 - [x] Fatia 1 UI real do motoboy implementada: `/motoboy` (sem query) renderiza `FilaDisponivel` consumindo `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` via Bearer token do `OperationalShell`; client `listAvailableDeliveries`/`acceptDelivery` e tipos `AvailableDeliveryItem`/`AvailableDeliveriesResult`/`AvailableDeliveriesQuery`/`AcceptedDelivery`. Estados loading/erro recuperavel/vazio honesto/lista paginada real, botao "Atualizar" manual (sem polling), aceite com lock anti duplo-clique, tratamento de `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND`/`COURIER_OFFLINE` e demais erros, confirmacao estatica pos-aceite. `CorridaAtiva.tsx` permanece mock isolado por `?demo=`. PII mantida (`store.name`/`store.address`; `courier_id` nao exibido). Runner Vitest+RTL introduzido com 25 testes. Gates ImpactValidator + SecurityValidator + PerformanceValidator aprovados antes de codar; `typecheck`, `lint`, `build`, `test` (25/25) e `git diff --check` passaram.
 - [x] Fatia 1 UI real do motoboy validada pos-deploy em producao: frontend `7db7fad` e backend `f5ab8d8`; smoke publico confirmou `/motoboy` `200`, bundle com `/api/deliveries/available` e endpoints backend sem token com `401 AUTH_REQUIRED`; smoke autenticado confirmou politica de PII (`store.name`/`store.address` somente), aceite atomico com `ALREADY_ACCEPTED`, expirado com `DELIVERY_EXPIRED`, confirmacao estatica pos-aceite, negacoes de offline/pendente/bloqueado/role errado e cleanup completo.
 - [x] Fatia 2 UI real do motoboy implementada localmente: `/motoboy` consulta `GET /api/deliveries/active` antes da fila; com corrida `aceita`, renderiza `CorridaAtivaReal` somente leitura com coleta, destino e observacao permitidos pos-aceite; sem ativa, renderiza `FilaDisponivel`; apos aceite, recarrega a corrida ativa real. `CorridaAtiva.tsx` permanece mock em `?demo=`. Sem polling, push, realtime, cancelamento ou botoes de status. Testes frontend passaram com 31/31 durante a implementacao.
+- [x] Fatia 2 UI real do motoboy validada pos-deploy em producao: frontend `53a8e72` e backend `af4d0df`; smoke publico confirmou `/motoboy` `200`, bundle com `/api/deliveries/active` e backend sem token com `401 AUTH_REQUIRED`; smoke autenticado confirmou corrida ativa somente do courier dono, outro motoboy com `data: null`, negacoes de offline/pendente/bloqueado/role errado, PII pre-aceite limitada a `store.name`/`store.address`, destino/observacao apenas pos-aceite e cleanup completo.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05) e a UI real de descoberta/aceite do motoboy (Fatia 1) ja existem; detalhe unico, busca textual, filtro por data, cancelamento e status pos-aceite (coletada/em_transito/entregue) seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), a UI real de descoberta/aceite do motoboy (Fatia 1) e a leitura real da corrida aceita (Fatia 2) ja existem; detalhe unico, busca textual, filtro por data, cancelamento e status pos-aceite (coletada/em_transito/entregue) seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
 - `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
-- Visao de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock e so aparece no fluxo demo (`?demo=`); a UI real de descoberta/aceite (`FilaDisponivel.tsx`) ja esta no caminho padrao. Transicoes pos-aceite reais (coletada/em_transito/entregue) continuam bloqueadas ate contrato backend e ciclo dedicado.
+- Visao demo de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock e so aparece no fluxo demo (`?demo=`); a UI real de descoberta/aceite e leitura pos-aceite (`FilaDisponivel.tsx`/`CorridaAtivaReal.tsx`) ja esta no caminho padrao. Transicoes pos-aceite reais (coletada/em_transito/entregue) continuam bloqueadas ate contrato backend e ciclo dedicado.
 
 ## Saude do Projeto
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (25 testes; `npm test`)
+**Testes:** Vitest + Testing Library (31 testes; `npm test`)
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4

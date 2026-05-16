@@ -345,3 +345,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes parciais durante implementacao:** Frontend `npm run typecheck` passou; `npm test` passou com 5 arquivos e 31 testes. Nenhum secret, token, cookie ou header sensivel foi impresso.
 
 **Fora do escopo:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), cancelamento, realtime, push/Web Push/VAPID, cron/expiracao automatica, online/offline operacional, historico do motoboy, historico admin, pagamentos e Storage.
+
+## 2026-05-16 - FATIA 2 MOTOBOY POS-DEPLOY PRODUCAO APROVADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Frontend publicado em producao no commit `53a8e72` apos o backend `af4d0df`. `/motoboy` foi validado contra `https://entreggo.vercel.app` e o endpoint `GET /api/deliveries/active` contra `https://entreggoback.vercel.app`. O smoke autenticado usou usuarios/perfis/entregas ficticios temporarios com cleanup em `finally`, sem imprimir token, cookie, header Authorization ou secret.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes dos commits:** Frontend `npm run typecheck`, `npm run lint`, `npm run build`, `npm test` (5 arquivos, 31 testes) e `git diff --check` passaram. Backend `npm run typecheck`, `npm run lint`, `npm run build`, `npm test` (6 arquivos, 73 testes) e `git diff --check` passaram. O frontend tambem foi aberto localmente em `/motoboy`; sem sessao, exibiu o estado esperado de sessao ausente.
+
+**Validacoes pos-deploy:** Smoke publico confirmou `/motoboy` -> `200`, bundle publicado contendo `/api/deliveries/active` e `GET /api/deliveries/active` sem token -> `401 AUTH_REQUIRED`. Smoke autenticado confirmou que o motoboy dono ve sua corrida `aceita` em modo somente leitura, outro motoboy recebe `data: null`, offline/pendente/bloqueado/role errado sao negados e a politica de PII foi preservada: pre-aceite somente `store.name`/`store.address`; pos-aceite `destination_address`/`notes` apenas para o courier atribuido. Cleanup retornou `completed`. Nenhum SQL, migration, RLS, grant ou policy foi executado ou alterado.
+
+**Fora do escopo preservado:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), cancelamento, realtime, push/Web Push/VAPID, cron/expiracao automatica, online/offline operacional, historico do motoboy, historico admin, pagamentos e Storage.
