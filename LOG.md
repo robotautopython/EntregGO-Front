@@ -248,3 +248,14 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado localmente; smoke autenticado real e deploy pendentes
 
 **Validacoes:** `npm run typecheck`, `npm run lint` (sem warnings/erros apos limpar deps de useMemo), `npm run build` (build estatico OK) e `git diff --check` passaram. `npm test --if-present` nao executou suite porque o frontend ainda nao tem testes. Nenhum acesso direto ao Supabase foi adicionado; toda leitura de dominio passa pela API backend.
+
+## 2026-05-16 - M-05 POS-DEPLOY PRODUCAO APROVADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** A M-05 foi fechada em producao com backend `https://entreggoback.vercel.app` no commit `f30bfc7` e frontend `https://entreggo.vercel.app` no commit `6833695`. O smoke publico confirmou o backend publicado (`GET` e `POST /api/deliveries` sem token com `401 AUTH_REQUIRED`) e a rota `/loja/historico` com `200`. O smoke autenticado foi executado contra a URL de producao do backend usando dados ficticios temporarios e cleanup completo, validando o contrato consumido pela tela de historico sem expor token, cookie, header ou secret.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, TestEngineer, SecurityValidator, PerformanceValidator, FinalValidator, Documentador
+**Status:** fechado em producao
+
+**Validacoes:** Smoke autenticado de producao validou que logista ativo lista somente entregas da propria loja, entrega de outra loja nao aparece, filtro `status=aceita` funciona, paginacao `page=1&limit=1` funciona, `limit=51`, `status=invalido` e `store_id` desconhecido retornam `VALIDATION_ERROR`, resposta nao inclui `store_id` nem `courier_id`, ordem `created_at desc` foi preservada e pendente/motoboy/admin foram negados. Cleanup retornou `completed`. Nenhum SQL, migration, RLS, grant ou policy foi executado ou alterado. Nenhum secret, token, cookie ou header sensivel foi impresso.
