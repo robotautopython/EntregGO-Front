@@ -259,3 +259,11 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado em producao
 
 **Validacoes:** Smoke autenticado de producao validou que logista ativo lista somente entregas da propria loja, entrega de outra loja nao aparece, filtro `status=aceita` funciona, paginacao `page=1&limit=1` funciona, `limit=51`, `status=invalido` e `store_id` desconhecido retornam `VALIDATION_ERROR`, resposta nao inclui `store_id` nem `courier_id`, ordem `created_at desc` foi preservada e pendente/motoboy/admin foram negados. Cleanup retornou `completed`. Nenhum SQL, migration, RLS, grant ou policy foi executado ou alterado. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+## 2026-05-16 - DIAGNOSTICO NOME DA LOJA (ADMIN E MOTOBOY)
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Investigacao read-only da queixa do nome da loja. `src/components/admin/UserDetailDrawer.tsx:355` ja renderiza `Nome da loja` via `profile.name`, alimentado por `GET /api/admin/users/:id`. A listagem `src/components/admin/AdminUsersPanel.tsx` nao tem coluna de loja e o contrato `GET /api/admin/users` so traz `DomainUser`. `src/components/motoboy/CorridaAtiva.tsx:94,107` usa `ride.store.name` vindo de mock (`src/components/motoboy/courier-types.ts`); nao existe contrato backend de loja para o motoboy. Nenhum codigo foi alterado.
+**Decisao de escopo:** Admin = correcao cirurgica em ciclo proprio (causa provavel: contrato de listagem nao traz o nome), com ImpactValidator + PerformanceValidator e sem N+1. Motoboy = backlog para o ciclo de aceite com SecurityValidator (PII/contrato entre atores). Sem SQL, migration ou RLS.
+**Agentes utilizados:** Camisa10, ImpactValidator (planejado), Documentador
+**Status:** diagnostico registrado; sem codigo

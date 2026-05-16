@@ -109,3 +109,7 @@ Ao integrar um endpoint real numa tela antes mockada, listar cada elemento da UI
 
 ### Impacto no projeto
 Historico real da loja entregue alinhado ao contrato, sem `supabase.from`, sem leitura direta de `delivery_requests`, sem dados de motoboy e sem metrica falsa; aceite, realtime, push, cron, detalhe unico, busca textual e filtro por data seguem fora de escopo.
+
+## 2026-05-16 - Confirmar contrato antes de culpar a UI
+
+A queixa "nome da loja nao aparece" parecia bug de frontend, mas o drawer admin (`UserDetailDrawer.tsx:355`) ja exibe `profile.name` e o backend de detalhe ja entrega o campo. A lacuna real esta no contrato de listagem `GET /api/admin/users`, que so traz `DomainUser`. Padrao: antes de alterar o componente, rastrear o endpoint/contrato que alimenta o campo; incluir campo em endpoint de listagem e mudanca de contrato (ImpactValidator + PerformanceValidator por risco N+1), nao ajuste cosmetico. Expor dado de um ator a outro (loja -> motoboy, hoje mock em `CorridaAtiva.tsx`) e sempre gate de SecurityValidator e ciclo dedicado.

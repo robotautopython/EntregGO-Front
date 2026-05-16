@@ -17,6 +17,7 @@
 - [ ] Planejar aceite, detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
 - [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
+- [ ] Cirurgico admin: exibir nome da loja na listagem (`AdminUsersPanel`), dependente de `GET /api/admin/users` passar a retornar nome/identificador da loja por linha (sem N+1). O drawer ja exibe `profile.name`. Coordenar com contrato backend; ImpactValidator + PerformanceValidator. Diagnostico em LOG 2026-05-16.
 
 ## Concluido
 
@@ -60,6 +61,7 @@
 - `npm audit --json` ainda falha com 2 vulnerabilidades moderadas: `next@15.5.18` aponta o `postcss@8.4.31` embutido em `node_modules/next`. Sem alto/critico; exige acompanhamento de release/advisory do Next antes de PWA/push real.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
+- Visao de corrida do motoboy (`src/components/motoboy/CorridaAtiva.tsx`) permanece mock; exibir nome/dados reais da loja ao motoboy depende de novo contrato backend e ciclo dedicado de aceite com SecurityValidator (PII/contrato entre atores). Nao tratar como ajuste de UI.
 
 ## Saude do Projeto
 
