@@ -374,3 +374,17 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes:** Frontend `npm run typecheck` passou. Frontend `npm test` passou com 5 arquivos e 36 testes. Nenhum secret, token, cookie ou header sensivel foi impresso.
 
 **Fora do escopo:** geolocalizacao/GPS, disponibilidade por raio, historico de presenca, realtime, push/Web Push/VAPID, cron, transicoes pos-aceite, cancelamento, pagamentos, Storage e documentos.
+
+## 2026-05-16 - FATIA 3 MOTOBOY POS-DEPLOY PRODUCAO APROVADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Frontend publicado em producao no commit `3201d77` apos o backend `001a1c6`. `/motoboy` foi validado contra `https://entreggo.vercel.app` e o contrato de status contra `https://entreggoback.vercel.app`. O smoke autenticado usou usuarios/perfis/loja/entrega ficticios temporarios com cleanup em `finally`, sem imprimir token, cookie, header Authorization, service role ou secret.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Status:** fechado em producao
+
+**Validacoes locais antes dos commits:** Frontend `npm run typecheck`, `npm test` (5 arquivos, 36 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 85 testes), `npm run lint`, `npm run build` e `git diff --check` passaram.
+
+**Validacoes pos-deploy:** Smoke publico confirmou `/motoboy` -> `200`, bundle publicado contendo `/api/couriers/me/status`, `GET /api/couriers/me/status` sem token -> `401 AUTH_REQUIRED` e `PATCH /api/couriers/me/status` sem token -> `401 AUTH_REQUIRED`. Smoke autenticado confirmou motoboy ativo iniciando `is_online=false`, resposta de status somente `{ is_online, updated_at }`, `/api/deliveries/active` negado offline com `COURIER_OFFLINE`, `PATCH { isOnline: true }` retornando `is_online=true`, `/api/deliveries/active` online retornando a fixture aceita, `PATCH { isOnline: false }` retornando `is_online=false`, payloads com `courier_id`, `user_id`, `is_online` ou campo extra retornando `VALIDATION_ERROR`, role errada retornando `FORBIDDEN_ROLE`, pendente retornando `USER_PENDING` e bloqueado retornando `USER_BLOCKED`. No browser autenticado em producao, antes de clicar em "Ficar online", os recursos observados tinham `/api/couriers/me/status` e zero chamadas a `/api/deliveries/active` ou `/api/deliveries/available`; apos o clique, a UI exibiu "Corrida aceita" e chamou `/api/deliveries/active`. Cleanup retornou `completed`.
+
+**Fora do escopo preservado:** SQL/migration/RLS/grants/policies, PII nova, Supabase direto no frontend, realtime, push/Web Push/VAPID, polling, cron, geolocalizacao/GPS, disponibilidade por raio, historico de presenca, transicoes pos-aceite, cancelamento, pagamentos, Storage e documentos.
