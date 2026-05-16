@@ -142,3 +142,14 @@
 **Decisao:** Ligar `CorridaAtivaReal` ao novo client `updateDeliveryStatus`, exibindo uma unica proxima acao por status ativo: "Confirmar coleta", "Iniciar transito" ou "Concluir entrega". Durante a requisicao, os botoes de acao/atualizacao ficam desabilitados para evitar duplo PATCH. Em `coletada` e `em_transito`, a corrida em tela e atualizada pelo retorno sanitizado; em `entregue`, a corrida sai da tela ativa e o fluxo volta para a fila real. O demo por `?demo=` permanece isolado.
 
 **Consequencias:** O caminho padrao `/motoboy` passa a cobrir descoberta, aceite, leitura ativa, online/offline e transicoes pos-aceite via REST. Nao ha polling, realtime, push, cron, cancelamento, GPS, historico ou acesso direto ao Supabase. A UI continua sem enviar ou renderizar `courier_id`, `store_id`, timestamps de transicao, Storage/documentos ou dados sensiveis.
+
+## ADR-014 - Diretorios locais de agentes fora do versionamento
+
+**Data:** 2026-05-16
+**Status:** aceito
+
+**Contexto:** Durante os ciclos com Camisa10, PromptRefiner, validadores e smokes, surgiram diretorios locais como `.codex/...` para prompts, agentes, rascunhos e material de orquestracao. Esses arquivos podem ser uteis no ambiente local, mas nao fazem parte do produto frontend nem do contrato publico do repositorio. A regra ja havia sido combinada durante os commits, mas ainda nao estava documentada.
+
+**Decisao:** Manter `.codex/` fora do versionamento e fora de commits. Qualquer pasta local equivalente, incluindo `.code/` se existir por engano ou legado, tambem fica fora. Conteudo desses diretorios so pode entrar no repositorio se houver decisao explicita, revisao de escopo e promocao para um caminho versionado apropriado fora dessas pastas. O `.gitignore` deve ignorar `.codex/` e `.code/`.
+
+**Consequencias:** O executor de release/commit deve tratar `.codex/...` e `.code/...` como artefatos locais excluidos, mesmo quando aparecerem no status antes do `.gitignore`. Prompts e materiais de agentes continuam disponiveis localmente sem poluir commits. Se algum arquivo desses diretorios virar documentacao oficial, ele deve ser movido conscientemente para `LOG.md`, `STATUS.md`, `CONTRACTS.md`, `DECISIONS.md` ou outro caminho versionado adequado.

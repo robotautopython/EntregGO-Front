@@ -10,3 +10,7 @@ npm-debug.log*
 .vercel/
 coverage/
 tsconfig.tsbuildinfo
+
+# Local agent/prompt workspaces. Keep out of commits.
+.codex/
+.code/
