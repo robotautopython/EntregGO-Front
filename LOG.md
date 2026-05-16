@@ -226,3 +226,14 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Status:** fechado localmente com ressalva operacional: smoke autenticado real depende da migration M-04C aplicada no Supabase alvo
 
 **Validacoes:** `npm run typecheck`, `npm run lint`, `npm run build`, `npm test --if-present` e `git diff --check` passaram. `npm test --if-present` nao executou suite porque nao ha script `test`. A varredura dos arquivos frontend alterados confirmou ausencia de `supabase.from`, `console.log` e acesso direto a `delivery_requests`; `store_id`, `status` e `courier_id` aparecem apenas nos tipos/resposta ou exibicao do retorno backend, nao no payload enviado. Smoke controlado de navegador nao foi executado neste ciclo porque a migration M-04C ainda precisa ser aplicada no banco alvo antes de criar entrega real sem endereco.
+
+## 2026-05-15 - M-04C POS-DEPLOY PRODUCAO APROVADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** A M-04C foi validada em producao contra frontend `https://entreggo.vercel.app` no commit `d304339` e backend `https://entreggoback.vercel.app` no commit `d70e45e`. Os dois repositorios estavam limpos, em `main`, com upstream `origin/main` e `HEAD...origin/main` em `0 0`. O smoke publico confirmou que `POST /api/deliveries` sem token retorna `401 AUTH_REQUIRED`, que `/loja/nova-entrega` retorna `200` e que o bundle publicado da rota contem o marcador funcional de payload minimo incremental sem strings vazias. O smoke autenticado usou env local seguro e recursos ficticios temporarios, sem imprimir token/header/cookie, criou entrega como `logista` ativo com payload `{}` e limpou os recursos no `finally`.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, TestEngineer, FinalValidator, Documentador
+**Status:** fechado em producao
+
+**Validacoes:** Smoke autenticado de producao retornou `201`, `success=true`, `destination_address=null`, `status=aguardando`, `courier_id=null` e `store_id` derivado da sessao. O payload enviado nao continha string vazia, `store_id`, `status` nem `courier_id`; as chaves enviadas foram `[]`. Cleanup retornou `completed`. Nenhum SQL adicional foi executado. Nenhum secret, token, cookie ou header sensivel foi impresso.
