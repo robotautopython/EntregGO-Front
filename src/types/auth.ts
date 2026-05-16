@@ -26,8 +26,12 @@ export interface AdminUsersQuery {
   search?: string;
 }
 
+export interface AdminUserListItem extends DomainUser {
+  store_name: string | null;
+}
+
 export interface AdminUsersResult {
-  items: DomainUser[];
+  items: AdminUserListItem[];
   pagination: {
     page: number;
     limit: number;

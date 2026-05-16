@@ -489,11 +489,12 @@ export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsers
 
       <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
             <thead className="bg-paper-deep text-xs uppercase tracking-wide text-asphalt-950/60">
               <tr>
                 <th className="border-b border-paper-line px-5 py-3 font-extrabold">Email</th>
                 <th className="border-b border-paper-line px-5 py-3 font-extrabold">Perfil</th>
+                <th className="border-b border-paper-line px-5 py-3 font-extrabold">Loja</th>
                 <th className="border-b border-paper-line px-5 py-3 font-extrabold">Status</th>
                 <th className="border-b border-paper-line px-5 py-3 font-extrabold">Criado em</th>
                 <th className="border-b border-paper-line px-5 py-3 font-extrabold">
@@ -521,6 +522,13 @@ export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsers
                     <td className="px-5 py-3 font-bold text-asphalt-950">{user.email}</td>
                     <td className="px-5 py-3 text-asphalt-950/75">
                       {roleLabels[user.role]}
+                    </td>
+                    <td className="px-5 py-3 text-asphalt-950/75">
+                      {user.store_name ? (
+                        user.store_name
+                      ) : (
+                        <span className="text-asphalt-950/40">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3">
                       <StatusPill status={user.status} />
