@@ -67,8 +67,8 @@ export function SearchingState({
         />
 
         <p className="max-w-md text-sm text-asphalt-950/65">
-          Esta tela simula o envio para a rede. Notificação real, concorrência e aceite único
-          entram depois do backend validado.
+          Esta tela simula o envio para a rede. Notificação real, concorrência e aceite único entram
+          depois do backend validado.
         </p>
 
         <div className="w-full max-w-xl rounded-lg border border-paper-line bg-paper p-5 text-left">
@@ -78,7 +78,7 @@ export function SearchingState({
           </div>
           <RouteLine
             from={`${storeName} — ${storeAddress}`}
-            to={draft.destinationAddress}
+            to={draft.destinationAddress ?? 'Destino não informado'}
           />
           {draft.notes ? (
             <p className="mt-4 rounded-md border border-paper-line bg-white p-3 text-sm text-asphalt-950/75">

@@ -29,9 +29,7 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-danger-700">
             Tempo esgotado
           </p>
-          <h2 className="text-3xl font-black text-asphalt-950">
-            Nenhum aceite nesta simulação.
-          </h2>
+          <h2 className="text-3xl font-black text-asphalt-950">Nenhum aceite nesta simulação.</h2>
           <p className="mx-auto max-w-md text-sm text-asphalt-950/70">
             Use este estado para validar o layout de expiração enquanto o aceite real não existe.
           </p>
@@ -42,7 +40,7 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
             Última simulação
           </p>
           <div className="mt-3">
-            <RouteLine from={storeName} to={draft.destinationAddress} />
+            <RouteLine from={storeName} to={draft.destinationAddress ?? 'Destino não informado'} />
           </div>
         </div>
 

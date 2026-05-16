@@ -56,7 +56,9 @@ function mapCreateError(error: unknown): DeliverySubmitError {
     };
   }
 
-  const details = error.details.map(detailToText).filter((detail): detail is string => Boolean(detail));
+  const details = error.details
+    .map(detailToText)
+    .filter((detail): detail is string => Boolean(detail));
 
   const permissionMessage =
     'Somente uma loja ativa pode criar solicitação de entrega por esta tela.';
@@ -65,7 +67,7 @@ function mapCreateError(error: unknown): DeliverySubmitError {
     case 'VALIDATION_ERROR':
       return {
         title: 'Revise os dados da entrega',
-        message: 'O destino é obrigatório e a observação precisa respeitar o limite do contrato.',
+        message: 'Confira os limites dos campos e tente novamente.',
         details,
       };
     case 'USER_PENDING':
@@ -120,7 +122,9 @@ export function NovaEntregaFlow({ accessToken }: NovaEntregaFlowProps) {
 
     try {
       const payload = {
-        destinationAddress: submitted.destinationAddress,
+        ...(submitted.destinationAddress
+          ? { destinationAddress: submitted.destinationAddress }
+          : {}),
         ...(submitted.notes ? { notes: submitted.notes } : {}),
       };
       const delivery = await createDeliveryRequest(accessToken, payload);
@@ -212,9 +216,7 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
             <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
               Resumo da entrega
             </p>
-            <h3 className="mt-1 text-lg font-black text-asphalt-950">
-              Pedido registrado na API
-            </h3>
+            <h3 className="mt-1 text-lg font-black text-asphalt-950">Pedido registrado na API</h3>
           </div>
           <PackagePlus className="h-6 w-6 text-asphalt-950/45" aria-hidden="true" />
         </div>
@@ -222,7 +224,7 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
         <div className="mt-5 rounded-md border border-paper-line bg-paper p-4">
           <RouteLine
             from={`${STORE_PLACEHOLDER.name} — ${STORE_PLACEHOLDER.address}`}
-            to={delivery.destination_address}
+            to={delivery.destination_address ?? 'Destino não informado'}
           />
         </div>
 
@@ -238,7 +240,10 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <StatusTile label="Criada em" value={formatDateTime(delivery.created_at)} />
           <StatusTile label="Status" value={delivery.status} />
-          <StatusTile label="Motoboy" value={delivery.courier_id ? 'Atribuído' : 'Ainda não atribuído'} />
+          <StatusTile
+            label="Motoboy"
+            value={delivery.courier_id ? 'Atribuído' : 'Ainda não atribuído'}
+          />
         </div>
       </Card>
 

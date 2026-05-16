@@ -9,7 +9,7 @@ export type DeliveryStatus =
   | 'cancelada';
 
 export interface DeliveryDraft {
-  destinationAddress: string;
+  destinationAddress?: string;
   notes?: string;
 }
 
@@ -48,7 +48,10 @@ export const statusLabel: Record<DeliveryStatus, string> = {
   cancelada: 'Cancelada',
 };
 
-export const statusTone: Record<DeliveryStatus, 'success' | 'warn' | 'route' | 'brand' | 'danger' | 'paper'> = {
+export const statusTone: Record<
+  DeliveryStatus,
+  'success' | 'warn' | 'route' | 'brand' | 'danger' | 'paper'
+> = {
   aceito: 'route',
   coletou: 'brand',
   em_transito: 'brand',
@@ -116,7 +119,9 @@ export const sampleHistory: HistoryEntry[] = [
   },
 ];
 
-export function groupHistoryByDay(entries: HistoryEntry[]): Array<{ day: string; items: HistoryEntry[] }> {
+export function groupHistoryByDay(
+  entries: HistoryEntry[],
+): Array<{ day: string; items: HistoryEntry[] }> {
   const byDay = new Map<string, HistoryEntry[]>();
   for (const entry of entries) {
     const day = entry.createdAt.slice(0, 10);
@@ -144,9 +149,7 @@ export function formatDayLabel(day: string): string {
   const date = new Date(`${day}T00:00:00`);
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   if (day === todayStr) return 'Hoje';
   if (day === yesterday) return 'Ontem';
   return dayFormatter.format(date);

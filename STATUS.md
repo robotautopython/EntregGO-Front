@@ -47,6 +47,7 @@
 - [x] Correcao cirurgica de conformidade pos-layout: landing, loja e motoboy deixam claro que entrega, push, realtime e aceite concorrente ainda sao demonstrativos/planejados; `design.md` e `CONTRACTS.md` refletem `OperationalShell`, `ComingSoonPanel` e fluxos demo.
 - [x] Landing simplificada (Design Agent): removidas todas as mencoes a leilao, admin, timer/contagem, central e cobranca; HeroMockup deixou de usar `CountdownRing` e virou imagem estatica; RouteSteps reduzido a 2 papeis (loja->motoboy); FAQ reduzido a 4 perguntas; TrustSeals reduzido a 3 selos voltados ao usuario; CTABand passa a ter 1 CTA unico; logo aumentada no header (h-9/h-10 -> h-11/h-12) e footer (h-11 -> h-12 sm:h-14). Pasta `public/landing/` criada para receber `hero.webp`, `loja.webp` e `motoboy.webp`; ate la, os tres `<Image>` apontam para o logo oficial como placeholder neutro.
 - [x] M-04B implementado e validado no frontend: `/loja/nova-entrega` usa `POST /api/deliveries` com Bearer token de logista ativo, envia somente `destinationAddress` e `notes`, mostra loading/sucesso/erros estaveis, impede duplo envio e teve smoke autenticado controlado aprovado com usuarios ficticios e limpeza automatica.
+- [x] M-04C frontend ajustado ao contrato opcional: `/loja/nova-entrega` permite criar solicitacao sem endereco, monta payload minimo sem strings vazias e preserva os bloqueios de aceite, realtime, push, cron, historico, cancelamento e expiracao.
 
 ## Bloqueios
 

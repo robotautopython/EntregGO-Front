@@ -44,7 +44,10 @@ Tela: `/loja/nova-entrega`
 Uso permitido:
 - `POST /api/deliveries` com `Authorization: Bearer <access_token>`.
 - Apenas usuario de dominio `role=logista` e `status=ativo` deve chegar ao formulario funcional.
-- O payload enviado pelo frontend contem somente `destinationAddress` e `notes`.
+- O payload enviado pelo frontend contem somente `destinationAddress` e `notes` quando esses campos tiverem texto util.
+- `destinationAddress` e opcional; se vazio, nao e enviado.
+- `notes` e opcional; se vazio, nao e enviado.
+- Payload vazio `{}` e permitido pelo contrato backend.
 - `store_id` nunca e enviado pelo frontend; o backend deriva a loja a partir da sessao.
 - O frontend nao acessa `delivery_requests` diretamente. Escrita/leitura de dominio segue pela API backend.
 
@@ -52,7 +55,6 @@ Body:
 
 ```json
 {
-  "destinationAddress": "Endereco de destino",
   "notes": "Observacao opcional"
 }
 ```
@@ -65,7 +67,7 @@ Resposta esperada:
   "data": {
     "id": "uuid",
     "store_id": "uuid",
-    "destination_address": "Endereco de destino",
+    "destination_address": null,
     "notes": "Observacao opcional",
     "status": "aguardando",
     "courier_id": null,

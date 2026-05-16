@@ -36,10 +36,7 @@ export function LojaHome({ authContext }: LojaHomeProps) {
           aria-hidden="true"
           className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-brand-600 opacity-60 blur-3xl transition-transform group-hover:scale-110"
         />
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-10 -right-10 opacity-25"
-        >
+        <div aria-hidden="true" className="absolute -bottom-10 -right-10 opacity-25">
           <BoxMark size={220} tone="paper" />
         </div>
         <div className="relative grid gap-5 sm:grid-cols-[1fr_auto] sm:items-center">
@@ -51,8 +48,8 @@ export function LojaHome({ authContext }: LojaHomeProps) {
               Solicitar nova entrega
             </h2>
             <p className="mt-2 max-w-md text-sm text-white/85">
-              Endereço de destino e observação enviados pelo contrato real. Aceite e
-              notificação aos motoboys entram em ciclos próprios.
+              Endereço de destino opcional e observação enviados pelo contrato real quando
+              preenchidos. Aceite e notificação aos motoboys entram em ciclos próprios.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-md bg-asphalt-950 px-5 py-3 text-sm font-extrabold shadow-ink transition-colors group-hover:bg-asphalt-700">
@@ -109,7 +106,8 @@ export function LojaHome({ authContext }: LojaHomeProps) {
             <History className="h-5 w-5 text-asphalt-950/45" aria-hidden="true" />
           </div>
           <div className="rounded-md border border-dashed border-paper-line bg-paper p-6 text-sm text-asphalt-950/65">
-            A versão real listará corridas, motoboy, destino e status final quando o endpoint existir.
+            A versão real listará corridas, motoboy, destino e status final quando o endpoint
+            existir.
           </div>
           <Link
             href="/loja/historico"
@@ -147,8 +145,8 @@ export function LojaHome({ authContext }: LojaHomeProps) {
           <div className="text-sm text-brand-700">
             <p className="font-extrabold">Construindo este painel</p>
             <p className="mt-1 leading-6 text-brand-700/85">
-              A criação real de solicitação já está ligada ao backend. Histórico, aceite,
-              realtime e push continuam bloqueados até os próximos contratos.
+              A criação real de solicitação já está ligada ao backend. Histórico, aceite, realtime e
+              push continuam bloqueados até os próximos contratos.
             </p>
           </div>
         </div>

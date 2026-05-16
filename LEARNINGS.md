@@ -67,3 +67,24 @@ Ao ligar `/loja/nova-entrega` ao `POST /api/deliveries`, o risco principal era c
 ## 2026-05-15 - Smoke autenticado deve isolar ambiente e cache do Next
 
 O smoke M-04B precisou rodar com API local temporaria e `NEXT_PUBLIC_API_URL` de teste. Para evitar contaminar a build normal, o processo removeu apenas `.next` com checagem de caminho, limpou `NODE_PATH`/`NODE_ENV` do processo Next, executou `next build` + `next start` para o navegador e refez a build normal ao final. `next dev` nao foi usado no veredito porque falhou ao compilar `/loja/nova-entrega` por `require` em `tailwind.config.ts` em contexto ESM; isso deve ser tratado como manutencao separada se o fluxo de dev local precisar dessa rota.
+
+## 2026-05-15 - Payload minimo evita strings vazias no contrato opcional
+
+**Tipo:** Padrao
+**Fase:** fundacao/auth-operacao
+**Contexto:** Ajuste de `/loja/nova-entrega` para aceitar criacao sem endereco de destino.
+
+### O que aconteceu
+Quando `destinationAddress` virou opcional, a UI precisou parar de bloquear o submit vazio e, ao mesmo tempo, evitar enviar `destinationAddress: ""` ou `notes: ""`.
+
+### Por que aconteceu
+Campos opcionais em formularios podem virar strings vazias por padrao no React. Se a UI envia essas strings, ela cria ambiguidade entre "campo nao informado" e "campo informado vazio".
+
+### Como foi resolvido
+O formulario passou a montar um objeto incremental: inclui `destinationAddress` e `notes` somente quando `trim()` tem texto; caso contrario envia `{}`.
+
+### O que fazer diferente da proxima vez
+Sempre que um campo vira opcional no contrato, revisar tambem disabled state, required visual, copy de erro, tipo TypeScript e montagem do payload.
+
+### Impacto no projeto
+O frontend ficou alinhado ao backend sem acessar `delivery_requests` diretamente e sem liberar aceite, push, realtime, cron, historico, cancelamento ou expiracao.

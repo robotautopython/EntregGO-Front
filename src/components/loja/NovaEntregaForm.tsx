@@ -43,21 +43,16 @@ export function NovaEntregaForm({
     const trimmedDestination = destination.trim();
     const trimmedNotes = notes.trim();
 
-    if (!trimmedDestination) {
-      setDestinationError('Informe o endereço de destino.');
-      return;
-    }
-
     if (trimmedDestination.length > MAX_ADDRESS) {
       setDestinationError(`Use no máximo ${MAX_ADDRESS} caracteres.`);
       return;
     }
 
     setDestinationError(null);
-    onSubmit({
-      destinationAddress: trimmedDestination,
-      notes: trimmedNotes || undefined,
-    });
+    const draft: DeliveryDraft = {};
+    if (trimmedDestination) draft.destinationAddress = trimmedDestination;
+    if (trimmedNotes) draft.notes = trimmedNotes;
+    onSubmit(draft);
   }
 
   return (
@@ -92,8 +87,7 @@ export function NovaEntregaForm({
       <form className="space-y-5" onSubmit={handleSubmit} noValidate>
         <Field
           label="Endereço de destino"
-          required
-          hint={`${destination.length}/${MAX_ADDRESS} caracteres — rua, número, bairro e complemento.`}
+          hint={`${destination.length}/${MAX_ADDRESS} caracteres — opcional; use rua, número, bairro e complemento quando houver.`}
           error={destinationError ?? undefined}
         >
           <div className="relative">
@@ -103,7 +97,6 @@ export function NovaEntregaForm({
             />
             <Input
               type="text"
-              required
               autoFocus
               autoComplete="street-address"
               placeholder="Av. Brasil, 884, Centro, Apto 51"
@@ -114,7 +107,7 @@ export function NovaEntregaForm({
               invalid={Boolean(destinationError)}
               onChange={(event) => {
                 setDestination(event.target.value);
-                if (event.target.value.trim()) setDestinationError(null);
+                if (event.target.value.trim().length <= MAX_ADDRESS) setDestinationError(null);
               }}
             />
           </div>
@@ -138,15 +131,15 @@ export function NovaEntregaForm({
           <div className="flex items-start gap-3 text-sm text-asphalt-950/75">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-route-600" aria-hidden="true" />
             <p>
-              A criação usa o contrato real <strong>POST /api/deliveries</strong>. Aceite,
-              push, realtime, cancelamento e histórico ainda não fazem parte desta etapa.
+              A criação usa o contrato real <strong>POST /api/deliveries</strong>. Aceite, push,
+              realtime, cancelamento e histórico ainda não fazem parte desta etapa.
             </p>
           </div>
         </div>
 
         <Alert tone="info" title="Sobre o endereço de coleta">
-          O backend identifica sua loja pela sessão autenticada. O formulário envia apenas
-          destino e observação.
+          O backend identifica sua loja pela sessão autenticada. O formulário envia apenas destino e
+          observação quando esses campos estiverem preenchidos.
         </Alert>
 
         <div className="flex flex-col gap-3 border-t border-paper-line pt-5 sm:flex-row sm:justify-end">
@@ -156,7 +149,7 @@ export function NovaEntregaForm({
             size="xl"
             width="full"
             className="sm:w-auto"
-            disabled={!destination.trim() || isSubmitting}
+            disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>

@@ -8,14 +8,14 @@ export type DeliveryRequestStatus =
   | 'cancelada';
 
 export interface CreateDeliveryRequestPayload {
-  destinationAddress: string;
+  destinationAddress?: string;
   notes?: string;
 }
 
 export interface DeliveryRequest {
   id: string;
   store_id: string;
-  destination_address: string;
+  destination_address: string | null;
   notes: string | null;
   status: DeliveryRequestStatus;
   courier_id: string | null;
