@@ -93,3 +93,14 @@ export interface AcceptedDelivery {
   expires_at: string;
   store: AvailableDeliveryStore;
 }
+
+export interface ActiveDelivery {
+  id: string;
+  destination_address: string | null;
+  notes: string | null;
+  status: 'aceita';
+  accepted_at: string | null;
+  created_at: string;
+  expires_at: string;
+  store: AvailableDeliveryStore;
+}

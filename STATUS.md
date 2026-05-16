@@ -17,7 +17,7 @@
 - [ ] Planejar transicoes pos-aceite do motoboy (coletada/em_transito/entregue), detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
 - [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
-- [ ] (Backlog) Nome/dados da loja na visao do motoboy: depende de novo contrato backend e ciclo de aceite com SecurityValidator (ver Bloqueios).
+- [ ] Planejar dados e acoes de transicao do motoboy (coleta/transito/entrega) somente com novo contrato backend e validadores.
 
 ## Concluido
 
@@ -56,6 +56,7 @@
 - [x] Fatia 1 do aceite do motoboy documentada no frontend sem UI real: `CONTRACTS.md` registra `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept`, erros e politica de PII; `CorridaAtiva.tsx` permanece mock e nenhum client/componente foi ligado ao backend. Gates ImpactValidator + SecurityValidator + PerformanceValidator aprovados no ciclo cross-stack; frontend `typecheck`, `lint`, `build` e `npm test --if-present` passaram.
 - [x] Fatia 1 UI real do motoboy implementada: `/motoboy` (sem query) renderiza `FilaDisponivel` consumindo `GET /api/deliveries/available` e `POST /api/deliveries/:id/accept` via Bearer token do `OperationalShell`; client `listAvailableDeliveries`/`acceptDelivery` e tipos `AvailableDeliveryItem`/`AvailableDeliveriesResult`/`AvailableDeliveriesQuery`/`AcceptedDelivery`. Estados loading/erro recuperavel/vazio honesto/lista paginada real, botao "Atualizar" manual (sem polling), aceite com lock anti duplo-clique, tratamento de `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND`/`COURIER_OFFLINE` e demais erros, confirmacao estatica pos-aceite. `CorridaAtiva.tsx` permanece mock isolado por `?demo=`. PII mantida (`store.name`/`store.address`; `courier_id` nao exibido). Runner Vitest+RTL introduzido com 25 testes. Gates ImpactValidator + SecurityValidator + PerformanceValidator aprovados antes de codar; `typecheck`, `lint`, `build`, `test` (25/25) e `git diff --check` passaram.
 - [x] Fatia 1 UI real do motoboy validada pos-deploy em producao: frontend `7db7fad` e backend `f5ab8d8`; smoke publico confirmou `/motoboy` `200`, bundle com `/api/deliveries/available` e endpoints backend sem token com `401 AUTH_REQUIRED`; smoke autenticado confirmou politica de PII (`store.name`/`store.address` somente), aceite atomico com `ALREADY_ACCEPTED`, expirado com `DELIVERY_EXPIRED`, confirmacao estatica pos-aceite, negacoes de offline/pendente/bloqueado/role errado e cleanup completo.
+- [x] Fatia 2 UI real do motoboy implementada localmente: `/motoboy` consulta `GET /api/deliveries/active` antes da fila; com corrida `aceita`, renderiza `CorridaAtivaReal` somente leitura com coleta, destino e observacao permitidos pos-aceite; sem ativa, renderiza `FilaDisponivel`; apos aceite, recarrega a corrida ativa real. `CorridaAtiva.tsx` permanece mock em `?demo=`. Sem polling, push, realtime, cancelamento ou botoes de status. Testes frontend passaram com 31/31 durante a implementacao.
 
 ## Bloqueios
 

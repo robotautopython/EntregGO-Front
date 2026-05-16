@@ -252,13 +252,67 @@ Erros esperados:
 - `DELIVERY_AVAILABLE_LIST_FAILED`, `DELIVERY_ACCEPT_FAILED`
 
 Fora desta fatia no frontend:
-- UI real do motoboy para fila/aceite;
+- detalhe pos-aceite real;
 - Realtime/Supabase subscription;
 - Web Push/VAPID/Service Worker operacional;
 - cron/expiracao automatica;
 - cancelamento;
 - transicoes pos-aceite (`coletada`, `em_transito`, `entregue`);
 - pagamentos, Storage, historico admin e historico do motoboy.
+
+## Entregas Fatia 2 - Motoboy
+
+Status frontend nesta fatia: `/motoboy` consulta primeiro `GET /api/deliveries/active`. Se houver corrida ativa, renderiza `CorridaAtivaReal` em modo somente leitura. Se nao houver, renderiza `FilaDisponivel`. Apos um aceite bem-sucedido, o frontend consulta novamente `GET /api/deliveries/active` e troca a confirmacao estatica pela tela real da corrida aceita. `CorridaAtiva.tsx` permanece mock e so aparece em `?demo=ativo`/`?demo=solicitacao`.
+
+Tela: `/motoboy` (padrao, sem query). Client API em `src/lib/api.ts`: `getActiveDelivery(accessToken)`. Tipo em `src/types/delivery.ts`: `ActiveDelivery`.
+
+Contrato consumido:
+- `GET /api/deliveries/active` com `Authorization: Bearer <access_token>`.
+- Apenas usuario de dominio `role=motoboy`, `status=ativo`, com perfil `couriers` e `is_online=true`.
+- Query params: nenhum.
+- Resposta com corrida ativa ou `data: null`.
+
+Resposta com corrida ativa:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "destination_address": "Endereco de destino",
+    "notes": "Observacao opcional",
+    "status": "aceita",
+    "accepted_at": "2026-05-16T12:00:20.000Z",
+    "created_at": "2026-05-16T12:00:00.000Z",
+    "expires_at": "2026-05-16T12:01:00.000Z",
+    "store": {
+      "name": "Nome da loja",
+      "address": "Endereco operacional da loja"
+    }
+  },
+  "message": "Corrida ativa encontrada"
+}
+```
+
+Estados de UI:
+- loading inicial: verifica corrida ativa antes de abrir a fila;
+- erro recuperavel: alerta com "Tentar novamente" usando o mesmo mapper da fila;
+- sem corrida ativa: renderiza a fila real da Fatia 1;
+- com corrida ativa: mostra loja, endereco de coleta, destino e observacao em modo somente leitura, com botao manual "Atualizar";
+- nao ha polling automatico, `setInterval`, realtime, push, cancelamento ou botoes de status.
+
+PII:
+- pre-aceite continua limitado a `store.name` e `store.address`;
+- pos-aceite pode exibir `destination_address` e `notes` somente porque a entrega ja esta atribuida ao motoboy autenticado;
+- a UI nao recebe nem renderiza `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, Storage/documentos ou campos de transicao.
+
+Fora desta fatia:
+- transicoes `coletada`, `em_transito`, `entregue`;
+- cancelamento;
+- realtime/push/Web Push/VAPID;
+- cron/expiracao automatica;
+- historico do motoboy;
+- historico admin, pagamentos, Storage/documentos.
 
 ## Variaveis permitidas no frontend
 

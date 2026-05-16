@@ -18,7 +18,7 @@ import {
   type RideStatus,
   sampleStores,
 } from './courier-types';
-import { FilaDisponivel } from './FilaDisponivel';
+import { MotoboyRealFlow } from './MotoboyRealFlow';
 import { PushPrimeSheet } from './PushPrimeSheet';
 import { SolicitacaoCard } from './SolicitacaoCard';
 
@@ -40,7 +40,7 @@ export function CourierHomeFlow({ authContext, accessToken }: CourierHomeFlowPro
     return <CourierDemoFlow authContext={authContext} />;
   }
 
-  return <FilaDisponivel accessToken={accessToken} />;
+  return <MotoboyRealFlow accessToken={accessToken} />;
 }
 
 function newRequest(index: number, fingerprint: string): IncomingRequest {

@@ -16,6 +16,7 @@ import type {
 } from '@/types/auth';
 import type {
   AcceptedDelivery,
+  ActiveDelivery,
   AvailableDeliveriesQuery,
   AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
@@ -241,6 +242,22 @@ export async function acceptDelivery(accessToken: string, deliveryId: string) {
     const response = await api.post<ApiSuccess<AcceptedDelivery> | ApiFailure>(
       `/api/deliveries/${deliveryId}/accept`,
       undefined,
+      {
+        headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function getActiveDelivery(accessToken: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<ActiveDelivery | null> | ApiFailure>(
+      '/api/deliveries/active',
       {
         headers: bearerHeaders(accessToken),
       },

@@ -109,3 +109,14 @@
 **Decisao:** Implementar `src/components/motoboy/FilaDisponivel.tsx` espelhando o padrao de `HistoricoEntregas.tsx` (loading, erro recuperavel, vazio honesto, paginacao real). `CourierHomeFlow.tsx` virou um seletor: sem query renderiza a UI real (`FilaDisponivel`); com `?demo=ativo`/`?demo=solicitacao` renderiza o fluxo mock isolado (`CourierDemoFlow`, antigo corpo do componente, incluindo `CorridaAtiva`/`SolicitacaoCard`/`PushPrimeSheet`). Mock e dado real nunca coexistem na mesma arvore React. Atualizacao da fila e manual via botao "Atualizar"; nenhum `setInterval`/polling no caminho real. Aceite usa lock `acceptingId` (anti duplo-clique e anti aceite paralelo) e trata `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND` removendo o item e recarregando. Sucesso mostra confirmacao estatica, sem navegar para corrida. O runner de testes escolhido foi Vitest + Testing Library (jsdom), compativel com Next 15/React 19, com 25 testes cobrindo `mapCourierError`, `FilaDisponivel` e o client de API.
 
 **Consequencias:** O motoboy passa a ver e aceitar entregas reais consumindo apenas REST com Bearer token, sem acesso direto ao Supabase e sem PII alem de `store.name`/`store.address` (`courier_id` retornado no aceite nao e exibido). `CorridaAtiva.tsx` e `courier-types.ts` permanecem mock intocados, agora alcancaveis so via `?demo=`. O frontend ganha sua primeira suite de testes automatizada (`npm test`). Transicoes pos-aceite (coletada/em_transito/entregue), realtime, push, cron, cancelamento, online/offline operacional e historico do motoboy seguem fora de escopo e exigem contrato backend e novos gates.
+
+## ADR-011 - Corrida ativa real separada do mock de transicoes
+
+**Data:** 2026-05-16
+**Status:** aceito
+
+**Contexto:** A Fatia 1 aceitava entregas reais, mas apos o aceite a UI mostrava apenas confirmacao estatica. Reaproveitar `CorridaAtiva.tsx` diretamente misturaria dados reais com botoes de transicao mockados (`coletou`, `em_transito`, `entregue`) e poderia fazer a UI prometer mutacoes que o backend ainda nao possui.
+
+**Decisao:** Criar um fluxo real separado (`MotoboyRealFlow` + `CorridaAtivaReal`). `/motoboy` sem query consulta `GET /api/deliveries/active` antes da fila; se houver corrida aceita, mostra a tela real somente leitura. Se nao houver, mostra `FilaDisponivel`. Apos `acceptDelivery`, a fila chama o parent para recarregar `GET /api/deliveries/active` e usar a fonte de verdade do backend para destino/notas. `CorridaAtiva.tsx`, `courier-types.ts`, `SolicitacaoCard` e `PushPrimeSheet` seguem isolados no demo por `?demo=`.
+
+**Consequencias:** A UI pos-aceite passa a exibir dados reais permitidos (`destination_address`/`notes`) apenas quando o backend confirma a corrida atribuida. Nao ha polling, realtime, push, cancelamento ou botoes de status. A separacao evita que o mock de transicoes contamine o caminho real e deixa as proximas mutacoes para um contrato backend proprio.

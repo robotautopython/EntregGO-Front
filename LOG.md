@@ -330,3 +330,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes:** Smoke publico confirmou `GET /api/deliveries/available` sem token -> `401 AUTH_REQUIRED`, `POST /api/deliveries/:id/accept` sem token -> `401 AUTH_REQUIRED`, `/motoboy` -> `200` e bundle publicado contendo `/api/deliveries/available`. Smoke autenticado confirmou listagem sem `destination_address`, `notes`, `store_id` ou `courier_id`, expondo somente `store.name` e `store.address` como dados da loja; aceite concorrente com um sucesso e um `ALREADY_ACCEPTED`; aceite expirado com `DELIVERY_EXPIRED`; resposta pos-aceite estatica em `status=aceita`, sem transicao para corrida; negacoes para motoboy offline, pendente, bloqueado e role errado. Cleanup retornou `completed`. Nenhum SQL, migration, RLS, grant ou policy foi executado ou alterado.
 
 **Fora do escopo preservado:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), realtime, push/Web Push/VAPID, cron/expiracao automatica, cancelamento, online/offline operacional, pagamentos, Storage, historico admin e historico do motoboy.
+
+## 2026-05-16 - FATIA 2 UI REAL POS-ACEITE DO MOTOBOY
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada a UI real de corrida aceita somente leitura. `MotoboyRealFlow` consulta `GET /api/deliveries/active` antes de abrir a fila; se o backend retorna `data: null`, renderiza `FilaDisponivel`; se retorna uma corrida `aceita`, renderiza `CorridaAtivaReal` com loja/coleta, destino e observacao. `FilaDisponivel` ganhou `onAccepted` opcional para, no caminho real, recarregar a corrida ativa apos o aceite. `CorridaAtiva.tsx` e o demo por `?demo=ativo`/`?demo=solicitacao` permanecem isolados.
+**Arquivos criados:** `src/components/motoboy/CorridaAtivaReal.tsx`, `src/components/motoboy/MotoboyRealFlow.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `src/components/motoboy/__tests__/CourierHomeFlow.test.tsx`
+**Arquivos modificados:** `src/types/delivery.ts`, `src/lib/api.ts`, `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/CourierHomeFlow.tsx`, `src/lib/__tests__/api.deliveries.test.ts`, `CONTRACTS.md`, `STATUS.md`, `DECISIONS.md`, `LOG.md`, `LEARNINGS.md`
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer, FinalValidator, Documentador
+**Status:** fechado localmente; deploy/smoke autenticado real pendentes
+
+**Gates pre-codigo:** ImpactValidator aprovado (fluxo aditivo, sem quebrar demo nem Fatia 1); SecurityValidator aprovado (sem Supabase direto, Bearer existente, PII pos-aceite somente via `/active`); PerformanceValidator aprovado (uma chamada inicial e uma pos-aceite, sem polling/`setInterval`, sem listas novas).
+
+**Validacoes parciais durante implementacao:** Frontend `npm run typecheck` passou; `npm test` passou com 5 arquivos e 31 testes. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+**Fora do escopo:** transicoes pos-aceite (`coletada`/`em_transito`/`entregue`), cancelamento, realtime, push/Web Push/VAPID, cron/expiracao automatica, online/offline operacional, historico do motoboy, historico admin, pagamentos e Storage.

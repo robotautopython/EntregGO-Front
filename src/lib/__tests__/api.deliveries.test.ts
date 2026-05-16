@@ -50,3 +50,18 @@ describe('acceptDelivery', () => {
     });
   });
 });
+
+describe('getActiveDelivery', () => {
+  it('gets the active delivery with the Bearer token and no params', async () => {
+    const { getActiveDelivery } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: null },
+    });
+
+    await getActiveDelivery('tok-123');
+
+    expect(getMock).toHaveBeenCalledWith('/api/deliveries/active', {
+      headers: { Authorization: 'Bearer tok-123' },
+    });
+  });
+});

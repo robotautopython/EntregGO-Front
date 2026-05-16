@@ -18,6 +18,7 @@ import type {
 
 interface FilaDisponivelProps {
   accessToken: string;
+  onAccepted?: (delivery: AcceptedDelivery) => void;
 }
 
 const PAGE_SIZE = 20;
@@ -110,7 +111,7 @@ export function mapCourierError(error: unknown): CourierError {
   }
 }
 
-export function FilaDisponivel({ accessToken }: FilaDisponivelProps) {
+export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps) {
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<AvailableDeliveriesResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -152,7 +153,11 @@ export function FilaDisponivel({ accessToken }: FilaDisponivelProps) {
     try {
       const data = await acceptDelivery(accessToken, id);
       if (data) {
-        setAccepted(data);
+        if (onAccepted) {
+          onAccepted(data);
+        } else {
+          setAccepted(data);
+        }
       }
       setResult((current) =>
         current

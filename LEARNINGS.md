@@ -135,3 +135,21 @@ UI real de descoberta/aceite entregue sem remover o mock (ainda referenciado pel
 ## 2026-05-16 - Contrato novo nao obriga UI imediata
 
 A Fatia 1 do aceite do motoboy entregou contratos backend reais para descoberta e aceite, mas o frontend permaneceu somente em documentacao. Esse foi o corte correto porque conectar `CorridaAtiva.tsx` ao backend puxaria fila real, online/offline operacional, realtime/push, expiracao visual, concorrencia de aceite e PII entre loja e motoboy. Padrao: quando o backend abre um contrato sensivel, registrar shape, erros e campos proibidos em `CONTRACTS.md`, mas so ligar UI em fatia propria com SecurityValidator e PerformanceValidator novamente.
+
+## 2026-05-16 - Apos aceitar, buscar a fonte de verdade do backend
+
+**Tipo:** Padrao
+**Fase:** fundacao/auth-operacao
+**Contexto:** Fatia 2 do motoboy, corrida aceita real somente leitura.
+
+### O que aconteceu
+A resposta de `POST /api/deliveries/:id/accept` continua sanitizada para o momento do aceite e nao traz destino/notas. A tela real pos-aceite precisa desses dados, mas so depois que o backend confirma que a entrega esta atribuida ao motoboy.
+
+### Como foi resolvido
+`FilaDisponivel` passou a aceitar `onAccepted`; no caminho real, o parent (`MotoboyRealFlow`) chama `GET /api/deliveries/active` apos o aceite e renderiza `CorridaAtivaReal`. Assim, a tela usa a fonte de verdade pos-aceite e nao tenta inferir dados sensiveis a partir da resposta de aceite.
+
+### O que fazer diferente da proxima vez
+Quando uma acao muda permissao de leitura, fazer uma nova leitura no contrato autorizado em vez de inflar a resposta da acao. Isso evita vazar PII cedo demais e separa claramente comando de consulta.
+
+### Impacto no projeto
+Destino/notas aparecem apenas na corrida aceita real, sem mexer no mock, sem polling e sem criar transicoes falsas.
