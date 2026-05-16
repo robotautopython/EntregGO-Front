@@ -402,3 +402,31 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (5 arquivos, 41 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 107 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Nenhum secret, token, cookie ou header sensivel foi impresso.
 
 **Fora do escopo:** Supabase direto no frontend, realtime, push/Web Push/VAPID, polling, cron, cancelamento, historico do motoboy, historico admin, pagamentos, Storage/documentos, geolocalizacao/GPS e disponibilidade por raio.
+
+## 2026-05-16 - FATIA 4A MOTOBOY POS-DEPLOY PRODUCAO APROVADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Frontend publicado em producao no commit `b9239dcce3ac25535990d148f8f2480df1bcb232` apos o backend `a84df437cb30b62c592454fe22b25b173fce9f83`. A UI real `/motoboy` foi validada contra `https://entreggo.vercel.app/motoboy` e o backend contra `https://entreggoback.vercel.app`. O smoke autenticado de UI usou Playwright em Chromium headless com usuarios/perfis/entrega ficticios temporarios e cleanup em `finally`, sem imprimir token, cookie, header Authorization, service role ou secret.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Status:** fechado em producao
+
+**Validacoes pos-deploy:** Smoke publico confirmou `/motoboy` -> `200` e bundle publicado contendo `Confirmar coleta`, `Iniciar transito`, `Concluir entrega` e chamada `/status`. No backend, `GET /api/health` retornou `200`, `GET /api/deliveries/active` sem token retornou `401 AUTH_REQUIRED` e `PATCH /api/deliveries/:id/status` sem token retornou `401 AUTH_REQUIRED`. Smoke API autenticado confirmou transicoes, idempotencia, isolamento de outro courier, payload strict, sanitizacao e remocao de `entregue` do `/active`. Smoke UI autenticado confirmou login real como motoboy ficticio, corrida ativa com `Confirmar coleta`, avanco para `Iniciar transito`, avanco para `Concluir entrega`, conclusao com remocao da corrida ativa, timestamps `collected_at`, `in_transit_at` e `delivered_at` preenchidos no banco, ausencia de `store_id`, `courier_id`, `owner_name`, `logo_url`, documentos, Storage, token, header ou secret na UI, e rede sem polling (`GET /api/couriers/me/status` 1x, `GET /api/deliveries/active` 1x, `PATCH /api/deliveries/:id/status` 3x, `GET /api/deliveries/available` 1x). Cleanup retornou completo.
+
+**Decisao de tooling:** Playwright fica como ferramenta oficial de smoke UI autenticado controlado. A instalacao adicionou `playwright` como `devDependency` e alterou `package.json`/`package-lock.json`; deve entrar em commit separado de tooling, sem misturar com codigo funcional da Fatia 4A. `npm audit --json` apos a instalacao reporta 7 vulnerabilidades moderadas, sem altas ou criticas, ligadas a `next`/`postcss` e `vitest`/`vite`; nao foi aplicado `npm audit fix --force`.
+
+**Fora do escopo preservado:** Supabase direto no frontend, SQL/migration/RLS/grants/policies, realtime, push/Web Push/VAPID, polling, cron, cancelamento, historico do motoboy, historico admin, pagamentos, Storage/documentos, geolocalizacao/GPS e disponibilidade por raio.
+
+## 2026-05-16 - AJUSTE UX MOTOBOY LOJA SOLICITANTE E ENDERECO AUSENTE
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Ajuste frontend local no caminho real `/motoboy`: `FilaDisponivel` e `CorridaAtivaReal` agora rotulam o nome da loja como `Loja solicitante`; enderecos vazios, nulos ou whitespace deixam de renderizar linha de endereco, placeholder `Endereco nao informado`, alerta `Destino nao informado` e acao `Abrir no mapa`. A fila continua sem `destination_address`/`notes` antes do aceite, e a corrida ativa continua exibindo destino/notas somente pos-aceite para o courier atribuido.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/CorridaAtivaReal.tsx`, `src/components/motoboy/__tests__/FilaDisponivel.test.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `STATUS.md`, `LOG.md`
+**Status:** fechado localmente; deploy/smoke pendentes
+
+**Validacoes:** `npm run typecheck`, `npm test` (5 arquivos, 46 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `npm run lint` manteve apenas o aviso conhecido de deprecacao do `next lint`; `git diff --check` exibiu apenas avisos LF/CRLF do Windows. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+**Impacto:** Contrato e PII preservados; nao houve backend, endpoint, tipo de API, SQL, migration, RLS, grant ou policy. O ajuste reduz ruido visual quando endereco nao existe e mantem o nome da loja solicitante como informacao principal.
+
+**Fora do escopo preservado:** Supabase direto no frontend, realtime, push/Web Push/VAPID, polling, cron, GPS, Storage/documentos, cancelamento, historico do motoboy, historico admin e pagamentos.
