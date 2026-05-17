@@ -156,7 +156,7 @@ export function ShellSidebar({
               {roleLabels[authContext.user.role]}
             </p>
             <p className="mt-0.5 truncate text-sm font-bold text-asphalt-950">
-              {authContext.user.email}
+              Conta {authContext.user.status}
             </p>
           </div>
         ) : null}

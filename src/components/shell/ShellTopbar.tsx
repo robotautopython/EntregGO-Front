@@ -36,8 +36,7 @@ export function ShellTopbar({
 }: ShellTopbarProps) {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
-  const initials = (authContext?.user.email ?? 'EG')
-    .split('@')[0]
+  const initials = roleLabels[role]
     .slice(0, 2)
     .toUpperCase();
 
@@ -152,7 +151,7 @@ export function ShellTopbar({
                     {roleLabels[role]}
                   </p>
                   <p className="truncate text-sm font-bold text-asphalt-950">
-                    {authContext?.user.email ?? 'Sem sessão'}
+                    {authContext ? `Conta ${authContext.user.status}` : 'Sem sessão'}
                   </p>
                   {authContext ? (
                     <Badge
