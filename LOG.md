@@ -442,3 +442,15 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes pos-deploy:** Smoke UI autenticado confirmou `Loja solicitante` na fila disponivel e na corrida ativa, pre-aceite sem destino/notas, destino ausente sem card `Entrega`, placeholder, alerta, mapa de destino ou botao `Abrir no mapa`, inclusive no cenario controlado com todos os enderecos ausentes. A UI nao expos `store_id`, `courier_id`, `owner_name`, `logo_url`, documentos, Storage, Authorization ou Bearer. Foram criados e limpos 2 auth users, 2 domain users, 1 store, 1 courier e 2 deliveries; cleanup completo, com `0` usuarios smoke restantes.
 
 **Fora do escopo preservado:** backend funcional, contrato API novo, SQL, migration, RLS, grant, policy, realtime, push, polling, cron, GPS, Storage, cancelamento, historico e diretorios locais de agentes.
+
+## 2026-05-16 - ACOMPANHAMENTO POS-PUSH DO FECHAMENTO MOTOBOY
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Os commits `069360b4fc67222e0ee41ce7439ee73a1e0044ed` (fechamento documental do smoke UX `/motoboy`) e `6a7c65c90e008d37082970f269c41fb1378baef8` (remocao de `.codex/` do versionamento) foram enviados para `origin/main`. O status do GitHub para `6a7c65c90e008d37082970f269c41fb1378baef8` ficou `success`, com Vercel reportando `Deployment has completed`.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Status:** acompanhamento aprovado
+
+**Validacoes pos-push:** `https://entreggo.vercel.app/motoboy` respondeu `200`; o chunk publicado de `/motoboy` contem `Loja solicitante`; os chunks baixados nao contem `Endereco nao informado` nem `Destino nao informado`. Nenhum codigo funcional, backend, contrato API ou arquivo de runtime foi alterado neste acompanhamento.
+
+**Fora do escopo preservado:** backend, contratos API, codigo funcional, SQL, migration, RLS, grant, policy e novo smoke autenticado.
