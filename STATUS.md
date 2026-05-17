@@ -8,12 +8,12 @@
 
 ## Em Andamento
 
-- [ ] Manter abas de documentos, pagamento externo e notas como placeholders honestos ate existirem endpoints reais.
+- [ ] Manter abas de documentos, entregas por usuario, pagamento por usuario e notas como placeholders honestos ate existirem endpoints reais.
 
 ## Proximas Tarefas
 
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
-- [ ] Planejar a UI de confirmacao de pagamento externo somente depois do contrato backend simples (`GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid`), sem checkout/gateway/PIX/cartao.
+- [ ] Fechar operacionalmente a UI admin de pagamento externo com commit, push, deploy Vercel e smoke pos-deploy.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
 
@@ -78,12 +78,13 @@
 - [x] Fatia 4C publicada e validada em producao: frontend `2f6f3bd638fd3f0810eaeed3b438ab9ab4b6f9ae` e backend `704694c4d6c63d1c3962e3b1353434f41c2c64c7` enviados para `origin/main`. Smoke publico confirmou `/motoboy/historico/<uuid>` `200`, backend `/api/health` `200` e `GET /api/deliveries/history/<uuid>` sem token com `401 AUTH_REQUIRED`. Smoke autenticado API+UI com dados ficticios confirmou login real, detalhe proprio, nao encontrado honesto para entrega de outro courier, ausencia de campos proibidos no DOM/API e cleanup completo sem imprimir secrets.
 - [x] M-07 implementada e validada localmente no frontend: `/admin/entregas` deixou de ser placeholder e passou a consumir `GET /api/admin/deliveries` por `listAdminDeliveries`, com loading, erro recuperavel, vazio honesto, filtro por status, paginacao e lista real somente leitura. A UI nao recebe nem renderiza `store_id`, `courier_id`, dados de motoboy, owner/logo/description, email, auth_id, token ou header. Frontend `typecheck`, `test` (75), `lint`, `build` e `git diff --check` passaram.
 - [x] M-07 publicada e validada em producao: frontend `48994109cfd1c559ac4df6b3eddf03de66d46c9b`, backend `a258888be13b69515ca4521c931452fac5796df2`; Vercel `success`; `/admin/entregas` `200`; smoke autenticado UI/API passou com lista real, ausencia de campos proibidos no DOM/API e cleanup completo.
+- [x] M-08 UI admin de pagamento externo implementada e validada localmente no frontend: `/admin/pagamentos` consome `GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid` por `listAdminPayments`/`markAdminPaymentPaid`, com filtros `paid`, `referenceMonth`, `role`, `userStatus`, paginacao, loading, erro recuperavel, vazio honesto, bloqueio contra duplo clique e retry idempotente via backend. A UI exibe somente `id`, `reference_month`, `due_date`, `paid`, `paid_at`, `created_at`, `updated_at`, `user.role`, `user.status`, `user.store_name`; nao envia nem renderiza `user_id`, `auth_id`, email, `owner_name`, `full_name`, `marked_by`, valor financeiro, metodo, comprovante, PIX, cartao, boleto, gateway, dados bancarios, repasse/split, token ou header. `UserDetailDrawer` teve copy ajustada para remover `GET /api/admin/payments?user_id=...`. Frontend `typecheck`, `test` (83), `lint`, `build` e `git diff --check` passaram.
 
 ## Bloqueios
 
 - Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), o detalhe/acompanhamento real da loja (M-06), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3), transicoes pos-aceite REST (Fatia 4A), historico real paginado do motoboy (Fatia 4B), detalhe unico do historico (Fatia 4C) e listagem admin global de entregas (M-07) ja existem em producao; busca textual, filtro por data, detalhe admin e cancelamento seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
-- Confirmacao de pagamento externo segue bloqueada ate endpoints backend com auditoria server-side. O escopo e apenas marcar se logista/motoboy pagou fora da plataforma; sem gateway, checkout, PIX, cartao, comprovante ou exibicao para loja/motoboy. Nao priorizar antes do fluxo principal.
+- UI admin de confirmacao de pagamento externo esta implementada e validada localmente contra o contrato backend M-08; pendem commit, push, deploy e smoke pos-deploy. Seguem fora de escopo gateway, checkout, PIX, cartao, boleto, comprovante/upload, valor financeiro, repasse/split, nota fiscal, criacao mensal de registros, desmarcar pago e exibicao para loja/motoboy.
 - `npm audit --json` ainda falha com 7 vulnerabilidades moderadas: `next@15.5.18` aponta `postcss` interno e a cadeia de testes `vitest`/`vite` aponta advisories moderados com fix semver-major. Sem alto/critico; exige acompanhamento de release/advisory antes de PWA/push real ou upgrade major do runner.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
@@ -93,6 +94,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (75 testes; `npm test`; inclui M-07); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C e M-07 validadas em producao
+**Testes:** Vitest + Testing Library (83 testes; `npm test`; inclui M-08 UI local); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Deploy:** publicado em Vercel; Fatia 4C, M-07 e M-08 backend-first validadas em producao; M-08 UI pendente de deploy
 **Riscos abertos:** 4

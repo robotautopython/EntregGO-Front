@@ -53,6 +53,51 @@ describe('listAdminDeliveries', () => {
   });
 });
 
+describe('listAdminPayments', () => {
+  it('sends only M-08 filters with the Bearer token', async () => {
+    const { listAdminPayments } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { items: [], pagination: { page: 1, limit: 20, total: 0 } } },
+    });
+
+    await listAdminPayments('tok-123', {
+      page: 1,
+      limit: 20,
+      paid: false,
+      referenceMonth: '2026-05',
+      role: 'logista',
+      userStatus: 'ativo',
+    });
+
+    expect(getMock).toHaveBeenCalledWith('/api/admin/payments', {
+      headers: { Authorization: 'Bearer tok-123' },
+      params: {
+        page: 1,
+        limit: 20,
+        paid: 'false',
+        referenceMonth: '2026-05',
+        role: 'logista',
+        userStatus: 'ativo',
+      },
+    });
+  });
+});
+
+describe('markAdminPaymentPaid', () => {
+  it('patches mark-paid with empty body and the Bearer token', async () => {
+    const { markAdminPaymentPaid } = await import('@/lib/api');
+    patchMock.mockResolvedValue({
+      data: { success: true, data: { id: 'p1', paid: true } },
+    });
+
+    await markAdminPaymentPaid('tok-123', 'p1');
+
+    expect(patchMock).toHaveBeenCalledWith('/api/admin/payments/p1/mark-paid', undefined, {
+      headers: { Authorization: 'Bearer tok-123' },
+    });
+  });
+});
+
 describe('createDeliveryRequest', () => {
   it('posts only the creation payload with the Bearer token', async () => {
     const { createDeliveryRequest } = await import('@/lib/api');

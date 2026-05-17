@@ -33,6 +33,11 @@ import type {
   StoreDeliveryDetail,
   StoreDeliveryListResult,
 } from '@/types/delivery';
+import type {
+  AdminPaymentListItem,
+  AdminPaymentsQuery,
+  AdminPaymentsResult,
+} from '@/types/payment';
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -196,6 +201,47 @@ export async function listAdminDeliveries(
           limit: query.limit,
           status: query.status || undefined,
         },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listAdminPayments(accessToken: string, query: AdminPaymentsQuery = {}) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminPaymentsResult> | ApiFailure>(
+      '/api/admin/payments',
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+          paid: typeof query.paid === 'boolean' ? String(query.paid) : undefined,
+          referenceMonth: query.referenceMonth || undefined,
+          role: query.role || undefined,
+          userStatus: query.userStatus || undefined,
+        },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function markAdminPaymentPaid(accessToken: string, paymentId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.patch<ApiSuccess<AdminPaymentListItem> | ApiFailure>(
+      `/api/admin/payments/${paymentId}/mark-paid`,
+      undefined,
+      {
+        headers: bearerHeaders(accessToken),
       },
     );
 

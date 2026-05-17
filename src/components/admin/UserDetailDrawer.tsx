@@ -463,16 +463,16 @@ function PagamentoTab() {
         </p>
         <p className="mt-1 text-xs text-asphalt-950/65">
           Tabela <code className="font-mono text-asphalt-950">public.payments</code> já existe na
-          M-01, mas controllers/routes ainda não foram implementados no backend. O EntregGO não
-          processa pagamento; o admin apenas confirma se este usuário pagou fora da plataforma.
-          Marcar como pago precisa de auditoria de quem marcou e idempotência server-side.
+          M-01 e a tela global de pagamentos usa o contrato M-08. O EntregGO não processa
+          pagamento; o admin apenas confirma pagamentos feitos fora da plataforma. Esta aba segue
+          sem detalhe por usuário para não criar filtro fora do contrato publicado.
         </p>
       </Card>
       <Card variant="paper" className="border-dashed">
         <p className="text-xs text-asphalt-950/65">
-          Endpoints necessários:{' '}
+          Contrato global disponível:{' '}
           <code className="font-mono text-asphalt-950">
-            GET /api/admin/payments?user_id=...
+            GET /api/admin/payments
           </code>{' '}
           +{' '}
           <code className="font-mono text-asphalt-950">

@@ -561,17 +561,20 @@ Telas:
 - `/admin/aprovacoes` (redirect server-side para `/admin/usuarios?status=pendente`)
 - `/admin/insights`
 - `/admin/entregas`
+- `/admin/pagamentos`
 
 Uso permitido:
 - `GET /api/admin/users?page=1&limit=20&role=logista&status=pendente&search=email`
 - `GET /api/admin/users/:id`
 - `GET /api/admin/insights`
 - `GET /api/admin/deliveries?page=1&limit=20&status=entregue`
+- `GET /api/admin/payments?page=1&limit=20&paid=false&referenceMonth=YYYY-MM&role=logista&userStatus=ativo`
+- `PATCH /api/admin/payments/:id/mark-paid`
 - `PATCH /api/admin/users/:id/approve`
 - `PATCH /api/admin/users/:id/block`
 - `PATCH /api/admin/users/:id/unblock`
 
-O drawer admin consome `GET /api/admin/users/:id` para enriquecer a aba Perfil com dados administrativos sanitizados de loja/motoboy. As abas de documentos, entregas, pagamento externo e notas continuam estruturais e nao devem chamar endpoints inexistentes.
+O drawer admin consome `GET /api/admin/users/:id` para enriquecer a aba Perfil com dados administrativos sanitizados de loja/motoboy. As abas de documentos, entregas por usuario, pagamento por usuario e notas continuam estruturais e nao devem chamar endpoints inexistentes ou parametros fora do contrato publicado.
 
 A listagem `GET /api/admin/users` retorna, por item, os campos de `DomainUser` mais `store_name: string | null` (tipo `AdminUserListItem`). `AdminUsersPanel` exibe a coluna `Loja` com `store_name` (ou `—` quando `null`, caso de `admin`/`motoboy`). A tela nao chama o detalhe por linha (sem N+1) e nao recebe campos de Storage/PII novos.
 
@@ -606,11 +609,39 @@ Campos proibidos no drawer enquanto nao houver pipeline de Storage validado:
 - `bike_photo_url`
 - `license_photo_url`
 
+`/admin/pagamentos` consome `GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid` com Bearer token de admin ativo. A pagina exibe controles internos de pagamento externo, com loading, erro recuperavel, vazio honesto, filtros por `paid`, `referenceMonth`, `role` e `userStatus`, paginacao real e acao idempotente de marcar como pago. O client API `listAdminPayments(accessToken, { page, limit, paid, referenceMonth, role, userStatus })` envia somente esses filtros; `markAdminPaymentPaid(accessToken, id)` envia `PATCH` com body vazio. Nao usa Supabase direto nem acessa `payments` pelo frontend.
+
+Campos permitidos na UI de pagamentos admin:
+- `id`
+- `reference_month`
+- `due_date`
+- `paid`
+- `paid_at`
+- `created_at`
+- `updated_at`
+- `user.role`
+- `user.status`
+- `user.store_name`
+
+Campos proibidos na UI de pagamentos admin:
+- `user_id`, `auth_id`, email
+- `owner_name`, `full_name`, `marked_by`, `approved_by`
+- documentos e Storage URLs
+- tokens, cookies, header Authorization ou service role
+- valor financeiro, metodo de pagamento, gateway id, PIX, cartao, boleto, comprovante, dados bancarios, repasse, split ou nota fiscal
+
+Estados de UI de pagamentos:
+- loading enquanto busca a lista;
+- erro recuperavel com botao "Tentar novamente";
+- vazio honesto para filtros sem resultado;
+- paginacao real com `Anterior`/`Proxima`;
+- botao "Marcar pago" apenas para registros pendentes;
+- bloqueio contra duplo clique enquanto o `PATCH` esta em voo;
+- erro de acao recuperavel, mantendo retry seguro pela idempotencia do backend.
+
 Contratos backend esperados para proximos ciclos, ainda ausentes:
 - `GET /api/admin/users/:id/deliveries?page=1`
-- `GET /api/admin/payments`
-- `PATCH /api/admin/payments/:id/mark-paid`
 - signed URLs para documentos em Storage
 - tabela/endpoint de `admin_notes`
 
-Escopo futuro da aba de pagamento: nao existe pagamento integrado no EntregGO. A UI admin deve apenas exibir e confirmar controle interno de pagamento externo de logista/motoboy, usando dados vindos do backend. Fora de escopo: checkout, gateway, PIX, cartao, boleto, repasse, comprovante, carteira, saldo, conciliacao ou exibicao para loja/motoboy. A acao de marcar como pago deve ter loading, bloqueio contra duplo clique, erro recuperavel e nao deve enviar valor financeiro, metodo de pagamento ou dados bancarios.
+Escopo de pagamento externo: nao existe pagamento integrado no EntregGO. A UI admin apenas exibe e confirma controle interno de pagamento externo de logista/motoboy, usando dados vindos do backend. Fora de escopo: checkout, gateway, PIX, cartao, boleto, repasse, split, comprovante/upload, carteira, saldo, conciliacao, nota fiscal, criacao/geracao mensal de registros, desmarcar pago ou exibicao para loja/motoboy. A acao de marcar como pago nao envia valor financeiro, metodo de pagamento, comprovante, `paid_at`, `marked_by`, `user_id` ou dados bancarios.

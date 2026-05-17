@@ -684,3 +684,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Smoke autenticado:** com dados ficticios temporarios, admin ativo abriu `/admin/entregas`, a tela renderizou lista real com loja, destino e status; o filtro backend `status=entregue` funcionou; `limit=51`, `unknown=1` e `courier_id=...` retornaram `VALIDATION_ERROR`; usuario `logista` recebeu `FORBIDDEN_ROLE`. DOM e payloads de sucesso ficaram sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, `owner_name`, `logo_url`, `description`, `full_name`, documentos, Storage URLs, `Authorization`, `Bearer`, token ou service role.
 
 **Cleanup:** cleanup em `finally` removeu os recursos temporarios; verificacao final retornou `delivery_residue=0`, `store_residue=0`, `courier_residue=0`, `domain_residue=0`, `auth_residue=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-17 - M-08 UI ADMIN DE PAGAMENTO EXTERNO LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a UI admin de pagamento externo em `/admin/pagamentos`, consumindo o backend M-08 ja publicado (`GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid`) via Bearer token do `OperationalShell`. O plano passou por Camisa10, Design, Cetico, SecurityValidator, PerformanceValidator e ImpactValidator antes da implementacao.
+**Arquivos modificados:** `src/app/admin/pagamentos/page.tsx`, `src/components/admin/AdminPaymentsPanel.tsx`, `src/components/admin/__tests__/AdminPaymentsPanel.test.tsx`, `src/components/admin/UserDetailDrawer.tsx`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/types/payment.ts`, `CONTRACTS.md`, `STATUS.md`
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Escopo entregue:** A tela lista pagamentos por `listAdminPayments(accessToken, { page, limit, paid, referenceMonth, role, userStatus })`, mostra loading, erro recuperavel, vazio honesto, filtros `paid`, `referenceMonth`, `role` e `userStatus`, paginacao real e acao `markAdminPaymentPaid(accessToken, id)` com body vazio, bloqueio contra duplo clique e retry seguro pela idempotencia server-side. `UserDetailDrawer` removeu a copy antiga que sugeria `GET /api/admin/payments?user_id=...`, parametro proibido no contrato M-08.
+
+**Campos permitidos:** `id`, `reference_month`, `due_date`, `paid`, `paid_at`, `created_at`, `updated_at`, `user.role`, `user.status`, `user.store_name`.
+
+**Fora do escopo preservado:** gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, dados bancarios, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros, desmarcar pago, Supabase direto no frontend, polling, realtime, push, cron, novos endpoints backend, SQL/migration/RLS/grants/policies. A UI/API client nao envia nem renderiza `user_id`, `auth_id`, email, `owner_name`, `full_name`, `marked_by`, valor, metodo, comprovante, token, header Authorization ou service role.
+
+**Validacoes locais:** `npm run typecheck`; `npm test` (12 arquivos, 83 testes); `npm run lint`; `npm run build`; `git diff --check` passou com apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
