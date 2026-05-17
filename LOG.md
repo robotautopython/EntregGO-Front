@@ -454,3 +454,15 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes pos-push:** `https://entreggo.vercel.app/motoboy` respondeu `200`; o chunk publicado de `/motoboy` contem `Loja solicitante`; os chunks baixados nao contem `Endereco nao informado` nem `Destino nao informado`. Nenhum codigo funcional, backend, contrato API ou arquivo de runtime foi alterado neste acompanhamento.
 
 **Fora do escopo preservado:** backend, contratos API, codigo funcional, SQL, migration, RLS, grant, policy e novo smoke autenticado.
+
+## 2026-05-16 - ACOMPANHAMENTO FINAL DO DEPLOY DOCUMENTAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O commit documental `22b83e2087d7b1c162215caf489ab3d46bd7212e` foi acompanhado apos push para `origin/main`. O status GitHub/Vercel ficou `success`, com Vercel reportando `Deployment has completed` em `https://vercel.com/robotautopythons-projects/entreggo/993FZE1jrWJAcDn5QtGQ4rQecUBK`.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Status:** acompanhamento aprovado
+
+**Validacoes finais:** `https://entreggo.vercel.app/motoboy` respondeu `200`; o chunk publicado contem `Loja solicitante`; os chunks baixados nao contem `Endereco nao informado` nem `Destino nao informado`. Backend publico tambem respondeu como esperado: `GET https://entreggoback.vercel.app/api/health` retornou `200` com `API online`, e `GET /api/deliveries/active` sem token retornou `401`.
+
+**Fora do escopo preservado:** alteracao funcional, backend, contrato API, codigo runtime, novo commit de produto e smoke autenticado.
