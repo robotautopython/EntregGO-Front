@@ -13,7 +13,7 @@
 ## Proximas Tarefas
 
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
-- [ ] Fechar operacionalmente a M-09A com commit, push, deploy e smoke pos-deploy antes de iniciar nova feature.
+- [ ] Planejar a proxima fatia pequena somente leitura com gates antes de qualquer codigo.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
 
@@ -80,11 +80,11 @@
 - [x] M-07 publicada e validada em producao: frontend `48994109cfd1c559ac4df6b3eddf03de66d46c9b`, backend `a258888be13b69515ca4521c931452fac5796df2`; Vercel `success`; `/admin/entregas` `200`; smoke autenticado UI/API passou com lista real, ausencia de campos proibidos no DOM/API e cleanup completo.
 - [x] M-08 UI admin de pagamento externo implementada e validada localmente no frontend: `/admin/pagamentos` consome `GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid` por `listAdminPayments`/`markAdminPaymentPaid`, com filtros `paid`, `referenceMonth`, `role`, `userStatus`, paginacao, loading, erro recuperavel, vazio honesto, bloqueio contra duplo clique e retry idempotente via backend. A UI exibe somente `id`, `reference_month`, `due_date`, `paid`, `paid_at`, `created_at`, `updated_at`, `user.role`, `user.status`, `user.store_name`; nao envia nem renderiza `user_id`, `auth_id`, email, `owner_name`, `full_name`, `marked_by`, valor financeiro, metodo, comprovante, PIX, cartao, boleto, gateway, dados bancarios, repasse/split, token ou header. `UserDetailDrawer` teve copy ajustada para remover `GET /api/admin/payments?user_id=...`. Frontend `typecheck`, `test` (83), `lint`, `build` e `git diff --check` passaram.
 - [x] M-08 UI admin de pagamento externo publicada e validada em producao: frontend `eb7b54faa6223091a341d75620ab96557e29934f`, backend M-08 `d47e9fecae486824c8f2f0898e65d09830bb3805`; Vercel/GitHub `success`; `/admin/pagamentos` `200` e chunk publicado com UI nova; smoke autenticado API+UI passou com dados ficticios, retry idempotente, ausencia de campos proibidos e cleanup completo.
-- [x] M-09A detalhe administrativo somente leitura de entrega implementada e validada localmente no frontend: `/admin/entregas/[id]` consome `GET /api/admin/deliveries/:id` por `getAdminDelivery`, com loading, erro recuperavel, nao encontrado honesto, detalhe renderizado, entrada "Abrir detalhe" na listagem `/admin/entregas` e DOM sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados de motoboy, documentos, Storage, token ou header. Frontend `typecheck`, `test` (89), `lint`, `build` passaram; commit, push, deploy e smoke pos-deploy pendentes.
+- [x] M-09A detalhe administrativo somente leitura de entrega publicada e validada em producao: frontend `c03e759a8e2e874a93cffec8ed78277f6dad9342` publicou `/admin/entregas/[id]`, consumindo `GET /api/admin/deliveries/:id` por `getAdminDelivery`, com loading, erro recuperavel, nao encontrado honesto, detalhe renderizado e entrada "Abrir detalhe" na listagem `/admin/entregas`. Smoke UI autenticado confirmou admin ativo abrindo detalhe real e DOM sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados de motoboy, documentos, Storage, token ou header.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O detalhe admin somente leitura de entrega foi implementado e validado localmente na M-09A, mas ainda precisa de commit, push, deploy e smoke pos-deploy para ser considerado fechado em producao; busca textual, filtro por data, cancelamento e dados de motoboy seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O detalhe admin somente leitura de entrega esta publicado e validado em producao na M-09A; busca textual, filtro por data, cancelamento e dados de motoboy seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - UI admin de confirmacao de pagamento externo esta publicada e validada em producao contra o contrato backend M-08. Seguem fora de escopo gateway, checkout, PIX, cartao, boleto, comprovante/upload, valor financeiro, repasse/split, nota fiscal, criacao mensal de registros, desmarcar pago e exibicao para loja/motoboy.
 - `npm audit --json` ainda falha com 7 vulnerabilidades moderadas: `next@15.5.18` aponta `postcss` interno e a cadeia de testes `vitest`/`vite` aponta advisories moderados com fix semver-major. Sem alto/critico; exige acompanhamento de release/advisory antes de PWA/push real ou upgrade major do runner.
@@ -97,5 +97,5 @@
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
 **Testes:** Vitest + Testing Library (89 testes; `npm test`; inclui M-09A local); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first e M-08 UI validadas em producao; M-09A ainda local
+**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI e M-09A validadas em producao
 **Riscos abertos:** 4

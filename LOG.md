@@ -727,3 +727,20 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (13 arquivos, 89 testes), `npm run lint` e `npm run build` passaram. Testes focados de admin/API passaram com 23 testes. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
 
 **Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, busca textual, filtro por data, dashboard, realtime, push, polling automatico, cron, documentos/Storage, pagamento externo, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros e desmarcar pago.
+
+## 2026-05-17 - M-09A DETALHE ADMINISTRATIVO DE ENTREGA FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O frontend da M-09A foi publicado em `origin/main` no commit `c03e759a8e2e874a93cffec8ed78277f6dad9342`, adicionando `/admin/entregas/[id]` em producao. A tela consome `GET /api/admin/deliveries/:id` com Bearer token, segue somente leitura e preserva estados loading, erro recuperavel, nao encontrado honesto e detalhe renderizado.
+**Arquivos modificados nesta rodada documental:** `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/admin/deliveries/:id` publicado no backend `4260d69775f9533783a0b45b3167db37d6423601`
+**Agentes utilizados:** Camisa10, DeployObservability, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (89), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Deploy e smoke UI:** `https://entreggo.vercel.app/admin/entregas/<uuid>` retornou `200` com `X-Matched-Path: /admin/entregas/[id]`. Smoke autenticado com admin ativo abriu detalhe real, renderizou loja, coleta, destino, status e timeline, e o DOM ficou sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados de motoboy, documentos, Storage URLs, token, header, financeiro ou comprovante.
+
+**Cleanup:** dados ficticios removidos; residuos finais `delivery=0`, `store=0`, `courier=0`, `domain=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+**Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, busca textual, filtro por data, dashboard, realtime, push, polling automatico, cron, documentos/Storage, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros e desmarcar pago.
