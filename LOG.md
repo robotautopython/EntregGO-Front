@@ -699,3 +699,16 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Fora do escopo preservado:** gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, dados bancarios, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros, desmarcar pago, Supabase direto no frontend, polling, realtime, push, cron, novos endpoints backend, SQL/migration/RLS/grants/policies. A UI/API client nao envia nem renderiza `user_id`, `auth_id`, email, `owner_name`, `full_name`, `marked_by`, valor, metodo, comprovante, token, header Authorization ou service role.
 
 **Validacoes locais:** `npm run typecheck`; `npm test` (12 arquivos, 83 testes); `npm run lint`; `npm run build`; `git diff --check` passou com apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-17 - M-08 UI ADMIN DE PAGAMENTO EXTERNO FECHADA EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** A UI `/admin/pagamentos` foi publicada em `origin/main` no commit `eb7b54faa6223091a341d75620ab96557e29934f`, consumindo o backend M-08 publicado em `d47e9fecae486824c8f2f0898e65d09830bb3805`. GitHub/Vercel retornaram `success` e o chunk da rota foi confirmado em producao com a UI nova.
+**Arquivos modificados nesta rodada documental:** `STATUS.md`, `LOG.md`
+**Status:** fechado em producao
+
+**Smoke publico:** `https://entreggo.vercel.app/admin/pagamentos` retornou `200`; o chunk `/_next/static/chunks/app/admin/pagamentos/page-98cea386b72dad72.js` contem a UI nova; `GET https://entreggoback.vercel.app/api/health` retornou `200`; `GET /api/admin/payments` sem token retornou `401`.
+
+**Smoke autenticado:** com dados ficticios temporarios, admin ativo listou pagamentos com `paid=false`, `referenceMonth=2026-05`, `role=logista`, `userStatus=ativo`; query invalida `status=pendente` retornou `VALIDATION_ERROR`; logista recebeu `FORBIDDEN_ROLE`; `PATCH /api/admin/payments/:id/mark-paid` marcou pagamento como pago; retry preservou `paid_at`; UI `/admin/pagamentos` fez login real, renderizou a loja ficticia, nao exibiu marcadores proibidos, marcou o pagamento pendente como pago, removeu-o da lista de pendentes e confirmou na aba `Pagos`.
+
+**Cleanup:** recursos temporarios removidos; verificacao final retornou `payment_residue=0` e `domain_residue=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
