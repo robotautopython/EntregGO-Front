@@ -8,6 +8,7 @@ import {
   Loader2,
   MapPin,
   RefreshCw,
+  Search,
   Store,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -15,7 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ClientApiError, listAdminDeliveries } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -322,6 +323,15 @@ export function AdminDeliveriesPanel({ accessToken }: AdminDeliveriesPanelProps)
 
                   <div className="min-w-0 lg:w-[28rem]">
                     <Timeline delivery={delivery} />
+                    <ButtonLink
+                      href={`/admin/entregas/${delivery.id}`}
+                      variant="secondary"
+                      size="sm"
+                      className="mt-3"
+                    >
+                      <Search className="h-4 w-4" aria-hidden="true" />
+                      Abrir detalhe
+                    </ButtonLink>
                   </div>
                 </div>
               </li>

@@ -712,3 +712,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Smoke autenticado:** com dados ficticios temporarios, admin ativo listou pagamentos com `paid=false`, `referenceMonth=2026-05`, `role=logista`, `userStatus=ativo`; query invalida `status=pendente` retornou `VALIDATION_ERROR`; logista recebeu `FORBIDDEN_ROLE`; `PATCH /api/admin/payments/:id/mark-paid` marcou pagamento como pago; retry preservou `paid_at`; UI `/admin/pagamentos` fez login real, renderizou a loja ficticia, nao exibiu marcadores proibidos, marcou o pagamento pendente como pago, removeu-o da lista de pendentes e confirmou na aba `Pagos`.
 
 **Cleanup:** recursos temporarios removidos; verificacao final retornou `payment_residue=0` e `domain_residue=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-17 - M-09A DETALHE ADMINISTRATIVO DE ENTREGA FRONTEND LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a M-09A no frontend: `/admin/entregas/[id]` consome `GET /api/admin/deliveries/:id` por `getAdminDelivery(accessToken, id)`, via Bearer token do `OperationalShell role="admin"`. A listagem `/admin/entregas` ganhou entrada "Abrir detalhe" por item.
+**Arquivos modificados:** `src/app/admin/entregas/[id]/page.tsx`, `src/components/admin/AdminDeliveryDetailPanel.tsx`, `src/components/admin/AdminDeliveriesPanel.tsx`, `src/components/admin/__tests__/AdminDeliveryDetailPanel.test.tsx`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/types/delivery.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/admin/deliveries/:id` implementado no repositorio backend com params UUID, query vazia strict e resposta sanitizada igual M-07.
+**Agentes/gates utilizados:** Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator, Documentador
+**Status:** implementado e validado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Ressalvas incorporadas:** O client API nao envia params/body no detalhe e nao usa Supabase direto. A UI exibe somente `id`, destino, observacao, status, timestamps e `store.name/address`; nao renderiza `store_id`, `courier_id`, `user_id`, `auth_id`, email, `owner_name`, `logo_url`, `description`, `full_name`, documentos, Storage URLs, token, header Authorization, service role ou dados de motoboy. Nao ha polling, realtime, push, cache persistente ou mutation.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (13 arquivos, 89 testes), `npm run lint` e `npm run build` passaram. Testes focados de admin/API passaram com 23 testes. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
+
+**Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, busca textual, filtro por data, dashboard, realtime, push, polling automatico, cron, documentos/Storage, pagamento externo, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros e desmarcar pago.

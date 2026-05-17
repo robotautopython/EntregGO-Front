@@ -84,6 +84,8 @@ export interface AdminDeliveriesResult {
   };
 }
 
+export type AdminDeliveryDetail = AdminDeliveryListItem;
+
 export interface AdminDeliveriesQuery {
   page?: number;
   limit?: number;

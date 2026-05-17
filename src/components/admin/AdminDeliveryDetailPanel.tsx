@@ -1,0 +1,396 @@
+'use client';
+
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  MapPin,
+  PackageCheck,
+  RefreshCw,
+  Route,
+  Store,
+  type LucideIcon,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { PageHeader } from '@/components/shell/PageHeader';
+import { Alert } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/Badge';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { ClientApiError, getAdminDelivery } from '@/lib/api';
+import { cn } from '@/lib/cn';
+import type { AdminDeliveryDetail, DeliveryRequestStatus } from '@/types/delivery';
+
+interface AdminDeliveryDetailPanelProps {
+  accessToken: string;
+  deliveryId: string;
+}
+
+interface DetailError {
+  kind: 'not_found' | 'recoverable';
+  title: string;
+  message: string;
+}
+
+const statusLabel: Record<DeliveryRequestStatus, string> = {
+  aguardando: 'Aguardando',
+  aceita: 'Aceita',
+  coletada: 'Coletada',
+  em_transito: 'Em transito',
+  entregue: 'Entregue',
+  expirada: 'Expirada',
+  cancelada: 'Cancelada',
+};
+
+const statusTone: Record<
+  DeliveryRequestStatus,
+  'success' | 'warn' | 'route' | 'brand' | 'danger' | 'paper'
+> = {
+  aguardando: 'warn',
+  aceita: 'route',
+  coletada: 'brand',
+  em_transito: 'brand',
+  entregue: 'success',
+  expirada: 'danger',
+  cancelada: 'paper',
+};
+
+const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+function formatDateTime(value: string | null): string {
+  if (!value) return 'Pendente';
+  return dateTimeFormatter.format(new Date(value));
+}
+
+function mapDetailError(error: unknown): DetailError {
+  if (!(error instanceof ClientApiError)) {
+    return {
+      kind: 'recoverable',
+      title: 'Nao foi possivel carregar a entrega',
+      message: 'Tente novamente em instantes.',
+    };
+  }
+
+  switch (error.code) {
+    case 'DELIVERY_NOT_FOUND':
+      return {
+        kind: 'not_found',
+        title: 'Entrega nao encontrada',
+        message: 'Ela pode ter sido removida ou ainda nao estar disponivel para consulta.',
+      };
+    case 'USER_PENDING':
+      return {
+        kind: 'recoverable',
+        title: 'Cadastro aguardando aprovacao',
+        message: 'Seu cadastro admin ainda precisa estar ativo para ver entregas.',
+      };
+    case 'USER_BLOCKED':
+      return {
+        kind: 'recoverable',
+        title: 'Conta bloqueada',
+        message: 'Sua conta esta bloqueada. Fale com a central para regularizar o acesso.',
+      };
+    case 'FORBIDDEN_ROLE':
+      return {
+        kind: 'recoverable',
+        title: 'Permissao negada',
+        message: 'Somente administradores ativos podem abrir esta entrega.',
+      };
+    case 'AUTH_REQUIRED':
+    case 'INVALID_TOKEN':
+    case 'DOMAIN_USER_NOT_FOUND':
+      return {
+        kind: 'recoverable',
+        title: 'Sessao invalida',
+        message: 'Entre novamente para ver a entrega.',
+      };
+    case 'API_URL_MISSING':
+      return {
+        kind: 'recoverable',
+        title: 'API nao configurada',
+        message: error.message,
+      };
+    default:
+      return {
+        kind: 'recoverable',
+        title: 'Nao foi possivel carregar a entrega',
+        message: error.message || 'Tente novamente em instantes.',
+      };
+  }
+}
+
+function buildTimeline(delivery: AdminDeliveryDetail) {
+  const steps = [
+    {
+      key: 'created',
+      label: 'Criada',
+      value: delivery.created_at,
+      complete: true,
+      current: delivery.status === 'aguardando',
+    },
+    {
+      key: 'accepted',
+      label: 'Aceita',
+      value: delivery.accepted_at,
+      complete: Boolean(delivery.accepted_at),
+      current: delivery.status === 'aceita',
+    },
+    {
+      key: 'collected',
+      label: 'Coletada',
+      value: delivery.collected_at,
+      complete: Boolean(delivery.collected_at),
+      current: delivery.status === 'coletada',
+    },
+    {
+      key: 'in_transit',
+      label: 'Em transito',
+      value: delivery.in_transit_at,
+      complete: Boolean(delivery.in_transit_at),
+      current: delivery.status === 'em_transito',
+    },
+    {
+      key: 'delivered',
+      label: 'Entregue',
+      value: delivery.delivered_at,
+      complete: Boolean(delivery.delivered_at),
+      current: delivery.status === 'entregue',
+    },
+  ];
+
+  if (delivery.status === 'expirada' || delivery.status === 'cancelada') {
+    steps.push({
+      key: delivery.status,
+      label: statusLabel[delivery.status],
+      value: delivery.updated_at,
+      complete: true,
+      current: true,
+    });
+  }
+
+  return steps;
+}
+
+export function AdminDeliveryDetailPanel({
+  accessToken,
+  deliveryId,
+}: AdminDeliveryDetailPanelProps) {
+  const [delivery, setDelivery] = useState<AdminDeliveryDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<DetailError | null>(null);
+
+  const load = useCallback(
+    async (mode: 'initial' | 'refresh' = 'initial') => {
+      if (mode === 'initial') {
+        setIsLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+      setError(null);
+
+      try {
+        const data = await getAdminDelivery(accessToken, deliveryId);
+        setDelivery(data ?? null);
+      } catch (caught) {
+        setDelivery(null);
+        setError(mapDetailError(caught));
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [accessToken, deliveryId],
+  );
+
+  useEffect(() => {
+    void load('initial');
+  }, [load]);
+
+  const timeline = useMemo(() => (delivery ? buildTimeline(delivery) : []), [delivery]);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Operacao"
+        title={`Entrega #${deliveryId.slice(0, 8)}`}
+        description="Detalhe administrativo somente leitura, com dados operacionais permitidos."
+        actions={
+          <ButtonLink href="/admin/entregas" variant="secondary" size="md">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Entregas
+          </ButtonLink>
+        }
+      />
+
+      {isLoading ? (
+        <Card variant="paper" className="text-center">
+          <div className="flex flex-col items-center gap-3 py-12 text-asphalt-950/70">
+            <Loader2 className="h-6 w-6 animate-spin text-brand-600" aria-hidden="true" />
+            <p className="text-sm font-semibold">Carregando entrega...</p>
+          </div>
+        </Card>
+      ) : error?.kind === 'not_found' ? (
+        <Card variant="white" className="text-center">
+          <div className="flex flex-col items-center gap-4 py-10">
+            <span className="flex h-12 w-12 items-center justify-center rounded-md bg-paper text-asphalt-950/60">
+              <AlertCircle className="h-6 w-6" aria-hidden="true" />
+            </span>
+            <div>
+              <h2 className="text-xl font-black text-asphalt-950">{error.title}</h2>
+              <p className="mt-2 max-w-md text-sm font-medium text-asphalt-950/65">
+                {error.message}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button variant="secondary" size="md" onClick={() => void load('refresh')}>
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                Atualizar
+              </Button>
+              <ButtonLink href="/admin/entregas" variant="primary" size="md">
+                Ver entregas
+              </ButtonLink>
+            </div>
+          </div>
+        </Card>
+      ) : error ? (
+        <Alert tone="danger" title={error.title}>
+          {error.message}
+          <div className="mt-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={isRefreshing}
+              onClick={() => void load('refresh')}
+            >
+              <RefreshCw
+                className={cn('h-4 w-4', isRefreshing && 'animate-spin')}
+                aria-hidden="true"
+              />
+              Tentar novamente
+            </Button>
+          </div>
+        </Alert>
+      ) : delivery ? (
+        <section className="space-y-5" aria-live="polite">
+          <Card variant="white" className="space-y-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+                <PackageCheck className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
+                  Status atual
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h2 className="text-2xl font-black text-asphalt-950">
+                    {statusLabel[delivery.status]}
+                  </h2>
+                  <Badge tone={statusTone[delivery.status]}>{statusLabel[delivery.status]}</Badge>
+                </div>
+                <p className="mt-1 text-sm font-medium text-asphalt-950/65">
+                  Atualizada em {formatDateTime(delivery.updated_at)}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <DetailTile icon={Store} label="Loja" value={delivery.store.name || 'Loja sem nome'} />
+              <DetailTile
+                icon={MapPin}
+                label="Coleta"
+                value={delivery.store.address || 'Endereco da loja nao informado'}
+              />
+              <DetailTile
+                icon={MapPin}
+                label="Destino"
+                value={delivery.destination_address ?? 'Destino nao informado'}
+              />
+              <DetailTile
+                icon={Clock3}
+                label="Criada em"
+                value={formatDateTime(delivery.created_at)}
+              />
+            </div>
+
+            {delivery.notes ? (
+              <div className="rounded-md border border-dashed border-paper-line bg-paper p-4">
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                  Observacao da loja
+                </p>
+                <p className="mt-1 text-sm font-medium text-asphalt-950/75">{delivery.notes}</p>
+              </div>
+            ) : null}
+          </Card>
+
+          <Card variant="white">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-route-600">
+                  Linha do tempo
+                </p>
+                <h3 className="mt-1 text-lg font-black text-asphalt-950">
+                  Timestamps operacionais
+                </h3>
+              </div>
+              <Route className="h-5 w-5 text-asphalt-950/45" aria-hidden="true" />
+            </div>
+
+            <ol className="space-y-3">
+              {timeline.map((step) => (
+                <li key={step.key} className="flex gap-3">
+                  <span
+                    className={cn(
+                      'mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border',
+                      step.complete || step.current
+                        ? 'border-brand-500 bg-brand-500 text-white'
+                        : 'border-paper-line bg-paper text-asphalt-950/35',
+                    )}
+                  >
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1 rounded-md border border-paper-line bg-paper px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-extrabold text-asphalt-950">{step.label}</p>
+                      {step.current ? <Badge tone="route">Atual</Badge> : null}
+                    </div>
+                    <p className="mt-1 text-xs font-bold text-asphalt-950/60">
+                      {formatDateTime(step.value)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+interface DetailTileProps {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}
+
+function DetailTile({ icon: Icon, label, value }: DetailTileProps) {
+  return (
+    <div className="rounded-md border border-paper-line bg-paper p-4">
+      <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+        {label}
+      </p>
+      <p className="mt-2 break-words text-sm font-black text-asphalt-950">{value}</p>
+    </div>
+  );
+}

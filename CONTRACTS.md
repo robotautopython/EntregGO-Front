@@ -568,6 +568,7 @@ Uso permitido:
 - `GET /api/admin/users/:id`
 - `GET /api/admin/insights`
 - `GET /api/admin/deliveries?page=1&limit=20&status=entregue`
+- `GET /api/admin/deliveries/:id`
 - `GET /api/admin/payments?page=1&limit=20&paid=false&referenceMonth=YYYY-MM&role=logista&userStatus=ativo`
 - `PATCH /api/admin/payments/:id/mark-paid`
 - `PATCH /api/admin/users/:id/approve`
@@ -603,6 +604,32 @@ Campos proibidos na UI de entregas admin:
 - `full_name`, documentos e Storage URLs
 - tokens, cookies, header Authorization ou service role
 - qualquer objeto ou dado de motoboy no v1
+
+`/admin/entregas/[id]` consome `GET /api/admin/deliveries/:id` com Bearer token de admin ativo. A pagina exibe detalhe administrativo somente leitura, com loading, erro recuperavel, nao encontrado honesto e detalhe renderizado. O client API `getAdminDelivery(accessToken, id)` nao envia params, body, `store_id`, `courier_id`, `user_id`, `auth_id`, status, pagina, busca textual ou filtro de data.
+
+Campos permitidos na UI de detalhe admin de entrega:
+- `id`
+- `destination_address`
+- `notes`
+- `status`
+- `created_at`
+- `expires_at`
+- `accepted_at`
+- `collected_at`
+- `in_transit_at`
+- `delivered_at`
+- `updated_at`
+- `store.name`
+- `store.address`
+
+Campos proibidos na UI de detalhe admin de entrega:
+- `store_id`, `courier_id`, `user_id`, `auth_id`, email
+- `owner_name`, `logo_url`, `description`
+- `full_name`, documentos e Storage URLs
+- tokens, cookies, header Authorization ou service role
+- qualquer objeto ou dado de motoboy no v1
+
+Fora da M-09A: cancelamento, alteracao de status, dados pessoais do motoboy, `courier_id`, `store_id`, `user_id`, `auth_id`, email, `owner_name`, `full_name`, documentos, Storage URLs, busca textual, filtro por data, dashboard, realtime, push, polling automatico, cron, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros e desmarcar pago.
 
 Campos proibidos no drawer enquanto nao houver pipeline de Storage validado:
 - `logo_url`

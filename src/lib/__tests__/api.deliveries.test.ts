@@ -53,6 +53,21 @@ describe('listAdminDeliveries', () => {
   });
 });
 
+describe('getAdminDelivery', () => {
+  it('gets one admin delivery with the Bearer token and no params', async () => {
+    const { getAdminDelivery } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { id: 'd1', status: 'entregue' } },
+    });
+
+    await getAdminDelivery('tok-123', 'd1');
+
+    expect(getMock).toHaveBeenCalledWith('/api/admin/deliveries/d1', {
+      headers: { Authorization: 'Bearer tok-123' },
+    });
+  });
+});
+
 describe('listAdminPayments', () => {
   it('sends only M-08 filters with the Bearer token', async () => {
     const { listAdminPayments } = await import('@/lib/api');
