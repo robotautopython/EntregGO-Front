@@ -622,3 +622,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Cleanup:** `finally` removeu todos os recursos temporarios; verificacao final retornou `domain_residue=0`, `store_residue=0`, `courier_residue=0`, `delivery_residue=0`, `auth_residue=0`.
 
 **Fora do escopo preservado:** Supabase direto para dados de negocio, codigo funcional novo de historico, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, GPS/mapa/raio, Storage/documentos, historico admin, pagamento externo, detalhe unico do historico, busca textual, filtro por data e dados pessoais do motoboy. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-17 - FATIA 4C DETALHE UNICO DO HISTORICO DO MOTOBOY
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Escolhida conservadoramente a menor proxima fatia do fluxo principal: detalhe unico do historico do motoboy. Foi criada a rota `/motoboy/historico/[id]`, consumindo `GET /api/deliveries/history/:id` via `getCourierHistoryDelivery(accessToken, id)` e Bearer token do `OperationalShell role="motoboy"`. A lista `/motoboy/historico` ganhou a entrada "Abrir detalhe" dentro do item expandido.
+**Arquivos modificados:** `src/app/motoboy/historico/[id]/page.tsx`, `src/components/motoboy/HistoricoMotoboy.tsx`, `src/components/motoboy/HistoricoMotoboyDetalhe.tsx`, `src/components/motoboy/__tests__/HistoricoMotoboy.test.tsx`, `src/components/motoboy/__tests__/HistoricoMotoboyDetalhe.test.tsx`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/types/delivery.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/deliveries/history/:id` implementado no backend com isolamento por courier autenticado.
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, TestEngineer, Documentador
+**Status:** fechado localmente; commit/deploy pendentes
+
+**Gates:** ImpactValidator aprovou a fatia aditiva e somente leitura. SecurityValidator aprovou com condicoes de nao enviar IDs internos, nao renderizar campos proibidos, nao usar Supabase direto e nao introduzir polling/realtime/push. TestEngineer aprovou matriz minima de client API, loading, sucesso, erro recuperavel, nao encontrado, entrada pela lista e regex de campos proibidos no DOM.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (10 arquivos, 70 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 148 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `.env.local` segue ignorado por `.gitignore` e nao aparece em `git ls-files`.
+
+**Fora do escopo preservado:** Supabase direto para dados de negocio, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, historico admin, pagamento externo, Storage/documentos, GPS/mapa/raio, busca textual, filtro por data e dados pessoais novos do motoboy. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.

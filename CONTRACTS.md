@@ -454,7 +454,7 @@ Fora desta fatia:
 
 ## Motoboy Fatia 4B - Historico real
 
-Status frontend nesta fatia: `/motoboy/historico` consome `GET /api/deliveries/history` via Bearer token do `OperationalShell`, substituindo os exemplos visuais por lista real paginada. A tela possui loading, erro recuperavel, vazio honesto, filtro por status do contrato e paginacao real. Em 2026-05-17, este contrato foi auditado contra o backend real sem necessidade de mudanca funcional nova.
+Status frontend nesta fatia: `/motoboy/historico` consome `GET /api/deliveries/history` via Bearer token do `OperationalShell`, substituindo os exemplos visuais por lista real paginada. A tela possui loading, erro recuperavel, vazio honesto, filtro por status do contrato e paginacao real. Em 2026-05-17, o detalhe unico `/motoboy/historico/[id]` foi adicionado como leitura autenticada do proprio historico, sem mutacao e sem ampliar para cancelamento, admin ou pagamento.
 
 Tela: `/motoboy/historico`. Client API em `src/lib/api.ts`: `listCourierHistory(accessToken, { page, limit, status })`. Tipos em `src/types/delivery.ts`: `CourierDeliveryHistoryItem`, `CourierDeliveryHistoryResult` e `ListCourierHistoryQuery`.
 
@@ -469,9 +469,34 @@ PII preservada:
 - a UI renderiza apenas campos retornados pelo contrato: `status`, `store.name/address`, `destination_address`, `notes` e timestamps operacionais;
 - a UI nao recebe nem renderiza `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, Storage/documentos, email, tokens ou headers.
 
+### Detalhe unico do historico
+
+Tela: `/motoboy/historico/[id]`. Client API em `src/lib/api.ts`: `getCourierHistoryDelivery(accessToken, id)`. Tipo em `src/types/delivery.ts`: `CourierDeliveryHistoryDetail`.
+
+Contrato consumido:
+- `GET /api/deliveries/history/:id` com `Authorization: Bearer <access_token>`.
+- Params: `id` UUID.
+- Query params: nenhum.
+- Apenas usuario de dominio `role=motoboy`, `status=ativo`, com perfil `couriers`.
+- Historico nao exige `is_online=true`.
+- O frontend nunca envia `courier_id`, `store_id`, `user_id`, status, pagina, busca textual ou filtro de data para o detalhe.
+
+Estados de UI:
+- loading enquanto busca a corrida;
+- erro recuperavel com botao "Tentar novamente";
+- nao encontrado honesto para `DELIVERY_NOT_FOUND`, sem expor se o id e de outro courier;
+- detalhe com status real, loja, coleta, destino, observacao da loja, `created_at`, `updated_at` e timeline de `accepted_at`, `collected_at`, `in_transit_at` e `delivered_at`;
+- atualizacao manual apenas em erro/nao encontrado; sem `setInterval`, polling automatico, push ou realtime.
+
+Entradas para a tela:
+- `/motoboy/historico` exibe "Abrir detalhe" em cada item expandido.
+
+PII preservada:
+- a UI renderiza apenas os campos do contrato de historico, sem campos internos;
+- a UI nao recebe nem renderiza `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, Storage/documentos, email, `auth_id`, tokens ou headers.
+
 Fora desta fatia:
 - busca textual e filtro por data;
-- detalhe unico;
 - cancelamento;
 - realtime/push/Web Push/VAPID;
 - polling;

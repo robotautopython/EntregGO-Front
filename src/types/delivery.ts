@@ -133,6 +133,8 @@ export interface CourierDeliveryHistoryItem {
   store: AvailableDeliveryStore;
 }
 
+export type CourierDeliveryHistoryDetail = CourierDeliveryHistoryItem;
+
 export interface CourierDeliveryHistoryResult {
   items: CourierDeliveryHistoryItem[];
   pagination: {

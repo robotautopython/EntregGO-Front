@@ -21,6 +21,7 @@ import type {
   AvailableDeliveriesQuery,
   AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
+  CourierDeliveryHistoryDetail,
   CourierDeliveryHistoryResult,
   DeliveryStatusUpdateResult,
   DeliveryTransitionStatus,
@@ -306,6 +307,22 @@ export async function listCourierHistory(
           limit: query.limit,
           status: query.status || undefined,
         },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function getCourierHistoryDelivery(accessToken: string, deliveryId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<CourierDeliveryHistoryDetail> | ApiFailure>(
+      `/api/deliveries/history/${deliveryId}`,
+      {
+        headers: bearerHeaders(accessToken),
       },
     );
 

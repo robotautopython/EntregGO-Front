@@ -71,6 +71,10 @@ describe('HistoricoMotoboy', () => {
     expect(await screen.findByText('Deixar na recepcao')).toBeInTheDocument();
     expect(screen.getAllByText('Coletada').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Em trânsito').length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /Abrir detalhe/i })).toHaveAttribute(
+      'href',
+      '/motoboy/historico/delivery-1',
+    );
     expect(container.innerHTML).not.toMatch(
       /store_id|courier_id|owner_name|logo_url|description|Authorization|Bearer/i,
     );

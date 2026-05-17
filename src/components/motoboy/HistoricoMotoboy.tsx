@@ -1,13 +1,22 @@
 'use client';
 
-import { ChevronDown, Clock3, Filter, Loader2, MapPin, RefreshCw, Store } from 'lucide-react';
+import {
+  ArrowRight,
+  ChevronDown,
+  Clock3,
+  Filter,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Store,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { BoxMark } from '@/components/brand/BoxMark';
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ClientApiError, listCourierHistory } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -364,6 +373,16 @@ export function HistoricoMotoboy({ accessToken }: HistoricoMotoboyProps) {
                                 label="Atualizada"
                                 value={formatDateTime(entry.updated_at)}
                               />
+                            </div>
+                            <div className="flex justify-end">
+                              <ButtonLink
+                                href={`/motoboy/historico/${entry.id}`}
+                                variant="secondary"
+                                size="sm"
+                              >
+                                Abrir detalhe
+                                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                              </ButtonLink>
                             </div>
                           </div>
                         </div>
