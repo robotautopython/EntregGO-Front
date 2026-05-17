@@ -603,3 +603,22 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Observabilidade:** Nenhum token, cookie, header Authorization, service role ou secret foi impresso. O smoke autenticado imprimiu apenas status resumido e confirmou cleanup.
 
 **Fora do escopo preservado:** Supabase direto para dados de negocio, codigo funcional novo, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, GPS/mapa/raio, Storage/documentos, historico admin, pagamento externo, detalhe unico do historico, busca textual, filtro por data e dados pessoais do motoboy.
+
+## 2026-05-17 - FATIA 4B FECHAMENTO VISUAL AUTENTICADO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Revalidado o fechamento visual autenticado de `/motoboy/historico` em producao. O SecurityValidator bloqueou a primeira tentativa porque o `OperationalShell` exibia email no sidebar/topbar/drawer da area autenticada. Foi aplicada correcao minima no frontend para trocar o email visivel por papel/status operacional e deixar as iniciais do topo derivadas do papel, nao do email. A correcao foi publicada em `origin/main` no frontend `6ab9ac8393076db640af5d1d7954874f2f61249e`; o backend permaneceu sem alteracao funcional em `df1a388eaea9f95e0beded5c419ee9c43b793dc6`.
+**Arquivos modificados:** `src/components/shell/ShellSidebar.tsx`, `src/components/shell/ShellTopbar.tsx`, `src/components/shell/MobileNavDrawer.tsx`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** sem mudanca de runtime; `GET /api/deliveries/history` continuou sendo o contrato validado.
+**Agentes utilizados:** Camisa10, SecurityValidator e TestEngineer
+**Status:** fechado em producao
+
+**Gates:** TestEngineer aprovou a matriz minima de smoke UI/API. SecurityValidator bloqueou por email visivel no shell, depois revalidou a correcao e aprovou o smoke com a condicao de publicar a build antes da execucao autenticada. Confirmado bundle publico de `/motoboy/historico` com a correcao antes do smoke.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test -- src/components/motoboy/__tests__/HistoricoMotoboy.test.tsx src/lib/__tests__/api.deliveries.test.ts` (14 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `rg -n "user\.email|authContext\.user\.email|email" src\components\shell` nao retornou ocorrencias. `.env.local` segue ignorado por `.gitignore` e nao aparece em `git ls-files`.
+
+**Smokes de producao:** Smoke publico confirmou `https://entreggo.vercel.app/motoboy/historico` -> `200`, `GET https://entreggoback.vercel.app/api/health` -> `200` e `GET /api/deliveries/history` sem token -> `401 AUTH_REQUIRED`. Smoke API autenticado criou dados ficticios temporarios, confirmou motoboy ativo offline consultando historico paginado (`page=1/2`, `limit=20`, `total=21`), ordenacao `created_at desc`, filtro `status=entregue`, entrega de outro courier ausente, `courier_id`, `unknown` e `limit=51` rejeitados com `VALIDATION_ERROR`, logista rejeitado com `FORBIDDEN_ROLE`, payload sem campos proibidos. Smoke UI com Playwright validou login real, `/motoboy/historico`, loja, destino, observacao, timestamps operacionais, pagina 2, filtro, vazio honesto, erro recuperavel com retry e DOM sem email/token/header/IDs internos.
+
+**Cleanup:** `finally` removeu todos os recursos temporarios; verificacao final retornou `domain_residue=0`, `store_residue=0`, `courier_residue=0`, `delivery_residue=0`, `auth_residue=0`.
+
+**Fora do escopo preservado:** Supabase direto para dados de negocio, codigo funcional novo de historico, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, GPS/mapa/raio, Storage/documentos, historico admin, pagamento externo, detalhe unico do historico, busca textual, filtro por data e dados pessoais do motoboy. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
