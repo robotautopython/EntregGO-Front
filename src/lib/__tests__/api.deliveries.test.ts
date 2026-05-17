@@ -37,6 +37,21 @@ describe('listAvailableDeliveries', () => {
   });
 });
 
+describe('getMyDelivery', () => {
+  it('gets one store delivery with the Bearer token and no params', async () => {
+    const { getMyDelivery } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { id: 'd1', status: 'aceita' } },
+    });
+
+    await getMyDelivery('tok-123', 'd1');
+
+    expect(getMock).toHaveBeenCalledWith('/api/deliveries/d1', {
+      headers: { Authorization: 'Bearer tok-123' },
+    });
+  });
+});
+
 describe('acceptDelivery', () => {
   it('posts to the accept endpoint with empty body and Bearer token', async () => {
     const { acceptDelivery } = await import('@/lib/api');

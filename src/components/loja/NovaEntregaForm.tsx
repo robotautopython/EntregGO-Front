@@ -131,8 +131,8 @@ export function NovaEntregaForm({
           <div className="flex items-start gap-3 text-sm text-asphalt-950/75">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-route-600" aria-hidden="true" />
             <p>
-              A criação usa o contrato real <strong>POST /api/deliveries</strong>. Aceite, push,
-              realtime, cancelamento e histórico ainda não fazem parte desta etapa.
+              A criação usa o contrato real <strong>POST /api/deliveries</strong>. Depois disso,
+              a entrega pode ser aberta no acompanhamento da loja.
             </p>
           </div>
         </div>

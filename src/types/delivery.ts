@@ -42,6 +42,8 @@ export interface StoreDeliveryListItem {
   updated_at: string;
 }
 
+export type StoreDeliveryDetail = StoreDeliveryListItem;
+
 export interface StoreDeliveryListResult {
   items: StoreDeliveryListItem[];
   pagination: {

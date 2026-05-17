@@ -1,13 +1,13 @@
 'use client';
 
-import { Bike, ChevronDown, Filter, Loader2, MapPin, RefreshCw } from 'lucide-react';
+import { Bike, ChevronDown, Eye, Filter, Loader2, MapPin, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { BoxMark } from '@/components/brand/BoxMark';
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ClientApiError, listMyDeliveries } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -339,9 +339,19 @@ export function HistoricoEntregas({ accessToken }: HistoricoEntregasProps) {
                                 <span className="mt-1 block">{entry.notes}</span>
                               </p>
                             ) : null}
-                            <p className="text-xs text-asphalt-950/55">
-                              ID interno: <span className="font-mono">{entry.id}</span>
-                            </p>
+                            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-white p-3">
+                              <p className="text-xs font-bold text-asphalt-950/55">
+                                ID interno: <span className="font-mono">{entry.id}</span>
+                              </p>
+                              <ButtonLink
+                                href={`/loja/entregas/${entry.id}`}
+                                variant="secondary"
+                                size="sm"
+                              >
+                                <Eye className="h-4 w-4" aria-hidden="true" />
+                                Abrir entrega
+                              </ButtonLink>
+                            </div>
                           </div>
                         </div>
                       </div>

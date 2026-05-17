@@ -27,6 +27,7 @@ import type {
   DeliveryRequest,
   ListCourierHistoryQuery,
   ListMyDeliveriesQuery,
+  StoreDeliveryDetail,
   StoreDeliveryListResult,
 } from '@/types/delivery';
 
@@ -209,6 +210,22 @@ export async function listMyDeliveries(accessToken: string, query: ListMyDeliver
           limit: query.limit,
           status: query.status || undefined,
         },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function getMyDelivery(accessToken: string, deliveryId: string) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<StoreDeliveryDetail> | ApiFailure>(
+      `/api/deliveries/${deliveryId}`,
+      {
+        headers: bearerHeaders(accessToken),
       },
     );
 

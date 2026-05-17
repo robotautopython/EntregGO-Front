@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 import { RouteLine } from '@/components/brand/RouteLine';
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ClientApiError, createDeliveryRequest } from '@/lib/api';
 import type { DeliveryRequest } from '@/types/delivery';
@@ -149,7 +149,7 @@ export function NovaEntregaFlow({ accessToken }: NovaEntregaFlowProps) {
       <PageHeader
         eyebrow="Pedido em movimento"
         title="Nova entrega"
-        description="Crie uma solicitação real para sua loja. Aceite, realtime, push, cron e histórico seguem bloqueados para ciclos próprios."
+        description="Crie uma solicitação real para sua loja e abra o acompanhamento assim que ela nascer."
         actions={
           <Link
             href="/loja"
@@ -207,6 +207,9 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
             Criar outra
           </Button>
+          <ButtonLink href={`/loja/entregas/${delivery.id}`} variant="primary" size="md">
+            Acompanhar entrega
+          </ButtonLink>
         </div>
       </Card>
 
@@ -240,17 +243,13 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <StatusTile label="Criada em" value={formatDateTime(delivery.created_at)} />
           <StatusTile label="Status" value={delivery.status} />
-          <StatusTile
-            label="Motoboy"
-            value={delivery.courier_id ? 'Atribuído' : 'Ainda não atribuído'}
-          />
+          <StatusTile label="Expira em" value={formatDateTime(delivery.expires_at)} />
         </div>
       </Card>
 
       <Alert tone="info" title="Escopo desta etapa">
-        A solicitação foi criada no backend. Esta tela ainda não lista histórico, não notifica
-        motoboys, não assina realtime, não executa aceite concorrente e não cancela/expira
-        automaticamente.
+        A solicitação foi criada no backend. O acompanhamento abre a entrega pelo contrato real e
+        mostra as próximas transições conforme o motoboy avançar.
       </Alert>
     </section>
   );
