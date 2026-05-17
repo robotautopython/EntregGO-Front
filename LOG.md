@@ -668,3 +668,19 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** `npm run typecheck`, `npm test` (11 arquivos, 75 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` avisou que sera removido no Next.js 16, ja registrado como risco conhecido. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
 
 **Fora do escopo preservado:** cancelamento, pagamento externo, alteracao de status, detalhe admin, busca textual, filtro por data, polling, realtime, push, cron, drawer por usuario, dados de motoboy e qualquer exposicao de token/header/secret no DOM.
+
+## 2026-05-17 - M-07 FECHAMENTO OPERACIONAL POS-SQL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** A M-07 foi publicada e validada em producao. O frontend `/admin/entregas` foi publicado em `origin/main` no commit `48994109cfd1c559ac4df6b3eddf03de66d46c9b`, consumindo o backend `a258888be13b69515ca4521c931452fac5796df2`. O indice remoto da migration backend foi confirmado antes do smoke pos-deploy.
+**Arquivos modificados nesta rodada documental:** `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, DeployObservability, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** frontend `npm run typecheck`, `npm test` (75), `npm run lint`, `npm run build` e `git diff --check`; backend `npm run typecheck`, `npm test` (158), `npm run lint`, `npm run build` e `git diff --check`. `git diff --check` sem erro de whitespace, apenas avisos LF/CRLF do Windows.
+
+**Deploy e smoke publico:** GitHub/Vercel retornou `success` para frontend e backend. `https://entreggo.vercel.app/admin/entregas` retornou `200`; `GET https://entreggoback.vercel.app/api/health` retornou `200`; `GET https://entreggoback.vercel.app/api/admin/deliveries` sem token retornou `401 AUTH_REQUIRED`.
+
+**Smoke autenticado:** com dados ficticios temporarios, admin ativo abriu `/admin/entregas`, a tela renderizou lista real com loja, destino e status; o filtro backend `status=entregue` funcionou; `limit=51`, `unknown=1` e `courier_id=...` retornaram `VALIDATION_ERROR`; usuario `logista` recebeu `FORBIDDEN_ROLE`. DOM e payloads de sucesso ficaram sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, `owner_name`, `logo_url`, `description`, `full_name`, documentos, Storage URLs, `Authorization`, `Bearer`, token ou service role.
+
+**Cleanup:** cleanup em `finally` removeu os recursos temporarios; verificacao final retornou `delivery_residue=0`, `store_residue=0`, `courier_residue=0`, `domain_residue=0`, `auth_residue=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.

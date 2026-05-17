@@ -8,7 +8,6 @@
 
 ## Em Andamento
 
-- [ ] Fechar operacionalmente M-07 com commit, push, deploy e smoke pos-deploy antes de iniciar nova feature.
 - [ ] Manter abas de documentos, pagamento externo e notas como placeholders honestos ate existirem endpoints reais.
 
 ## Proximas Tarefas
@@ -78,10 +77,11 @@
 - [x] Fatia 4C detalhe unico do historico do motoboy implementada localmente: `/motoboy/historico/[id]` consome `GET /api/deliveries/history/:id` via `getCourierHistoryDelivery`, com loading, erro recuperavel, nao encontrado honesto, status real, loja, coleta, destino, observacao e timestamps operacionais. `/motoboy/historico` ganhou entrada "Abrir detalhe" em item expandido. Sem Supabase direto, sem `store_id`/`courier_id`, sem email/token/header no DOM, sem polling/realtime/push/cancelamento/cron. Frontend `typecheck`, `test` (70), `lint`, `build` e `git diff --check` passaram.
 - [x] Fatia 4C publicada e validada em producao: frontend `2f6f3bd638fd3f0810eaeed3b438ab9ab4b6f9ae` e backend `704694c4d6c63d1c3962e3b1353434f41c2c64c7` enviados para `origin/main`. Smoke publico confirmou `/motoboy/historico/<uuid>` `200`, backend `/api/health` `200` e `GET /api/deliveries/history/<uuid>` sem token com `401 AUTH_REQUIRED`. Smoke autenticado API+UI com dados ficticios confirmou login real, detalhe proprio, nao encontrado honesto para entrega de outro courier, ausencia de campos proibidos no DOM/API e cleanup completo sem imprimir secrets.
 - [x] M-07 implementada e validada localmente no frontend: `/admin/entregas` deixou de ser placeholder e passou a consumir `GET /api/admin/deliveries` por `listAdminDeliveries`, com loading, erro recuperavel, vazio honesto, filtro por status, paginacao e lista real somente leitura. A UI nao recebe nem renderiza `store_id`, `courier_id`, dados de motoboy, owner/logo/description, email, auth_id, token ou header. Frontend `typecheck`, `test` (75), `lint`, `build` e `git diff --check` passaram.
+- [x] M-07 publicada e validada em producao: frontend `48994109cfd1c559ac4df6b3eddf03de66d46c9b`, backend `a258888be13b69515ca4521c931452fac5796df2`; Vercel `success`; `/admin/entregas` `200`; smoke autenticado UI/API passou com lista real, ausencia de campos proibidos no DOM/API e cleanup completo.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), o detalhe/acompanhamento real da loja (M-06), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3), transicoes pos-aceite REST (Fatia 4A), historico real paginado do motoboy (Fatia 4B), detalhe unico do historico (Fatia 4C) e listagem admin global de entregas (M-07) ja existem localmente; busca textual, filtro por data, detalhe admin e cancelamento seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), o detalhe/acompanhamento real da loja (M-06), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3), transicoes pos-aceite REST (Fatia 4A), historico real paginado do motoboy (Fatia 4B), detalhe unico do historico (Fatia 4C) e listagem admin global de entregas (M-07) ja existem em producao; busca textual, filtro por data, detalhe admin e cancelamento seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Confirmacao de pagamento externo segue bloqueada ate endpoints backend com auditoria server-side. O escopo e apenas marcar se logista/motoboy pagou fora da plataforma; sem gateway, checkout, PIX, cartao, comprovante ou exibicao para loja/motoboy. Nao priorizar antes do fluxo principal.
 - `npm audit --json` ainda falha com 7 vulnerabilidades moderadas: `next@15.5.18` aponta `postcss` interno e a cadeia de testes `vitest`/`vite` aponta advisories moderados com fix semver-major. Sem alto/critico; exige acompanhamento de release/advisory antes de PWA/push real ou upgrade major do runner.
@@ -93,6 +93,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (70 testes; `npm test`; inclui Fatia 4C); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C validada em producao
+**Testes:** Vitest + Testing Library (75 testes; `npm test`; inclui M-07); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Deploy:** publicado em Vercel; Fatia 4C e M-07 validadas em producao
 **Riscos abertos:** 4
