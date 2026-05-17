@@ -84,6 +84,7 @@ export function CorridaAtivaReal({
   const config = statusConfig[delivery.status];
   const StatusIcon = config.icon;
   const ActionIcon = config.actionIcon;
+  const normalizedNotes = delivery.notes?.trim();
 
   return (
     <section className="space-y-6 animate-fade-in">
@@ -161,12 +162,12 @@ export function CorridaAtivaReal({
         />
       </div>
 
-      {delivery.notes ? (
+      {normalizedNotes ? (
         <Card variant="paper" className="border-dashed">
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
             Observacao da loja
           </p>
-          <p className="mt-1 text-base font-bold text-asphalt-950">{delivery.notes}</p>
+          <p className="mt-1 text-base font-bold text-asphalt-950">{normalizedNotes}</p>
         </Card>
       ) : null}
     </section>

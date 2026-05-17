@@ -117,6 +117,8 @@ describe('MotoboyRealFlow', () => {
     expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
     expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
     expect(screen.getAllByText('Loja Alpha').length).toBeGreaterThan(0);
+    expect(screen.getByText('Coleta')).toBeInTheDocument();
+    expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
     expect(screen.getByText('Rua Destino, 50')).toBeInTheDocument();
     expect(screen.getByText('Levar na portaria')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirmar coleta' })).toBeInTheDocument();
@@ -138,6 +140,21 @@ describe('MotoboyRealFlow', () => {
     expect(screen.queryByText(/Destino nao informado/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Entrega$/)).not.toBeInTheDocument();
+  });
+
+  it('does not render observations when notes are blank', async () => {
+    activeMock.mockResolvedValue({
+      ...activeDelivery,
+      notes: '   ',
+    });
+
+    render(<MotoboyRealFlow accessToken="tok" />);
+
+    expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
+    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Coleta')).toBeInTheDocument();
+    expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
+    expect(screen.queryByText('Observacao da loja')).not.toBeInTheDocument();
   });
 
   it('does not render map actions when every address is absent', async () => {

@@ -537,3 +537,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes pos-deploy:** Smoke publico confirmou `https://entreggo.vercel.app/loja/entregas/<uuid>` -> `200`, backend `/api/health` -> `200` e rotas de entrega sem token retornando `401`. Smoke autenticado de producao com dados ficticios temporarios confirmou: loja cria entrega e recebe resposta sem `store_id`/`courier_id`; a UI abre `/loja/entregas/[id]` usando o `id`; motoboy aceita e a resposta nao contem `courier_id`; transicao para `coletada` funciona; detalhe da loja permanece sem identificadores internos; cleanup completo.
 
 **Fora do escopo preservado:** Supabase direto no frontend para dados de negocio, realtime, push/Web Push/VAPID, polling automatico, cancelamento, cron/expiracao automatica, historico admin, pagamento externo, documentos/Storage, GPS/mapa/raio, dados pessoais do motoboy e dados sensiveis em logs.
+
+## 2026-05-17 - M-06.1 LOJA/ENDERECO NO FLUXO REAL DO MOTOBOY
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Iniciada e fechada localmente a M-06.1 para validar loja e endereco no caminho real `/motoboy`. A auditoria confirmou que `FilaDisponivel` mostra `Loja solicitante`, `store.name` e `store.address` quando existir, sem renderizar `destination_address` ou `notes` antes do aceite. Apos o aceite, `MotoboyRealFlow` recarrega `GET /api/deliveries/active` como fonte de verdade, e `CorridaAtivaReal` mostra loja, coleta/endereco da loja, destino e observacao somente pos-aceite. A correcao runtime normaliza `notes` com `trim()` antes de renderizar, evitando card de observacao vazio/whitespace.
+**Arquivos modificados:** `src/components/motoboy/CorridaAtivaReal.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** contratos de motoboy ja corretos em `src/services/delivery.service.ts`; backend alterado somente em documentacao (`CONTRACTS.md`, `STATUS.md`, `LOG.md`).
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, TestEngineer, Documentador
+**Status:** fechado localmente; commit/deploy pendentes
+
+**Gates:** ImpactValidator aprovado, confirmando que o plano permanece aditivo e dentro do escopo. SecurityValidator aprovado com condicoes de manter pre-aceite sem destino/notas e UI/logs sem IDs internos ou dados sensiveis. TestEngineer apontou lacuna de teste para `Coleta` + endereco da loja e observacao em branco; os testes foram ampliados.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (9 arquivos, 64 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 133 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum secret, token, cookie, header Authorization ou service role foi impresso. `.env.local` segue ignorado por `.gitignore`.
+
+**Fora do escopo preservado:** Supabase direto no frontend para dados de negocio, backend funcional novo, SQL/migration/RLS/grants/policies, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, GPS/mapa/raio, Storage/documentos, historico admin, pagamento externo e dados pessoais do motoboy.

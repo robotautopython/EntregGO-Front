@@ -357,6 +357,18 @@ PII:
 - pos-aceite pode exibir `destination_address` e `notes` somente porque a entrega ja esta atribuida ao motoboy autenticado;
 - a UI nao recebe nem renderiza `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, Storage/documentos ou timestamps de transicao.
 
+### M-06.1 - Loja e endereco no fluxo real do motoboy
+
+Auditoria e regressao sem rota nova, sem acesso direto ao Supabase, sem realtime, push, polling automatico, cron, cancelamento, GPS/mapa novo, Storage ou dados pessoais do motoboy.
+
+Regras de renderizacao no caminho real `/motoboy`:
+
+- Na fila disponivel, `FilaDisponivel` mostra o label `Loja solicitante`, o `store.name` e o endereco operacional `store.address` somente quando ele vem preenchido.
+- Na fila disponivel, a UI nao renderiza `destination_address`, `notes`, `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, documentos, Storage, token, header ou payload sensivel.
+- Apos aceite, `MotoboyRealFlow` recarrega a fonte de verdade via `GET /api/deliveries/active`; o payload reduzido de `POST /accept` nao e usado para renderizar destino ou observacoes.
+- Na corrida ativa, `CorridaAtivaReal` mostra `Loja solicitante`, o card `Coleta` com `store.address` quando existir, o card `Destino` com `destination_address` somente pos-aceite e observacoes somente quando `notes` tiver texto util.
+- Enderecos e observacoes vazios ou compostos apenas por espacos nao geram placeholder, alerta, card vazio, acao de mapa ou texto operacional inventado.
+
 Fora do fluxo atual:
 - cancelamento;
 - realtime/push/Web Push/VAPID;

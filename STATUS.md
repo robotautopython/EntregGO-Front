@@ -68,6 +68,7 @@
 - [x] M-06 validada pos-deploy em producao: frontend `20ab39710367bfcb9565246daef292f275e3c370` e backend `27987f0b54b6747c6dac5a9f5134f4f2c80d8b3e` publicados com Vercel `success`; smoke publico confirmou `/loja/entregas/<uuid>` -> `200`, chunk da rota publicado, backend `/api/health` -> `200` e `GET /api/deliveries/:id` sem token -> `401 AUTH_REQUIRED`; smoke autenticado validou loja criando entrega ficticia, motoboy aceitando e avancando status, loja dona abrindo detalhe com timeline real e resposta sanitizada, outra loja recebendo `DELIVERY_NOT_FOUND` e cleanup completo.
 - [x] Hardening pos-M-06 refletido no frontend: tipos/contratos de `POST /api/deliveries` e `POST /api/deliveries/:id/accept` nao esperam `store_id`/`courier_id`; `/loja/nova-entrega` continua navegando para `/loja/entregas/[id]` usando somente `id`, e teste do client API fixa payload de criacao sem IDs internos. Sem Supabase direto, polling, realtime, push, cancelamento, cron, Storage ou dados pessoais do motoboy.
 - [x] Hardening pos-M-06 validado pos-deploy em producao: frontend funcional `8771b9b` e backend funcional `ad5ded4` publicados com Vercel `success`; smoke publico confirmou `/loja/entregas/<uuid>` `200` e backend protegido com `401` sem token; smoke autenticado confirmou criacao sem IDs internos, navegacao para detalhe por `id`, aceite sem `courier_id`, transicao de status funcionando e detalhe ainda sanitizado.
+- [x] M-06.1 implementada localmente no frontend: auditoria confirmou `Loja solicitante` e `store.address` na fila e na corrida ativa, sem destino/notas pre-aceite; `CorridaAtivaReal` passou a normalizar `notes` em branco antes de renderizar e os testes travam `Coleta`, endereco da loja, destino/observacao pos-aceite e ausencia de observacao vazia. Sem backend funcional novo, Supabase direto, realtime, push, polling, cron, GPS, Storage, cancelamento ou dados pessoais do motoboy.
 
 ## Bloqueios
 
@@ -83,6 +84,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (63 testes; `npm test`); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Testes:** Vitest + Testing Library (64 testes; `npm test`); Playwright instalado como ferramenta de smoke UI autenticado controlado
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4
