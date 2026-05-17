@@ -3,19 +3,18 @@
 ## Estado Atual
 
 **Fase:** fundacao/auth-operacao
-**Ultima atualizacao:** 2026-05-16
+**Ultima atualizacao:** 2026-05-17
 **Atualizado por:** Codex/Camisa10
 
 ## Em Andamento
 
-- [ ] Manter abas de documentos, entregas, pagamento e notas como placeholders honestos ate existirem endpoints reais.
-- [ ] Receber 3 imagens reais em `public/landing/` (hero.webp 4:3, loja.webp 4:5, motoboy.webp 4:5) e trocar os `src` em HeroMockup, StorePitch e CourierPitch. Hoje os 3 `<Image>` apontam para `public/brand/entreggo-logo-transparent.png` como placeholder neutro.
+- [ ] Validar M-06 em deploy/smoke autenticado quando houver ciclo operacional de publicacao.
+- [ ] Manter abas de documentos, entregas, pagamento externo e notas como placeholders honestos ate existirem endpoints reais.
 
 ## Proximas Tarefas
 
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
-- [ ] Planejar detalhe unico de entrega, historico admin/motoboy, realtime, push e cron somente depois dos contratos backend e validadores especializados.
-- [ ] Planejar pagamentos e documentos somente depois de endpoints com auditoria, signed URLs e Security Validator.
+- [ ] Planejar a UI de confirmacao de pagamento externo somente depois do contrato backend simples (`GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid`), sem checkout/gateway/PIX/cartao.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
 
@@ -65,12 +64,14 @@
 - [x] Ajuste UX do `/motoboy` validado em producao: frontend `ecc1e66734eebe72401ebf270ac4a3cf356bd3f1`, backend `57a38723d749e39a578925e3da529695346af4dd` e `https://entreggo.vercel.app/motoboy` com `200`. Smoke UI autenticado confirmou `Loja solicitante` na fila e na corrida ativa, pre-aceite sem destino/notas, destino ausente sem card `Entrega`, placeholder, alerta, mapa ou `Abrir no mapa`, UI sem `store_id`/`courier_id`/owner/logo/documentos/Storage/Authorization/Bearer e cleanup completo com `0` usuarios smoke restantes. Sem backend, contrato API, SQL/migration/RLS/grants/policies, PII nova, polling/realtime/push/cron/GPS/Storage/cancelamento/historico.
 - [x] Fechamento documental e limpeza de `.codex/` publicados em `origin/main`: commits `069360b4fc67222e0ee41ce7439ee73a1e0044ed` e `6a7c65c90e008d37082970f269c41fb1378baef8`; GitHub status `success`, Vercel `Deployment has completed`, `/motoboy` `200`, chunk publicado com `Loja solicitante` e sem `Endereco nao informado`/`Destino nao informado`. Sem alteracao funcional, backend ou contrato API.
 - [x] Acompanhamento final do deploy documental aprovado: commit `22b83e2087d7b1c162215caf489ab3d46bd7212e` em `origin/main`, GitHub/Vercel `success`, Vercel `Deployment has completed`, `/motoboy` `200`, chunk com `Loja solicitante`, chunks sem `Endereco nao informado`/`Destino nao informado`, backend publico com `/api/health` `200` e `/api/deliveries/active` sem token `401`. Sem alteracao funcional, backend ou contrato API.
+- [x] Planejamento de pagamentos ajustado em 2026-05-17: nao havera pagamento integrado na plataforma; o frontend deve tratar isso como confirmacao administrativa simples de pagamento externo, visivel somente ao admin.
+- [x] M-06 frontend implementado e validado localmente: `/loja/entregas/[id]` consome `GET /api/deliveries/:id` via `getMyDelivery`, com loading, erro recuperavel, nao encontrado honesto, status real, destino/observacao, timeline de timestamps e botao manual "Atualizar". `/loja/nova-entrega` ganhou CTA "Acompanhar entrega" apos criar a entrega; `/loja/historico` ganhou "Abrir entrega" por item expandido. Sem Supabase direto, sem `store_id`/`courier_id`, sem dados pessoais do motoboy, sem polling/realtime/push/cancelamento/cron. Frontend `typecheck`, `test` (62), `lint`, `build`, `git diff --check`, smoke HTTP/CORS local e smoke autenticado local M-06 passaram com cleanup completo.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3) e transicoes pos-aceite REST (Fatia 4A) ja existem; detalhe unico, busca textual, filtro por data e cancelamento seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), o detalhe/acompanhamento real da loja (M-06), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3) e transicoes pos-aceite REST (Fatia 4A) ja existem; busca textual, filtro por data e cancelamento seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
-- Pagamentos seguem bloqueados ate endpoints com auditoria server-side e Security Validator.
+- Confirmacao de pagamento externo segue bloqueada ate endpoints backend com auditoria server-side. O escopo e apenas marcar se logista/motoboy pagou fora da plataforma; sem gateway, checkout, PIX, cartao, comprovante ou exibicao para loja/motoboy. Nao priorizar antes do fluxo principal.
 - `npm audit --json` ainda falha com 7 vulnerabilidades moderadas: `next@15.5.18` aponta `postcss` interno e a cadeia de testes `vitest`/`vite` aponta advisories moderados com fix semver-major. Sem alto/critico; exige acompanhamento de release/advisory antes de PWA/push real ou upgrade major do runner.
 - Logo/paleta inicial definida em `design.md`; refinamentos finais ainda dependem de validacao visual nas proximas telas.
 - VAPID ainda pendente e nao deve ser hardcoded.
@@ -80,6 +81,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (46 testes; `npm test`); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Testes:** Vitest + Testing Library (62 testes; `npm test`); Playwright instalado como ferramenta de smoke UI autenticado controlado
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4

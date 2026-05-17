@@ -26,7 +26,7 @@ Documento base: `design.md`.
 - Implementar push real, realtime real ou dashboard complexo.
 - Implementar aceite concorrente, listagem/historico de entregas, cron de expiracao ou notificacao para motoboys.
 - Exibir documentos/CNH/fotos sem pipeline backend de Storage com signed URLs e Security Validator.
-- Marcar pagamentos como pagos sem endpoints backend, auditoria e persistencia.
+- Marcar pagamento externo como pago sem endpoints backend, auditoria e persistencia.
 - Inserir secrets reais ou variaveis privadas.
 
 ## Comandos
@@ -38,4 +38,4 @@ Documento base: `design.md`.
 
 ## Proximo passo
 
-Aceite, listagem/historico de entregas, realtime, push, cron, pagamentos e documentos dependem de endpoints backend e validadores especializados antes de virar UI funcional. Dashboards mais ricos devem passar por Performance Validator antes de novas agregacoes, cache, polling ou listas grandes. PWA/Service Worker real deve aguardar Security Validator e acompanhamento do residual moderado de auditoria em Next/PostCSS.
+O proximo passo deve fechar o fluxo principal antes de modulos secundarios: a loja precisa acompanhar uma entrega real em detalhe apos criacao, aceite e transicoes do motoboy. A fatia recomendada e uma tela de detalhe/acompanhamento real da entrega para loja, consumindo contrato backend novo, sem realtime, push, cron ou cancelamento. O pagamento no EntregGO nao e integrado e fica para etapa futura: a UI admin deve apenas confirmar se logista/motoboy pagou fora da plataforma, sem checkout, gateway, PIX, cartao ou comprovante.

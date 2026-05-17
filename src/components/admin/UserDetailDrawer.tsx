@@ -459,11 +459,12 @@ function PagamentoTab() {
       <Card variant="paper" className="border-dashed">
         <Wallet className="h-5 w-5 text-asphalt-950/50" aria-hidden="true" />
         <p className="mt-2 text-sm font-bold text-asphalt-950">
-          Controle de pagamento aguardando endpoint
+          Confirmação de pagamento externo aguardando endpoint
         </p>
         <p className="mt-1 text-xs text-asphalt-950/65">
           Tabela <code className="font-mono text-asphalt-950">public.payments</code> já existe na
-          M-01, mas controllers/routes de pagamento ainda não foram implementados no backend.
+          M-01, mas controllers/routes ainda não foram implementados no backend. O EntregGO não
+          processa pagamento; o admin apenas confirma se este usuário pagou fora da plataforma.
           Marcar como pago precisa de auditoria de quem marcou e idempotência server-side.
         </p>
       </Card>

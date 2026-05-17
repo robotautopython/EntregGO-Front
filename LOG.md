@@ -466,3 +466,39 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes finais:** `https://entreggo.vercel.app/motoboy` respondeu `200`; o chunk publicado contem `Loja solicitante`; os chunks baixados nao contem `Endereco nao informado` nem `Destino nao informado`. Backend publico tambem respondeu como esperado: `GET https://entreggoback.vercel.app/api/health` retornou `200` com `API online`, e `GET /api/deliveries/active` sem token retornou `401`.
 
 **Fora do escopo preservado:** alteracao funcional, backend, contrato API, codigo runtime, novo commit de produto e smoke autenticado.
+
+## 2026-05-17 - PLANEJAMENTO DE PAGAMENTO EXTERNO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O escopo de pagamentos foi alinhado ao produto real: nao havera pagamento integrado no EntregGO. A UI futura deve ser apenas uma confirmacao administrativa simples de pagamento externo para logistas/motoboys, visivel somente ao admin.
+**Arquivos modificados:** `STATUS.md`, `README.md`, `CONTRACTS.md`, `DECISIONS.md`, `src/app/admin/pagamentos/page.tsx`, `src/components/admin/UserDetailDrawer.tsx`, `LOG.md`
+**Status:** documental/copy concluido
+
+**Decisao registrada:** a tela admin de pagamentos nao deve criar checkout, gateway, PIX, cartao, boleto, comprovante, carteira, saldo, repasse ou conciliacao. Deve consumir endpoints backend, exibir status pago/pendente e permitir marcar como pago com loading, erro recuperavel, bloqueio contra duplo clique e auditoria server-side.
+
+**Correcao de prioridade:** pagamento externo ficou apenas documentado como escopo futuro. O proximo passo nao deve ser pagamento; deve ser o fluxo principal loja -> motoboy -> loja, com detalhe/acompanhamento real da entrega para a loja.
+
+**Validacoes:** Mudanca documental/copy; rodar `git diff --check`. Build/test/lint completos ficam para a implementacao funcional.
+
+## 2026-05-17 - CORRECAO DE PRIORIDADE DO ROADMAP
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Foi corrigida a ordem sugerida apos o ajuste de pagamento externo. O controle de pagamento permanece documentado, mas nao e o proximo marco. A prioridade volta para completar o fluxo principal com dados reais: loja cria entrega, motoboy aceita e avanca status, loja acompanha o estado real da entrega.
+**Arquivos modificados:** `STATUS.md`, `README.md`, `CONTRACTS.md`, `LOG.md`
+**Status:** documental concluido
+
+**Proximo passo sugerido:** M-06 Core Flow - tela de detalhe/acompanhamento real da entrega para a loja, provavelmente `/loja/entregas/[id]`, consumindo `GET /api/deliveries/:id` quando o backend existir. Sem realtime, push, cron, cancelamento, historico admin ou pagamento externo nesta fatia.
+
+## 2026-05-17 - M-06 CORE FLOW LOJA ACOMPANHA ENTREGA REAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a tela `/loja/entregas/[id]` para a loja acompanhar uma entrega real da propria loja via `GET /api/deliveries/:id`. O client `getMyDelivery(accessToken, id)` usa Bearer token e nao envia query params. A UI exibe loading, erro recuperavel, nao encontrado honesto, status real, destino, observacao, `created_at`, `expires_at`, `updated_at` e timeline de `accepted_at`, `collected_at`, `in_transit_at` e `delivered_at`, com botao manual "Atualizar". `/loja/nova-entrega` passou a oferecer CTA "Acompanhar entrega" apos criacao real; `/loja/historico` passou a oferecer "Abrir entrega" por item expandido.
+**Arquivos criados:** `src/app/loja/entregas/[id]/page.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `src/components/loja/__tests__/HistoricoEntregas.test.tsx`, `src/components/loja/__tests__/NovaEntregaFlow.test.tsx`
+**Arquivos modificados:** `src/lib/api.ts`, `src/types/delivery.ts`, `src/components/loja/NovaEntregaFlow.tsx`, `src/components/loja/NovaEntregaForm.tsx`, `src/components/loja/HistoricoEntregas.tsx`, `src/lib/__tests__/api.deliveries.test.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Status:** fechado localmente; deploy/smoke de producao pendentes
+
+**Gates pre-codigo:** ImpactValidator aprovado (rota/tela aditivas, historico e criacao preservados); Security/PII aprovado (sem Supabase direto, sem `store_id`/`courier_id`, sem dados pessoais do motoboy, tokens ou headers); Performance aprovado (um GET manual por detalhe e refresh manual, sem polling/Realtime/cache); TestEngineer aprovado com cobertura de client API, detalhe, historico e CTA de criacao.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (9 arquivos, 62 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 133 testes), `npm run lint`, `npm run build`, `git diff --check` e `node --check scripts/smoke-auth-rls.mjs` passaram. Smoke local minimo confirmou `GET /api/health` -> `200`, preflight CORS de `/api/auth/me` aceitando `http://127.0.0.1:3001`, `/login` -> `200` e renderizacao por navegador headless. Smoke autenticado local validou loja criando entrega ficticia, motoboy aceitando e avancando para `em_transito`, loja dona abrindo detalhe com timeline real e resposta sanitizada, outra loja recebendo `DELIVERY_NOT_FOUND`, query proibida com `VALIDATION_ERROR`, UUID invalido com `VALIDATION_ERROR` e cleanup completo. Nenhum secret, token, cookie ou header sensivel foi impresso.
+
+**Fora do escopo preservado:** realtime, push/Web Push/VAPID, polling automatico, cancelamento, cron/expiracao automatica, historico admin, pagamento externo, documentos/Storage, GPS/mapa/raio, dados pessoais do motoboy, SQL/migration/RLS/grants/policies.

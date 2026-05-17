@@ -153,3 +153,14 @@
 **Decisao:** Manter `.codex/` fora do versionamento e fora de commits. Qualquer pasta local equivalente, incluindo `.code/` se existir por engano ou legado, tambem fica fora. Conteudo desses diretorios so pode entrar no repositorio se houver decisao explicita, revisao de escopo e promocao para um caminho versionado apropriado fora dessas pastas. O `.gitignore` deve ignorar `.codex/` e `.code/`.
 
 **Consequencias:** O executor de release/commit deve tratar `.codex/...` e `.code/...` como artefatos locais excluidos, mesmo quando aparecerem no status antes do `.gitignore`. Prompts e materiais de agentes continuam disponiveis localmente sem poluir commits. Se algum arquivo desses diretorios virar documentacao oficial, ele deve ser movido conscientemente para `LOG.md`, `STATUS.md`, `CONTRACTS.md`, `DECISIONS.md` ou outro caminho versionado adequado.
+
+## ADR-015 - Pagamento como confirmacao externa administrativa
+
+**Data:** 2026-05-17
+**Status:** aceito
+
+**Contexto:** A UI admin ja possuia placeholder de pagamentos, mas o produto nao tera pagamento integrado. O objetivo real e apenas o admin confirmar se logistas e motoboys pagaram fora da plataforma.
+
+**Decisao:** A experiencia frontend de pagamento sera restrita ao admin e consumira somente contratos backend de controle interno. A UI nao deve criar checkout, gateway, PIX, cartao, boleto, upload de comprovante, carteira, saldo, repasse ou conciliacao. O fluxo permitido e listar status de pagamento externo e marcar como pago com feedback claro.
+
+**Consequencias:** A proxima UI pode ser pequena e operacional, com pagina paginada e acao idempotente. Loja e motoboy nao veem esse controle. O frontend continua sem Supabase direto para `payments`, sem secrets e sem dados financeiros sensiveis.

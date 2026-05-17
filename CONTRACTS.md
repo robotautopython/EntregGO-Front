@@ -148,9 +148,62 @@ Estados de UI:
 
 Fora do escopo atual (M-05):
 - aceite no historico da loja, realtime, push, cron, cancelamento, expiracao;
-- detalhe unico, busca textual, filtro por data;
+- busca textual, filtro por data;
 - qualquer dado de motoboy (a tela informa explicitamente que nao mostra motoboy);
 - historico admin/dashboard real.
+
+## Entregas M-06
+
+### Detalhe/acompanhamento real da loja
+
+Tela: `/loja/entregas/[id]`
+
+Uso permitido:
+- `GET /api/deliveries/:id` com `Authorization: Bearer <access_token>` obtido do `OperationalShell`.
+- Client API `getMyDelivery(accessToken, id)` em `src/lib/api.ts`.
+- Tipos `StoreDeliveryDetail`/`StoreDeliveryListItem` em `src/types/delivery.ts`.
+- Query enviada: nenhuma. O frontend nunca envia `store_id`, `courier_id` ou `user_id`.
+- O frontend nao acessa `delivery_requests`, nao usa `supabase.from`, nao faz polling automatico e nao assina Realtime.
+
+Resposta consumida:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "destination_address": "Endereco de destino",
+    "notes": "Observacao opcional",
+    "status": "em_transito",
+    "created_at": "2026-05-17T12:00:00.000Z",
+    "expires_at": "2026-05-17T12:01:00.000Z",
+    "accepted_at": "2026-05-17T12:00:20.000Z",
+    "collected_at": "2026-05-17T12:02:00.000Z",
+    "in_transit_at": "2026-05-17T12:04:00.000Z",
+    "delivered_at": null,
+    "updated_at": "2026-05-17T12:04:00.000Z"
+  },
+  "message": "Entrega encontrada"
+}
+```
+
+Estados de UI:
+- loading enquanto busca o detalhe;
+- erro recuperavel com botao "Tentar novamente";
+- nao encontrado honesto para `DELIVERY_NOT_FOUND`, sem expor se o id e de outra loja;
+- detalhe com status real, destino, observacao, `created_at`, `expires_at`, `updated_at` e timeline de `accepted_at`, `collected_at`, `in_transit_at` e `delivered_at`;
+- atualizacao manual por botao "Atualizar"; sem `setInterval`, polling automatico, push ou realtime.
+
+Entradas para a tela:
+- `/loja/nova-entrega` exibe CTA "Acompanhar entrega" apos criar uma entrega real.
+- `/loja/historico` exibe "Abrir entrega" em cada item expandido.
+
+PII preservada:
+- a UI nao recebe nem renderiza `store_id`, `courier_id`, nome/documento/foto do motoboy, owner da loja, Storage, tokens ou headers;
+- se o produto decidir mostrar dados pessoais do motoboy, isso exige contrato backend novo e validacao de PII antes de entrar no frontend.
+
+Fora desta fatia:
+- realtime, push, polling automatico, cancelamento, cron/expiracao automatica, pagamento externo, historico admin, documentos/Storage, GPS/mapa/raio e dados pessoais do motoboy.
 
 ## Entregas Fatia 1 - Motoboy
 
@@ -258,7 +311,7 @@ Fora desta fatia no frontend:
 - cron/expiracao automatica;
 - cancelamento;
 - transicoes pos-aceite (`coletada`, `em_transito`, `entregue`);
-- pagamentos, Storage, historico admin e historico do motoboy.
+- confirmacao de pagamento externo, Storage, historico admin e historico do motoboy.
 
 ## Entregas Fatia 2 - Motoboy
 
@@ -311,7 +364,7 @@ Fora do fluxo atual:
 - realtime/push/Web Push/VAPID;
 - cron/expiracao automatica;
 - historico do motoboy;
-- historico admin, pagamentos, Storage/documentos.
+- historico admin, confirmacao de pagamento externo, Storage/documentos.
 
 ## Motoboy Fatia 3 - Status operacional online/offline
 
@@ -355,7 +408,7 @@ Fora desta fatia:
 - historico de presenca;
 - realtime/push/Web Push/VAPID;
 - cron;
-- cancelamento, pagamentos, Storage/documentos.
+- cancelamento, confirmacao de pagamento externo, Storage/documentos.
 
 ## Motoboy Fatia 4A - Transicoes pos-aceite
 
@@ -386,7 +439,7 @@ Fora desta fatia:
 - polling;
 - cron/expiracao automatica;
 - historico do motoboy;
-- historico admin, pagamentos, Storage/documentos;
+- historico admin, confirmacao de pagamento externo, Storage/documentos;
 - geolocalizacao/GPS e disponibilidade por raio.
 
 ## Motoboy Fatia 4B - Historico real
@@ -413,8 +466,12 @@ Fora desta fatia:
 - realtime/push/Web Push/VAPID;
 - polling;
 - cron/expiracao automatica;
-- historico admin, pagamentos, Storage/documentos;
+- historico admin, confirmacao de pagamento externo, Storage/documentos;
 - geolocalizacao/GPS e disponibilidade por raio.
+
+## Fluxo principal loja -> motoboy -> loja
+
+A M-06 entrega a tela `/loja/entregas/[id]` consumindo `GET /api/deliveries/:id`, com entrada apos criacao e pelo historico. O caminho minimo loja cria -> motoboy aceita/avanca -> loja acompanha agora existe em REST e UI manual, ainda sem realtime, push, polling automatico, cancelamento, cron ou dados pessoais do motoboy.
 
 ## Variaveis permitidas no frontend
 
@@ -477,7 +534,7 @@ Uso permitido:
 - `PATCH /api/admin/users/:id/block`
 - `PATCH /api/admin/users/:id/unblock`
 
-O drawer admin consome `GET /api/admin/users/:id` para enriquecer a aba Perfil com dados administrativos sanitizados de loja/motoboy. As abas de documentos, entregas, pagamento e notas continuam estruturais e nao devem chamar endpoints inexistentes.
+O drawer admin consome `GET /api/admin/users/:id` para enriquecer a aba Perfil com dados administrativos sanitizados de loja/motoboy. As abas de documentos, entregas, pagamento externo e notas continuam estruturais e nao devem chamar endpoints inexistentes.
 
 A listagem `GET /api/admin/users` retorna, por item, os campos de `DomainUser` mais `store_name: string | null` (tipo `AdminUserListItem`). `AdminUsersPanel` exibe a coluna `Loja` com `store_name` (ou `—` quando `null`, caso de `admin`/`motoboy`). A tela nao chama o detalhe por linha (sem N+1) e nao recebe campos de Storage/PII novos.
 
@@ -494,3 +551,5 @@ Contratos backend esperados para proximos ciclos, ainda ausentes:
 - `PATCH /api/admin/payments/:id/mark-paid`
 - signed URLs para documentos em Storage
 - tabela/endpoint de `admin_notes`
+
+Escopo futuro da aba de pagamento: nao existe pagamento integrado no EntregGO. A UI admin deve apenas exibir e confirmar controle interno de pagamento externo de logista/motoboy, usando dados vindos do backend. Fora de escopo: checkout, gateway, PIX, cartao, boleto, repasse, comprovante, carteira, saldo, conciliacao ou exibicao para loja/motoboy. A acao de marcar como pago deve ter loading, bloqueio contra duplo clique, erro recuperavel e nao deve enviar valor financeiro, metodo de pagamento ou dados bancarios.
