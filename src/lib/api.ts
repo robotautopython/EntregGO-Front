@@ -21,9 +21,11 @@ import type {
   AvailableDeliveriesQuery,
   AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
+  CourierDeliveryHistoryResult,
   DeliveryStatusUpdateResult,
   DeliveryTransitionStatus,
   DeliveryRequest,
+  ListCourierHistoryQuery,
   ListMyDeliveriesQuery,
   StoreDeliveryListResult,
 } from '@/types/delivery';
@@ -263,6 +265,30 @@ export async function getActiveDelivery(accessToken: string) {
       '/api/deliveries/active',
       {
         headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listCourierHistory(
+  accessToken: string,
+  query: ListCourierHistoryQuery = {},
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<CourierDeliveryHistoryResult> | ApiFailure>(
+      '/api/deliveries/history',
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+          status: query.status || undefined,
+        },
       },
     );
 

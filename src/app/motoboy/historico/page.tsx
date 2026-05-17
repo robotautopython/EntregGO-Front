@@ -6,7 +6,7 @@ import { OperationalShell } from '@/components/shell/OperationalShell';
 export default function MotoboyHistoricoPage() {
   return (
     <OperationalShell role="motoboy" title="Histórico">
-      <HistoricoMotoboy />
+      {({ accessToken }) => <HistoricoMotoboy accessToken={accessToken} />}
     </OperationalShell>
   );
 }

@@ -67,6 +67,22 @@ describe('getActiveDelivery', () => {
   });
 });
 
+describe('listCourierHistory', () => {
+  it('gets the courier history with page, limit, status and the Bearer token', async () => {
+    const { listCourierHistory } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { items: [], pagination: { page: 2, limit: 20, total: 0 } } },
+    });
+
+    await listCourierHistory('tok-123', { page: 2, limit: 20, status: 'entregue' });
+
+    expect(getMock).toHaveBeenCalledWith('/api/deliveries/history', {
+      headers: { Authorization: 'Bearer tok-123' },
+      params: { page: 2, limit: 20, status: 'entregue' },
+    });
+  });
+});
+
 describe('updateDeliveryStatus', () => {
   it('patches the delivery status with a strict body and Bearer token', async () => {
     const { updateDeliveryStatus } = await import('@/lib/api');

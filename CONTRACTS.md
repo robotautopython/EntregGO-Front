@@ -389,6 +389,33 @@ Fora desta fatia:
 - historico admin, pagamentos, Storage/documentos;
 - geolocalizacao/GPS e disponibilidade por raio.
 
+## Motoboy Fatia 4B - Historico real
+
+Status frontend nesta fatia: `/motoboy/historico` consome `GET /api/deliveries/history` via Bearer token do `OperationalShell`, substituindo os exemplos visuais por lista real paginada. A tela possui loading, erro recuperavel, vazio honesto, filtro por status do contrato e paginacao real.
+
+Tela: `/motoboy/historico`. Client API em `src/lib/api.ts`: `listCourierHistory(accessToken, { page, limit, status })`. Tipos em `src/types/delivery.ts`: `CourierDeliveryHistoryItem`, `CourierDeliveryHistoryResult` e `ListCourierHistoryQuery`.
+
+Contrato consumido:
+- `GET /api/deliveries/history` com `Authorization: Bearer <access_token>`.
+- Query strict: `page`, `limit<=50`, `status` opcional.
+- Apenas usuario de dominio `role=motoboy`, `status=ativo`, com perfil `couriers`.
+- Historico nao exige `is_online=true`.
+- O frontend nunca envia `courier_id`, `store_id`, `user_id` ou busca textual.
+
+PII preservada:
+- a UI renderiza apenas campos retornados pelo contrato: `status`, `store.name/address`, `destination_address`, `notes` e timestamps operacionais;
+- a UI nao recebe nem renderiza `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, Storage/documentos, email, tokens ou headers.
+
+Fora desta fatia:
+- busca textual e filtro por data;
+- detalhe unico;
+- cancelamento;
+- realtime/push/Web Push/VAPID;
+- polling;
+- cron/expiracao automatica;
+- historico admin, pagamentos, Storage/documentos;
+- geolocalizacao/GPS e disponibilidade por raio.
+
 ## Variaveis permitidas no frontend
 
 - `NEXT_PUBLIC_API_URL`
