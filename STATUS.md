@@ -8,7 +8,6 @@
 
 ## Em Andamento
 
-- [ ] Validar M-06 em deploy/smoke autenticado quando houver ciclo operacional de publicacao.
 - [ ] Manter abas de documentos, entregas, pagamento externo e notas como placeholders honestos ate existirem endpoints reais.
 
 ## Proximas Tarefas
@@ -66,6 +65,7 @@
 - [x] Acompanhamento final do deploy documental aprovado: commit `22b83e2087d7b1c162215caf489ab3d46bd7212e` em `origin/main`, GitHub/Vercel `success`, Vercel `Deployment has completed`, `/motoboy` `200`, chunk com `Loja solicitante`, chunks sem `Endereco nao informado`/`Destino nao informado`, backend publico com `/api/health` `200` e `/api/deliveries/active` sem token `401`. Sem alteracao funcional, backend ou contrato API.
 - [x] Planejamento de pagamentos ajustado em 2026-05-17: nao havera pagamento integrado na plataforma; o frontend deve tratar isso como confirmacao administrativa simples de pagamento externo, visivel somente ao admin.
 - [x] M-06 frontend implementado e validado localmente: `/loja/entregas/[id]` consome `GET /api/deliveries/:id` via `getMyDelivery`, com loading, erro recuperavel, nao encontrado honesto, status real, destino/observacao, timeline de timestamps e botao manual "Atualizar". `/loja/nova-entrega` ganhou CTA "Acompanhar entrega" apos criar a entrega; `/loja/historico` ganhou "Abrir entrega" por item expandido. Sem Supabase direto, sem `store_id`/`courier_id`, sem dados pessoais do motoboy, sem polling/realtime/push/cancelamento/cron. Frontend `typecheck`, `test` (62), `lint`, `build`, `git diff --check`, smoke HTTP/CORS local e smoke autenticado local M-06 passaram com cleanup completo.
+- [x] M-06 validada pos-deploy em producao: frontend `20ab39710367bfcb9565246daef292f275e3c370` e backend `27987f0b54b6747c6dac5a9f5134f4f2c80d8b3e` publicados com Vercel `success`; smoke publico confirmou `/loja/entregas/<uuid>` -> `200`, chunk da rota publicado, backend `/api/health` -> `200` e `GET /api/deliveries/:id` sem token -> `401 AUTH_REQUIRED`; smoke autenticado validou loja criando entrega ficticia, motoboy aceitando e avancando status, loja dona abrindo detalhe com timeline real e resposta sanitizada, outra loja recebendo `DELIVERY_NOT_FOUND` e cleanup completo.
 
 ## Bloqueios
 
