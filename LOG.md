@@ -526,3 +526,14 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (9 arquivos, 63 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 133 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erros de whitespace. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
 
 **Fora do escopo preservado:** Supabase direto no frontend para dados de negocio, realtime, push/Web Push/VAPID, polling automatico, cancelamento, cron/expiracao automatica, historico admin, pagamento externo, documentos/Storage, GPS/mapa/raio, dados pessoais do motoboy e deploy.
+
+## 2026-05-17 - HARDENING POS-M-06 POS-DEPLOY PRODUCAO APROVADO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O hardening foi publicado em producao com frontend funcional `8771b9b` e backend funcional `ad5ded4`. Os checks GitHub/Vercel retornaram `success` e `Deployment has completed` nos dois repos. O fechamento documental posterior nao altera runtime.
+**Arquivos publicados:** frontend `src/types/delivery.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/components/loja/__tests__/NovaEntregaFlow.test.tsx`, `src/components/motoboy/__tests__/FilaDisponivel.test.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`; backend `src/services/delivery.service.ts`, `tests/delivery-routes.spec.ts` e documentos de contrato/status/log.
+**Status:** fechado em producao
+
+**Validacoes pos-deploy:** Smoke publico confirmou `https://entreggo.vercel.app/loja/entregas/<uuid>` -> `200`, backend `/api/health` -> `200` e rotas de entrega sem token retornando `401`. Smoke autenticado de producao com dados ficticios temporarios confirmou: loja cria entrega e recebe resposta sem `store_id`/`courier_id`; a UI abre `/loja/entregas/[id]` usando o `id`; motoboy aceita e a resposta nao contem `courier_id`; transicao para `coletada` funciona; detalhe da loja permanece sem identificadores internos; cleanup completo.
+
+**Fora do escopo preservado:** Supabase direto no frontend para dados de negocio, realtime, push/Web Push/VAPID, polling automatico, cancelamento, cron/expiracao automatica, historico admin, pagamento externo, documentos/Storage, GPS/mapa/raio, dados pessoais do motoboy e dados sensiveis em logs.
