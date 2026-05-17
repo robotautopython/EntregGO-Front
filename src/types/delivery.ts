@@ -57,6 +57,39 @@ export interface ListMyDeliveriesQuery {
   status?: DeliveryRequestStatus;
 }
 
+export interface AdminDeliveryListItem {
+  id: string;
+  destination_address: string | null;
+  notes: string | null;
+  status: DeliveryRequestStatus;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+  collected_at: string | null;
+  in_transit_at: string | null;
+  delivered_at: string | null;
+  updated_at: string;
+  store: {
+    name: string;
+    address: string;
+  };
+}
+
+export interface AdminDeliveriesResult {
+  items: AdminDeliveryListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+
+export interface AdminDeliveriesQuery {
+  page?: number;
+  limit?: number;
+  status?: DeliveryRequestStatus;
+}
+
 export interface AvailableDeliveryStore {
   name: string;
   address: string;

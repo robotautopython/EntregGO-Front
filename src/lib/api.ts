@@ -18,6 +18,8 @@ import type {
 import type {
   AcceptedDelivery,
   ActiveDelivery,
+  AdminDeliveriesQuery,
+  AdminDeliveriesResult,
   AvailableDeliveriesQuery,
   AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
@@ -170,6 +172,30 @@ export async function getAdminInsights(accessToken: string) {
       '/api/admin/insights',
       {
         headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listAdminDeliveries(
+  accessToken: string,
+  query: AdminDeliveriesQuery = {},
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminDeliveriesResult> | ApiFailure>(
+      '/api/admin/deliveries',
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+          status: query.status || undefined,
+        },
       },
     );
 

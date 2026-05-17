@@ -37,6 +37,22 @@ describe('listAvailableDeliveries', () => {
   });
 });
 
+describe('listAdminDeliveries', () => {
+  it('sends only page, limit and status with the Bearer token', async () => {
+    const { listAdminDeliveries } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { items: [], pagination: { page: 2, limit: 20, total: 0 } } },
+    });
+
+    await listAdminDeliveries('tok-123', { page: 2, limit: 20, status: 'entregue' });
+
+    expect(getMock).toHaveBeenCalledWith('/api/admin/deliveries', {
+      headers: { Authorization: 'Bearer tok-123' },
+      params: { page: 2, limit: 20, status: 'entregue' },
+    });
+  });
+});
+
 describe('createDeliveryRequest', () => {
   it('posts only the creation payload with the Bearer token', async () => {
     const { createDeliveryRequest } = await import('@/lib/api');

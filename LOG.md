@@ -653,3 +653,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Smoke autenticado:** com dados ficticios temporarios, UI confirmou login real, detalhe do proprio historico renderizado com loja, coleta, destino, observacao e status `Entregue`; entrega de outro courier exibiu nao encontrado honesto. API confirmou isolamento por courier, query proibida e role errada. DOM/API ficaram sem `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, documentos, `Authorization`, `Bearer`, token ou email.
 
 **Cleanup:** cleanup completo com `domain_residue=0`, `store_residue=0`, `courier_residue=0`, `delivery_residue=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-17 - M-07 LISTAGEM ADMINISTRATIVA DE ENTREGAS
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a M-07 no frontend. A rota `/admin/entregas` deixou de usar `ComingSoonPanel` e passou a renderizar `AdminDeliveriesPanel`, consumindo `GET /api/admin/deliveries` por `listAdminDeliveries(accessToken, { page, limit, status })` com Bearer token vindo do `OperationalShell`.
+**Arquivos modificados:** `src/app/admin/entregas/page.tsx`, `src/components/admin/AdminDeliveriesPanel.tsx`, `src/components/admin/__tests__/AdminDeliveriesPanel.test.tsx`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/types/delivery.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/admin/deliveries` implementado no repositorio backend com migration de indice global para `created_at desc, id desc`.
+**Agentes/gates utilizados:** Camisa10; SecurityValidator e PerformanceValidator aprovaram previamente com ressalvas obrigatorias.
+**Status:** implementado e validado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Ressalvas incorporadas:** A UI exibe apenas dados permitidos por contrato: `id`, destino, observacao, status, timestamps e `store.name/address`. A copy da pagina nao promete responsavel da corrida e nenhum dado de motoboy entra no v1. Nao ha Supabase direto, polling, realtime, push, cancelamento, pagamento, detalhe admin, busca textual ou filtro por data.
+
+**Validacoes locais:** `npm run typecheck`, `npm test` (11 arquivos, 75 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` avisou que sera removido no Next.js 16, ja registrado como risco conhecido. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
+
+**Fora do escopo preservado:** cancelamento, pagamento externo, alteracao de status, detalhe admin, busca textual, filtro por data, polling, realtime, push, cron, drawer por usuario, dados de motoboy e qualquer exposicao de token/header/secret no DOM.

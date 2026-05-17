@@ -560,11 +560,13 @@ Telas:
 - `/admin/motoboys`
 - `/admin/aprovacoes` (redirect server-side para `/admin/usuarios?status=pendente`)
 - `/admin/insights`
+- `/admin/entregas`
 
 Uso permitido:
 - `GET /api/admin/users?page=1&limit=20&role=logista&status=pendente&search=email`
 - `GET /api/admin/users/:id`
 - `GET /api/admin/insights`
+- `GET /api/admin/deliveries?page=1&limit=20&status=entregue`
 - `PATCH /api/admin/users/:id/approve`
 - `PATCH /api/admin/users/:id/block`
 - `PATCH /api/admin/users/:id/unblock`
@@ -574,6 +576,30 @@ O drawer admin consome `GET /api/admin/users/:id` para enriquecer a aba Perfil c
 A listagem `GET /api/admin/users` retorna, por item, os campos de `DomainUser` mais `store_name: string | null` (tipo `AdminUserListItem`). `AdminUsersPanel` exibe a coluna `Loja` com `store_name` (ou `—` quando `null`, caso de `admin`/`motoboy`). A tela nao chama o detalhe por linha (sem N+1) e nao recebe campos de Storage/PII novos.
 
 `/admin/insights` consome `GET /api/admin/insights` com Bearer token de admin ativo. A pagina exibe apenas campos do contrato: contagens por `role/status`, lojas e motoboys ativos, `latest_pending_users.items` limitado pelo backend e `generated_at`. Campos de PII como email, nomes, endereco, perfis e documentos nao fazem parte desta tela.
+
+`/admin/entregas` consome `GET /api/admin/deliveries` com Bearer token de admin ativo. A pagina exibe a listagem real de entregas da rede em modo somente leitura, com loading, erro recuperavel, vazio honesto, filtro por status e paginacao. O client API `listAdminDeliveries(accessToken, { page, limit, status })` envia somente `page`, `limit` e `status`; nao usa Supabase direto nem acessa tabelas de dominio pelo frontend.
+
+Campos permitidos na UI de entregas admin:
+- `id`
+- `destination_address`
+- `notes`
+- `status`
+- `created_at`
+- `expires_at`
+- `accepted_at`
+- `collected_at`
+- `in_transit_at`
+- `delivered_at`
+- `updated_at`
+- `store.name`
+- `store.address`
+
+Campos proibidos na UI de entregas admin:
+- `store_id`, `courier_id`, `user_id`, `auth_id`, email
+- `owner_name`, `logo_url`, `description`
+- `full_name`, documentos e Storage URLs
+- tokens, cookies, header Authorization ou service role
+- qualquer objeto ou dado de motoboy no v1
 
 Campos proibidos no drawer enquanto nao houver pipeline de Storage validado:
 - `logo_url`
