@@ -637,3 +637,19 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (10 arquivos, 70 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 148 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `.env.local` segue ignorado por `.gitignore` e nao aparece em `git ls-files`.
 
 **Fora do escopo preservado:** Supabase direto para dados de negocio, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, historico admin, pagamento externo, Storage/documentos, GPS/mapa/raio, busca textual, filtro por data e dados pessoais novos do motoboy. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-17 - FATIA 4C FECHAMENTO OPERACIONAL EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechado o ciclo operacional da Fatia 4C no frontend. A rota `/motoboy/historico/[id]` foi publicada em `origin/main` no commit `2f6f3bd638fd3f0810eaeed3b438ab9ab4b6f9ae`, consumindo o backend `704694c4d6c63d1c3962e3b1353434f41c2c64c7`. Smoke publico e autenticado confirmaram a tela em producao.
+**Arquivos modificados nesta rodada documental:** `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, DeployObservability
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** frontend `npm run typecheck`, `npm test` (70), `npm run lint`, `npm run build`; backend `npm run typecheck`, `npm test` (148), `npm run lint`, `npm run build`. `git diff --check` sem erro de whitespace, apenas avisos LF/CRLF do Windows.
+
+**Smoke publico:** `https://entreggo.vercel.app/motoboy/historico/<uuid>` retornou `200`; `GET https://entreggoback.vercel.app/api/health` retornou `200`; `GET /api/deliveries/history/<uuid>` sem token retornou `401 AUTH_REQUIRED`.
+
+**Smoke autenticado:** com dados ficticios temporarios, UI confirmou login real, detalhe do proprio historico renderizado com loja, coleta, destino, observacao e status `Entregue`; entrega de outro courier exibiu nao encontrado honesto. API confirmou isolamento por courier, query proibida e role errada. DOM/API ficaram sem `store_id`, `courier_id`, `owner_name`, `logo_url`, `description`, documentos, `Authorization`, `Bearer`, token ou email.
+
+**Cleanup:** cleanup completo com `domain_residue=0`, `store_residue=0`, `courier_residue=0`, `delivery_residue=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.

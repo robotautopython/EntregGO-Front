@@ -75,6 +75,7 @@
 - [x] Fatia 4B publicada em `origin/main`: frontend documental `4ecb8f0` e backend documental `b619859` enviados; smoke publico confirmou `/motoboy/historico` `200`, backend `/api/health` `200` e `GET /api/deliveries/history` sem token com `401 AUTH_REQUIRED`; smoke autenticado de producao com dados ficticios confirmou historico permitido para motoboy offline, isolamento por courier, query proibida com `VALIDATION_ERROR`, role errada com `FORBIDDEN_ROLE`, resposta sanitizada e cleanup completo.
 - [x] Fechamento visual autenticado da Fatia 4B revalidado em producao: SecurityValidator bloqueou exposicao de email no shell autenticado, correcao minima publicada no frontend `6ab9ac8393076db640af5d1d7954874f2f61249e` removendo email visivel de sidebar/topbar/drawer e iniciais derivadas de email; SecurityValidator e TestEngineer aprovaram antes do smoke. Smoke publico/API/UI em producao confirmou `/motoboy/historico` `200`, `/api/health` `200`, `GET /api/deliveries/history` sem token `401 AUTH_REQUIRED`, motoboy ativo offline vendo historico real paginado, entrega de outro courier ausente, query proibida com `VALIDATION_ERROR`, loja com `FORBIDDEN_ROLE`, UI com loja/destino/observacao/timestamps, vazio e erro recuperavel, sem campos proibidos ou email no DOM/API, e cleanup completo (`domain_residue=0`, `store_residue=0`, `courier_residue=0`, `delivery_residue=0`, `auth_residue=0`).
 - [x] Fatia 4C detalhe unico do historico do motoboy implementada localmente: `/motoboy/historico/[id]` consome `GET /api/deliveries/history/:id` via `getCourierHistoryDelivery`, com loading, erro recuperavel, nao encontrado honesto, status real, loja, coleta, destino, observacao e timestamps operacionais. `/motoboy/historico` ganhou entrada "Abrir detalhe" em item expandido. Sem Supabase direto, sem `store_id`/`courier_id`, sem email/token/header no DOM, sem polling/realtime/push/cancelamento/cron. Frontend `typecheck`, `test` (70), `lint`, `build` e `git diff --check` passaram.
+- [x] Fatia 4C publicada e validada em producao: frontend `2f6f3bd638fd3f0810eaeed3b438ab9ab4b6f9ae` e backend `704694c4d6c63d1c3962e3b1353434f41c2c64c7` enviados para `origin/main`. Smoke publico confirmou `/motoboy/historico/<uuid>` `200`, backend `/api/health` `200` e `GET /api/deliveries/history/<uuid>` sem token com `401 AUTH_REQUIRED`. Smoke autenticado API+UI com dados ficticios confirmou login real, detalhe proprio, nao encontrado honesto para entrega de outro courier, ausencia de campos proibidos no DOM/API e cleanup completo sem imprimir secrets.
 
 ## Bloqueios
 
@@ -91,5 +92,5 @@
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
 **Testes:** Vitest + Testing Library (70 testes; `npm test`; inclui Fatia 4C); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel
+**Deploy:** publicado em Vercel; Fatia 4C validada em producao
 **Riscos abertos:** 4
