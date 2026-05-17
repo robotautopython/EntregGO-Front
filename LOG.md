@@ -430,3 +430,15 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Impacto:** Contrato e PII preservados; nao houve backend, endpoint, tipo de API, SQL, migration, RLS, grant ou policy. O ajuste reduz ruido visual quando endereco nao existe e mantem o nome da loja solicitante como informacao principal.
 
 **Fora do escopo preservado:** Supabase direto no frontend, realtime, push/Web Push/VAPID, polling, cron, GPS, Storage/documentos, cancelamento, historico do motoboy, historico admin e pagamentos.
+
+## 2026-05-16 - AJUSTE UX MOTOBOY POS-DEPLOY PRODUCAO APROVADO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** O ajuste UX do `/motoboy` foi validado em producao em `https://entreggo.vercel.app/motoboy`, com frontend publicado ate `ecc1e66734eebe72401ebf270ac4a3cf356bd3f1` e backend publicado ate `57a38723d749e39a578925e3da529695346af4dd`. A rota respondeu `200`; os assets publicados contem `Loja solicitante` e nao contem `Endereco nao informado` nem `Destino nao informado`.
+**Arquivos criados:** nenhum
+**Arquivos modificados:** `STATUS.md`, `LOG.md`
+**Status:** fechado em producao
+
+**Validacoes pos-deploy:** Smoke UI autenticado confirmou `Loja solicitante` na fila disponivel e na corrida ativa, pre-aceite sem destino/notas, destino ausente sem card `Entrega`, placeholder, alerta, mapa de destino ou botao `Abrir no mapa`, inclusive no cenario controlado com todos os enderecos ausentes. A UI nao expos `store_id`, `courier_id`, `owner_name`, `logo_url`, documentos, Storage, Authorization ou Bearer. Foram criados e limpos 2 auth users, 2 domain users, 1 store, 1 courier e 2 deliveries; cleanup completo, com `0` usuarios smoke restantes.
+
+**Fora do escopo preservado:** backend funcional, contrato API novo, SQL, migration, RLS, grant, policy, realtime, push, polling, cron, GPS, Storage, cancelamento, historico e diretorios locais de agentes.
