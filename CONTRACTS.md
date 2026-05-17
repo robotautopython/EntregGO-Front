@@ -50,6 +50,7 @@ Uso permitido:
 - Payload vazio `{}` e permitido pelo contrato backend.
 - `store_id` nunca e enviado pelo frontend; o backend deriva a loja a partir da sessao.
 - O frontend nao acessa `delivery_requests` diretamente. Escrita/leitura de dominio segue pela API backend.
+- A resposta usada pela UI nao inclui `store_id` nem `courier_id`; a navegacao para o detalhe usa somente `id`.
 
 Body:
 
@@ -66,11 +67,9 @@ Resposta esperada:
   "success": true,
   "data": {
     "id": "uuid",
-    "store_id": "uuid",
     "destination_address": null,
     "notes": "Observacao opcional",
     "status": "aguardando",
-    "courier_id": null,
     "created_at": "2026-05-15T20:00:00.000Z",
     "expires_at": "2026-05-15T20:01:00.000Z",
     "accepted_at": null,
@@ -220,7 +219,7 @@ Estados de UI:
 - aceite: botao por item com lock de estado (`acceptingId`) que desabilita todos os botoes enquanto um aceite esta em voo (anti duplo-clique e anti aceite paralelo); `ALREADY_ACCEPTED`/`DELIVERY_EXPIRED`/`DELIVERY_NOT_FOUND` removem o item e recarregam a lista;
 - sucesso: o item sai da lista e a tela exibe confirmacao estatica com `store.name`/`store.address` da resposta; nao ha navegacao para fluxo de corrida.
 
-PII preservada: a UI le e renderiza apenas `store.name` e `store.address`. `destination_address`, `notes`, `store_id`, `owner_name`, `logo_url`, `description` nao sao recebidos no contrato; `courier_id` retornado no aceite nao e exibido.
+PII preservada: a UI le e renderiza apenas `store.name` e `store.address`. `destination_address`, `notes`, `store_id`, `courier_id`, `owner_name`, `logo_url` e `description` nao sao recebidos no contrato.
 
 ### Descoberta de entregas disponiveis
 
@@ -281,7 +280,6 @@ Resposta esperada:
   "data": {
     "id": "uuid",
     "status": "aceita",
-    "courier_id": "uuid",
     "accepted_at": "2026-05-16T12:00:20.000Z",
     "created_at": "2026-05-16T12:00:00.000Z",
     "expires_at": "2026-05-16T12:01:00.000Z",

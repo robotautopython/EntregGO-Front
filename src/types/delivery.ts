@@ -14,11 +14,9 @@ export interface CreateDeliveryRequestPayload {
 
 export interface DeliveryRequest {
   id: string;
-  store_id: string;
   destination_address: string | null;
   notes: string | null;
   status: DeliveryRequestStatus;
-  courier_id: string | null;
   created_at: string;
   expires_at: string;
   accepted_at: string | null;
@@ -89,7 +87,6 @@ export interface AvailableDeliveriesResult {
 export interface AcceptedDelivery {
   id: string;
   status: DeliveryRequestStatus;
-  courier_id: string;
   accepted_at: string;
   created_at: string;
   expires_at: string;

@@ -20,11 +20,9 @@ const createMock = vi.mocked(createDeliveryRequest);
 
 const createdDelivery: DeliveryRequest = {
   id: '99999999-9999-4999-8999-999999999999',
-  store_id: '55555555-5555-4555-8555-555555555555',
   destination_address: null,
   notes: null,
   status: 'aguardando',
-  courier_id: null,
   created_at: '2026-05-17T12:00:00.000Z',
   expires_at: '2026-05-17T12:10:00.000Z',
   accepted_at: null,

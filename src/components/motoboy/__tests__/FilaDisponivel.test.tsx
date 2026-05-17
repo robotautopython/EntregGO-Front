@@ -96,7 +96,6 @@ describe('FilaDisponivel', () => {
     acceptMock.mockResolvedValue({
       id: 'd1',
       status: 'aceita',
-      courier_id: 'me',
       accepted_at: '2026-05-16T12:00:20.000Z',
       created_at: '2026-05-16T12:00:00.000Z',
       expires_at: '2026-05-16T12:01:00.000Z',
@@ -152,7 +151,6 @@ describe('FilaDisponivel', () => {
     resolveAccept({
       id: 'd1',
       status: 'aceita',
-      courier_id: 'me',
       accepted_at: '2026-05-16T12:00:20.000Z',
       created_at: '2026-05-16T12:00:00.000Z',
       expires_at: '2026-05-16T12:01:00.000Z',

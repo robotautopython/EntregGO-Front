@@ -65,7 +65,6 @@ const activeDelivery: ActiveDelivery = {
 const acceptedDelivery: AcceptedDelivery = {
   id: activeDelivery.id,
   status: 'aceita',
-  courier_id: 'courier-1',
   accepted_at: activeDelivery.accepted_at ?? '2026-05-16T12:00:20.000Z',
   created_at: activeDelivery.created_at,
   expires_at: activeDelivery.expires_at,

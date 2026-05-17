@@ -37,6 +37,25 @@ describe('listAvailableDeliveries', () => {
   });
 });
 
+describe('createDeliveryRequest', () => {
+  it('posts only the creation payload with the Bearer token', async () => {
+    const { createDeliveryRequest } = await import('@/lib/api');
+    postMock.mockResolvedValue({
+      data: { success: true, data: { id: 'd1', status: 'aguardando' } },
+    });
+
+    await createDeliveryRequest('tok-123', { notes: 'Sem destino informado' });
+
+    expect(postMock).toHaveBeenCalledWith(
+      '/api/deliveries',
+      { notes: 'Sem destino informado' },
+      {
+        headers: { Authorization: 'Bearer tok-123' },
+      },
+    );
+  });
+});
+
 describe('getMyDelivery', () => {
   it('gets one store delivery with the Bearer token and no params', async () => {
     const { getMyDelivery } = await import('@/lib/api');
