@@ -575,3 +575,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Observabilidade:** `gh` local continuou sem autenticacao (`401 Unauthorized`), portanto checks GitHub/Vercel nao foram consultados via CLI. Nenhum token, header, cookie, service role ou secret foi impresso.
 
 **Fora do escopo preservado:** Supabase direto no frontend para dados de negocio, SQL/migration/RLS/grants/policies, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, GPS/mapa/raio, Storage/documentos, historico admin, pagamento externo e dados pessoais do motoboy.
+
+## 2026-05-17 - FATIA 4B HISTORICO REAL DO MOTOBOY AUDITADA
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Iniciada e fechada localmente a Fatia 4B. A auditoria confirmou que `/motoboy/historico` ja estava conectado ao contrato real `GET /api/deliveries/history` por `listCourierHistory(accessToken, { page, limit, status })`, usando Bearer token vindo do `OperationalShell role="motoboy"`. A tela renderiza historico real paginado, filtro por status, loading, erro recuperavel, vazio honesto e detalhes expansivos com destino, observacao e timestamps operacionais. Nao usa Supabase direto para dados de negocio, polling, realtime ou push.
+**Arquivos modificados:** `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/deliveries/history` ja estava implementado e auditado com `courier_id` derivado da sessao, sem exigir `is_online`.
+**Agentes utilizados:** Camisa10, ImpactValidator, SecurityValidator, TestEngineer, Documentador
+**Status:** fechado localmente; commit/deploy pendentes
+
+**Gates:** ImpactValidator aprovado sem necessidade de implementacao funcional nova; SecurityValidator aprovado, confirmando ausencia de `store_id`, `courier_id`, `owner_name`, `logo_url`, documentos, Storage, email, tokens e headers na UI; TestEngineer aprovado, confirmando cobertura minima de client API, render real, vazio, retry, filtro, paginacao e campos proibidos.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (9 arquivos, 64 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Backend `npm run typecheck`, `npm test` (7 arquivos, 133 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. Nenhum secret, token, cookie, header Authorization ou service role foi impresso. `.env.local` segue ignorado por `.gitignore`.
+
+**Fora do escopo preservado:** Supabase direto para dados de negocio, codigo funcional novo, realtime, push/Web Push/VAPID, polling automatico, cron, cancelamento, GPS/mapa/raio, Storage/documentos, historico admin, pagamento externo, detalhe unico do historico, busca textual, filtro por data e dados pessoais do motoboy.

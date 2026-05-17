@@ -71,10 +71,11 @@
 - [x] M-06.1 implementada localmente no frontend: auditoria confirmou `Loja solicitante` e `store.address` na fila e na corrida ativa, sem destino/notas pre-aceite; `CorridaAtivaReal` passou a normalizar `notes` em branco antes de renderizar e os testes travam `Coleta`, endereco da loja, destino/observacao pos-aceite e ausencia de observacao vazia. Sem backend funcional novo, Supabase direto, realtime, push, polling, cron, GPS, Storage, cancelamento ou dados pessoais do motoboy.
 - [x] M-06.1 publicada em `origin/main`: frontend `5005d84` e backend `3c168b5` enviados; smoke publico confirmou `/motoboy` `200`, backend `/api/health` `200` e rotas protegidas do motoboy sem token com `401`. Checks GitHub/Vercel nao foram lidos via `gh` porque o CLI local retornou `401 Unauthorized`; smoke autenticado nao foi executado por falta de credencial segura no contexto.
 - [x] Fechamento operacional M-06.1 validado em producao: frontend final `038eb2b` e backend final `5ea06bc` confirmados em `origin/main`; smoke publico repetido com sucesso; smoke autenticado API+UI executado com credenciais locais seguras, dados ficticios, sem imprimir tokens/headers/secrets, validando fila sem destino/notas pre-aceite, corrida ativa com loja/coleta/destino/observacao pos-aceite, ausencia de campos sensiveis e cleanup completo (`domain_residue=0`, `auth_residue=0`).
+- [x] Fatia 4B historico real do motoboy auditada localmente: `/motoboy/historico` ja consumia `GET /api/deliveries/history` via `listCourierHistory` e Bearer token do `OperationalShell`, com lista real paginada, filtro por status, vazio/erro recuperavel e testes cobrindo ausencia de campos proibidos. Sem Supabase direto para dados de negocio, sem codigo funcional novo, sem realtime/push/polling/cron/cancelamento. Gates ImpactValidator, SecurityValidator e TestEngineer aprovaram; frontend `typecheck`, `test` (64), `lint`, `build` e `git diff --check` passaram, assim como a matriz backend correlata.
 
 ## Bloqueios
 
-- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), o detalhe/acompanhamento real da loja (M-06), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3) e transicoes pos-aceite REST (Fatia 4A) ja existem; busca textual, filtro por data e cancelamento seguem fora de escopo.
+- Projeto ainda nao possui dashboards complexos, push real, realtime real ou cron. O historico real da loja (M-05), o detalhe/acompanhamento real da loja (M-06), a UI real de descoberta/aceite do motoboy (Fatia 1), a leitura real da corrida ativa (Fatia 2), o status online/offline real (Fatia 3), transicoes pos-aceite REST (Fatia 4A) e historico real paginado do motoboy (Fatia 4B) ja existem; busca textual, filtro por data, detalhe unico do historico e cancelamento seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - Confirmacao de pagamento externo segue bloqueada ate endpoints backend com auditoria server-side. O escopo e apenas marcar se logista/motoboy pagou fora da plataforma; sem gateway, checkout, PIX, cartao, comprovante ou exibicao para loja/motoboy. Nao priorizar antes do fluxo principal.
 - `npm audit --json` ainda falha com 7 vulnerabilidades moderadas: `next@15.5.18` aponta `postcss` interno e a cadeia de testes `vitest`/`vite` aponta advisories moderados com fix semver-major. Sem alto/critico; exige acompanhamento de release/advisory antes de PWA/push real ou upgrade major do runner.
@@ -86,6 +87,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (64 testes; `npm test`); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Testes:** Vitest + Testing Library (64 testes; `npm test`; inclui Fatia 4B); Playwright instalado como ferramenta de smoke UI autenticado controlado
 **Deploy:** publicado em Vercel
 **Riscos abertos:** 4

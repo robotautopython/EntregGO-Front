@@ -454,7 +454,7 @@ Fora desta fatia:
 
 ## Motoboy Fatia 4B - Historico real
 
-Status frontend nesta fatia: `/motoboy/historico` consome `GET /api/deliveries/history` via Bearer token do `OperationalShell`, substituindo os exemplos visuais por lista real paginada. A tela possui loading, erro recuperavel, vazio honesto, filtro por status do contrato e paginacao real.
+Status frontend nesta fatia: `/motoboy/historico` consome `GET /api/deliveries/history` via Bearer token do `OperationalShell`, substituindo os exemplos visuais por lista real paginada. A tela possui loading, erro recuperavel, vazio honesto, filtro por status do contrato e paginacao real. Em 2026-05-17, este contrato foi auditado contra o backend real sem necessidade de mudanca funcional nova.
 
 Tela: `/motoboy/historico`. Client API em `src/lib/api.ts`: `listCourierHistory(accessToken, { page, limit, status })`. Tipos em `src/types/delivery.ts`: `CourierDeliveryHistoryItem`, `CourierDeliveryHistoryResult` e `ListCourierHistoryQuery`.
 
