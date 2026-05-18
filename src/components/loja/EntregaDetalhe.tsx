@@ -10,6 +10,7 @@ import {
   PackageCheck,
   RefreshCw,
   Route,
+  UserCheck,
   type LucideIcon,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -291,6 +292,7 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
   }, [accessToken, deliveryId, scheduleRealtimeRefresh]);
 
   const timeline = useMemo(() => (delivery ? buildTimeline(delivery) : []), [delivery]);
+  const acceptedCourierName = delivery?.accepted_at ? delivery.courier?.full_name : null;
 
   return (
     <div className="space-y-6">
@@ -408,6 +410,16 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
                 label="Criada em"
                 value={formatDateTime(delivery.created_at)}
               />
+              {acceptedCourierName ? (
+                <DetailTile icon={UserCheck} label="Motoboy" value={acceptedCourierName} />
+              ) : null}
+              {delivery.accepted_at ? (
+                <DetailTile
+                  icon={Clock3}
+                  label="Aceita em"
+                  value={formatDateTime(delivery.accepted_at)}
+                />
+              ) : null}
               <DetailTile
                 icon={Clock3}
                 label="Expira em"

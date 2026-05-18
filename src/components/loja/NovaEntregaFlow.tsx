@@ -1,6 +1,14 @@
 'use client';
 
-import { ArrowLeft, CheckCircle2, Clock3, PackagePlus, RefreshCw } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock3,
+  PackagePlus,
+  RefreshCw,
+  UserCheck,
+  type LucideIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -192,6 +200,7 @@ function CreatedDeliveryState({
   onNewRequest,
 }: CreatedDeliveryStateProps) {
   const shortId = delivery.id.slice(0, 8);
+  const acceptedCourierName = delivery.accepted_at ? delivery.courier?.full_name : null;
   const loadRequestId = useRef(0);
   const loadInFlight = useRef(false);
   const queuedLoad = useRef(false);
@@ -312,7 +321,9 @@ function CreatedDeliveryState({
                 Solicitação criada
               </p>
               <h2 className="mt-1 text-2xl font-black text-asphalt-950">
-                Entrega #{shortId} aguardando próxima etapa.
+                {acceptedCourierName
+                  ? `Entrega #${shortId} aceita por ${acceptedCourierName}.`
+                  : `Entrega #${shortId} aguardando próxima etapa.`}
               </h2>
               <p className="mt-1 text-sm font-medium text-asphalt-950/70">
                 Status recebido do backend: {delivery.status}
@@ -382,9 +393,15 @@ function CreatedDeliveryState({
           </p>
         ) : null}
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <StatusTile label="Criada em" value={formatDateTime(delivery.created_at)} />
           <StatusTile label="Status" value={delivery.status} />
+          {acceptedCourierName ? (
+            <StatusTile label="Motoboy" value={acceptedCourierName} icon={UserCheck} />
+          ) : null}
+          {delivery.accepted_at ? (
+            <StatusTile label="Aceita em" value={formatDateTime(delivery.accepted_at)} />
+          ) : null}
           <StatusTile label="Expira em" value={formatDateTime(delivery.expires_at)} />
         </div>
       </Card>
@@ -400,16 +417,17 @@ function CreatedDeliveryState({
 interface StatusTileProps {
   label: string;
   value: string;
+  icon?: LucideIcon;
 }
 
-function StatusTile({ label, value }: StatusTileProps) {
+function StatusTile({ label, value, icon: Icon = Clock3 }: StatusTileProps) {
   return (
     <div className="rounded-md border border-paper-line bg-paper p-4">
       <p className="text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
         {label}
       </p>
       <p className="mt-1 flex items-center gap-2 text-sm font-black text-asphalt-950">
-        <Clock3 className="h-3.5 w-3.5 text-route-600" aria-hidden="true" />
+        <Icon className="h-3.5 w-3.5 text-route-600" aria-hidden="true" />
         {value}
       </p>
     </div>

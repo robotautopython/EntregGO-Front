@@ -41,6 +41,9 @@ const detail: StoreDeliveryDetail = {
     name: 'Loja Cafe',
     address: 'Rua da Loja, 100',
   },
+  courier: {
+    full_name: 'Motoboy Parceiro',
+  },
 };
 
 beforeEach(() => {
@@ -73,12 +76,34 @@ describe('EntregaDetalhe', () => {
     expect(screen.getByText('Rua Destino, 99')).toBeInTheDocument();
     expect(screen.getByText('Deixar na recepção')).toBeInTheDocument();
     expect(screen.getByText('Solicitação criada')).toBeInTheDocument();
+    expect(screen.getByText('Motoboy')).toBeInTheDocument();
+    expect(screen.getByText('Motoboy Parceiro')).toBeInTheDocument();
+    expect(screen.getByText('Aceita em')).toBeInTheDocument();
     expect(screen.getAllByText('Aceita').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Coletada').length).toBeGreaterThan(0);
     expect(getDetailMock).toHaveBeenCalledWith('tok', detail.id);
     expect(container.innerHTML).not.toMatch(
-      /store_id|courier_id|owner_name|full_name|logo_url|bike_photo_url|license_photo_url|Authorization|Bearer/i,
+      /store_id|courier_id|user_id|auth_id|email|phone|owner_name|full_name|is_online|logo_url|bike_photo_url|license_photo_url|Authorization|Bearer|service_role|token/i,
     );
+  });
+
+  it('keeps courier information hidden before acceptance', async () => {
+    getDetailMock.mockResolvedValue({
+      ...detail,
+      status: 'aguardando',
+      accepted_at: null,
+      collected_at: null,
+      courier: {
+        full_name: 'Motoboy Parceiro',
+      },
+    });
+
+    render(<EntregaDetalhe accessToken="tok" deliveryId={detail.id} />);
+
+    expect(await screen.findByRole('heading', { name: 'Aguardando' })).toBeInTheDocument();
+    expect(screen.queryByText('Motoboy')).not.toBeInTheDocument();
+    expect(screen.queryByText('Motoboy Parceiro')).not.toBeInTheDocument();
+    expect(screen.queryByText('Aceita em')).not.toBeInTheDocument();
   });
 
   it('refreshes manually without polling', async () => {
@@ -117,7 +142,7 @@ describe('EntregaDetalhe', () => {
       within(realtimeAlert as HTMLElement).getByText('A entrega foi atualizada.'),
     ).toBeInTheDocument();
     expect((realtimeAlert as HTMLElement).innerHTML).not.toMatch(
-      /77777777|deliveryId|status|address|destination_address|notes|store_id|courier_id|user_id|auth_id|Authorization|Bearer|service_role|token|email|phone/i,
+      /77777777|deliveryId|status|address|destination_address|notes|store_id|courier_id|user_id|auth_id|full_name|Motoboy Parceiro|Authorization|Bearer|service_role|token|email|phone/i,
     );
     await waitFor(() => expect(getDetailMock).toHaveBeenCalledTimes(2));
     expect(subscribeStoreMock).toHaveBeenCalledWith('tok', detail.id, expect.any(Function));

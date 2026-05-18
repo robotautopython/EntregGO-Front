@@ -4,6 +4,18 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - M-12B FRONTEND MOTOBOY ACEITO LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada e validada localmente a fatia frontend da M-12B. `/loja/nova-entrega` exibe o motoboy aceito no card criado apos refetch REST, e `/loja/entregas/[id]` agora mostra os tiles `Motoboy` e `Aceita em` somente quando `delivery.courier?.full_name` e `accepted_at` existem. Antes do aceite, o dado fica invisivel.
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Arquivos principais:** `src/components/loja/NovaEntregaFlow.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `src/types/delivery.ts`.
+
+**Validacoes locais:** `npm run typecheck`, `npm test -- src/components/loja/__tests__/EntregaDetalhe.test.tsx src/components/loja/__tests__/NovaEntregaFlow.test.tsx` (15 testes), `npm test` (17 arquivos, 118 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Seguranca e escopo:** a UI consome apenas API REST autenticada por Bearer token e nao acessa tabelas de dominio via Supabase. O DOM nao renderiza `courier_id`, `user_id`, `auth_id`, email, telefone, `is_online`, documentos/fotos, Storage, tokens, Authorization, Bearer ou service role; a unica informacao nova visivel e o nome do motoboy aceito (`courier.full_name`) para a loja dona. Realtime continua como aviso generico "A entrega foi atualizada." e gatilho de refetch REST, sem canal novo, payload ampliado, polling, Web Push/PWA, cron, GPS, pagamento, Storage ou documentos.
+
 ## 2026-05-18 - HOTFIX M-12A NOVA ENTREGA FECHADO EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao

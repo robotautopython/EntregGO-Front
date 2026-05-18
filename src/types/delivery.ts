@@ -17,6 +17,10 @@ export interface DeliveryStoreSummary {
   address: string;
 }
 
+export interface AcceptedCourierSummary {
+  full_name: string;
+}
+
 export interface DeliveryRequest {
   id: string;
   destination_address: string | null;
@@ -30,6 +34,7 @@ export interface DeliveryRequest {
   delivered_at: string | null;
   updated_at: string;
   store: DeliveryStoreSummary;
+  courier?: AcceptedCourierSummary | null;
 }
 
 export interface StoreDeliveryListItem {
@@ -48,6 +53,7 @@ export interface StoreDeliveryListItem {
 
 export interface StoreDeliveryDetail extends StoreDeliveryListItem {
   store: DeliveryStoreSummary;
+  courier?: AcceptedCourierSummary | null;
 }
 
 export interface StoreDeliveryListResult {
