@@ -4,6 +4,20 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - HOTFIX M-12A NOVA ENTREGA FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechamento operacional frontend do hotfix M-12A cross-stack concluido. Commit funcional `751957ee156ee762cb2f10a19cf5c00a350a7330` foi publicado em `origin/main`, consumindo o backend `6a78bc872bbf34eb9d6eedf664395d5eb8e313a1`. `/loja/nova-entrega` passou a exibir `store.name/address` vindos do REST no card criado, sem placeholder de loja/coleta, assinando `delivery:<id>` como gatilho de refetch REST e notificacao generica.
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (17 arquivos, 117 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `751957ee156ee762cb2f10a19cf5c00a350a7330` em `refs/heads/main`; GitHub/Vercel retornou `success` e `Deployment has completed`. `https://entreggo.vercel.app/loja/nova-entrega` e `/loja/entregas/<uuid>` retornaram `200`; backend `/api/health` retornou `200`; rotas protegidas de entrega sem token retornaram `401 AUTH_REQUIRED`.
+
+**Smoke autenticado UI/API:** com dados ficticios temporarios, a loja criou entrega pela UI e o `POST /api/deliveries` retornou `store.name/address` sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, `owner_name`, `logo_url`, `description`, token, header Authorization, Bearer ou service role. O card criado mostrou loja/coleta reais e nao mostrou "Sua loja"; o botao manual `Atualizar` permaneceu visivel. Motoboy ativo aceitou/atualizou a entrega para disparar realtime; o card recebeu "A entrega foi atualizada.", alimentou o sino, refez `GET /api/deliveries/:id` e atualizou o status via REST.
+
+**Cleanup e escopo:** cleanup final `delivery=0`, `store=0`, `courier=0`, `domain=0`, `auth=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso. Realtime continua apenas gatilho; payload realtime nao foi interpolado no DOM. Sem SQL/migration/RLS/env, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage, documentos ou M-12B.
+
 ## 2026-05-18 - HOTFIX M-12A NOVA ENTREGA COM LOJA REAL LOCAL
 
 **Fase:** fundacao/auth-operacao
