@@ -137,9 +137,9 @@ export function NovaEntregaForm({
           </div>
         </div>
 
-        <Alert tone="info" title="Sobre o endereço de coleta">
-          O backend identifica sua loja pela sessão autenticada. O formulário envia apenas destino e
-          observação quando esses campos estiverem preenchidos.
+        <Alert tone="info" title="Sobre a loja e a coleta">
+          Nome da loja e endereco de coleta vem do perfil cadastrado. Este formulario envia
+          somente o endereco de destino e a observacao quando esses campos estiverem preenchidos.
         </Alert>
 
         <div className="flex flex-col gap-3 border-t border-paper-line pt-5 sm:flex-row sm:justify-end">

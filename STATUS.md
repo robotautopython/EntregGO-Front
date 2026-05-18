@@ -91,6 +91,7 @@
 - [x] M-11A frontend publicado e validado em producao: commit `b8410fb5250aa02a50c4754d050fbd88269a1469` em `origin/main`, consumindo backend `dda542abbbac0353cbfd78dd2fdbec47101d8de2`; Vercel/GitHub `success` e `Deployment has completed`; `/admin/insights` retornou `200`; chunk publicado contem `Entregas por status`, `Pagamentos externos`, `delivery_counts_by_status` e `payment_counts`; smoke autenticado UI confirmou blocos novos no DOM sem campos proibidos e cleanup `delivery=0 payment=0 store=0 domain=0`.
 - [x] M-12A frontend implementada e validada localmente: `FilaDisponivel` e `EntregaDetalhe` agora exibem avisos in-app genericos e efemeros sobre eventos realtime ja existentes, sem interpolar payload, sem chamada REST extra, preservando debounce/coalescing, fallback manual e cleanup de timers/assinaturas. `CONTRACTS.md` registra a fatia. Sem backend, SQL/migration, env, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage ou documentos. Frontend `typecheck`, `test` (110), `lint` sem warnings e `build` passaram.
 - [x] M-12A frontend publicado e validado em producao: commit funcional `150f4f1d1b623bb276a26b50bb44756c84c0a9c9` em `origin/main`; Vercel/GitHub `success` e `Deployment has completed`; `/motoboy` e `/loja/entregas/<uuid>` retornaram `200`; bundles publicados contem os avisos genericos; smoke autenticado API+UI confirmou avisos em motoboy e loja, refetch REST, botao manual `Atualizar` nos dois fluxos e cleanup `delivery=0 store=0 courier=0 domain=0 auth=0`.
+- [x] Hotfix M-12A frontend validado localmente em 2026-05-18: `/motoboy` agora rotula explicitamente `Nome da loja` e `Endereco de coleta`, preservando destino/observacao fora da fila pre-aceite; `/loja/nova-entrega` esclarece que loja/coleta vem do perfil cadastrado; o sino do `OperationalShell` foi ligado a notificacoes in-app genericas com contador/lista de sessao para "Ha novas solicitacoes na fila." e "A entrega foi atualizada.". Sem backend, banco, migration, env, canal realtime novo, Web Push/PWA/Service Worker/VAPID ou M-12B. Frontend `git diff --check`, `npm run typecheck`, `npm test` (17 arquivos, 113 testes), `npm run lint` e `npm run build` passaram.
 
 ## Bloqueios
 
@@ -106,6 +107,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (110 testes; `npm test`; inclui M-12A); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Testes:** Vitest + Testing Library (113 testes; `npm test`; inclui M-12A e hotfix de notificacoes/sino); Playwright instalado como ferramenta de smoke UI autenticado controlado
 **Deploy:** publicado em Vercel ate M-12A; M-12A esta validada em producao com smoke publico e autenticado
 **Riscos abertos:** 4

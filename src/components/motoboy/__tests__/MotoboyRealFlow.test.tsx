@@ -119,9 +119,9 @@ describe('MotoboyRealFlow', () => {
     const { container } = render(<MotoboyRealFlow accessToken="tok" />);
 
     expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
-    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Nome da loja')).toBeInTheDocument();
     expect(screen.getAllByText('Loja Alpha').length).toBeGreaterThan(0);
-    expect(screen.getByText('Coleta')).toBeInTheDocument();
+    expect(screen.getByText('Endereco de coleta')).toBeInTheDocument();
     expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
     expect(screen.getByText('Rua Destino, 50')).toBeInTheDocument();
     expect(screen.getByText('Levar na portaria')).toBeInTheDocument();
@@ -139,7 +139,7 @@ describe('MotoboyRealFlow', () => {
     render(<MotoboyRealFlow accessToken="tok" />);
 
     expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
-    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Nome da loja')).toBeInTheDocument();
     expect(screen.getAllByText('Loja Alpha').length).toBeGreaterThan(0);
     expect(screen.queryByText(/Destino nao informado/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
@@ -155,8 +155,8 @@ describe('MotoboyRealFlow', () => {
     render(<MotoboyRealFlow accessToken="tok" />);
 
     expect(await screen.findByRole('heading', { name: 'Corrida em andamento' })).toBeInTheDocument();
-    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
-    expect(screen.getByText('Coleta')).toBeInTheDocument();
+    expect(screen.getByText('Nome da loja')).toBeInTheDocument();
+    expect(screen.getByText('Endereco de coleta')).toBeInTheDocument();
     expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
     expect(screen.queryByText('Observacao da loja')).not.toBeInTheDocument();
   });

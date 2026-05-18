@@ -105,7 +105,7 @@ export function CorridaAtivaReal({
             <div className="min-w-0">
               <Badge tone="success">{config.badge}</Badge>
               <p className="mt-2 text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
-                Loja solicitante
+                Nome da loja
               </p>
               <h2 className="mt-2 text-2xl font-black text-asphalt-950">
                 {delivery.store.name}
@@ -150,7 +150,7 @@ export function CorridaAtivaReal({
       <div className="grid gap-4 lg:grid-cols-2">
         <AddressCard
           icon={Store}
-          label="Coleta"
+          label="Endereco de coleta"
           title={delivery.store.name}
           address={delivery.store.address}
         />

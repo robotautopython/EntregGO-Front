@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, LogOut, Menu, Search, Wifi, WifiOff } from 'lucide-react';
+import { Bell, LogOut, Menu, Search, Trash2, Wifi, WifiOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/cn';
 import type { AuthContext, UserRole } from '@/types/auth';
 
+import type { InAppNotificationItem } from './InAppNotifications';
 import { roleLabels } from './ShellNavConfig';
 
 interface ShellTopbarProps {
@@ -19,6 +20,8 @@ interface ShellTopbarProps {
   showSearch?: boolean;
   online?: boolean;
   notifications?: number;
+  notificationItems?: InAppNotificationItem[];
+  onClearNotifications?: () => void;
   onOpenMobileNav: () => void;
   onSignOut: () => void;
 }
@@ -31,25 +34,32 @@ export function ShellTopbar({
   showSearch = role === 'admin',
   online = true,
   notifications = 0,
+  notificationItems = [],
+  onClearNotifications,
   onOpenMobileNav,
   onSignOut,
 }: ShellTopbarProps) {
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
   const initials = roleLabels[role]
     .slice(0, 2)
     .toUpperCase();
 
   useEffect(() => {
-    if (!avatarOpen) return;
+    if (!avatarOpen && !notificationsOpen) return;
     function onClick(event: MouseEvent) {
       if (!avatarRef.current?.contains(event.target as Node)) {
         setAvatarOpen(false);
       }
+      if (!notificationsRef.current?.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
     }
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
-  }, [avatarOpen]);
+  }, [avatarOpen, notificationsOpen]);
 
   return (
     <header className="sticky top-0 z-20 h-16 border-b border-paper-line bg-white/85 backdrop-blur">
@@ -111,18 +121,74 @@ export function ShellTopbar({
             {online ? 'Online' : 'Reconectando'}
           </span>
 
-          <button
-            type="button"
-            aria-label="Notificações"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-md text-asphalt-950/70 hover:bg-paper-deep hover:text-asphalt-950"
-          >
-            <Bell className="h-5 w-5" aria-hidden="true" />
-            {notifications > 0 ? (
-              <span className="absolute right-1.5 top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-extrabold text-white">
-                {notifications > 9 ? '9+' : notifications}
-              </span>
+          <div ref={notificationsRef} className="relative">
+            <button
+              type="button"
+              aria-label={`Notificacoes${notifications > 0 ? ` (${notifications})` : ''}`}
+              aria-haspopup="menu"
+              aria-expanded={notificationsOpen}
+              onClick={() => {
+                setNotificationsOpen((value) => !value);
+                setAvatarOpen(false);
+              }}
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-md text-asphalt-950/70 hover:bg-paper-deep hover:text-asphalt-950"
+            >
+              <Bell className="h-5 w-5" aria-hidden="true" />
+              {notifications > 0 ? (
+                <span className="absolute right-1.5 top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-extrabold text-white">
+                  {notifications > 9 ? '9+' : notifications}
+                </span>
+              ) : null}
+            </button>
+
+            {notificationsOpen ? (
+              <div
+                role="menu"
+                aria-label="Notificacoes in-app"
+                className="absolute right-0 top-full z-30 mt-1 w-[min(22rem,calc(100vw-2rem))] origin-top-right rounded-md border border-paper-line bg-white p-2 shadow-card animate-fade-in"
+              >
+                <div className="flex items-center justify-between gap-3 border-b border-paper-line px-3 py-3">
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                      Notificacoes
+                    </p>
+                    <p className="text-sm font-bold text-asphalt-950">
+                      Atualizacoes em tempo real
+                    </p>
+                  </div>
+                  {notificationItems.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={onClearNotifications}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-asphalt-950/65 hover:bg-paper-deep hover:text-asphalt-950"
+                      aria-label="Limpar notificacoes"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  ) : null}
+                </div>
+
+                {notificationItems.length > 0 ? (
+                  <ul className="max-h-72 overflow-auto py-1">
+                    {notificationItems.map((item) => (
+                      <li key={item.id} className="rounded-md px-3 py-2 hover:bg-paper">
+                        <p className="text-sm font-extrabold text-asphalt-950">
+                          {item.message}
+                        </p>
+                        <p className="mt-0.5 text-xs font-bold text-asphalt-950/55">
+                          {formatNotificationTime(item.createdAt)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-3 py-4 text-sm font-semibold text-asphalt-950/60">
+                    Nenhuma notificacao nova.
+                  </p>
+                )}
+              </div>
             ) : null}
-          </button>
+          </div>
 
           <div ref={avatarRef} className="relative">
             <button
@@ -130,7 +196,10 @@ export function ShellTopbar({
               aria-label="Conta"
               aria-haspopup="menu"
               aria-expanded={avatarOpen}
-              onClick={() => setAvatarOpen((value) => !value)}
+              onClick={() => {
+                setAvatarOpen((value) => !value);
+                setNotificationsOpen(false);
+              }}
               className="inline-flex h-10 items-center gap-2 rounded-md border border-paper-line bg-white px-2 pr-3 hover:border-brand-300"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-md bg-asphalt-950 text-xs font-extrabold text-white">
@@ -151,7 +220,7 @@ export function ShellTopbar({
                     {roleLabels[role]}
                   </p>
                   <p className="truncate text-sm font-bold text-asphalt-950">
-                    {authContext ? `Conta ${authContext.user.status}` : 'Sem sessão'}
+                    {authContext ? `Conta ${authContext.user.status}` : 'Sem sessao'}
                   </p>
                   {authContext ? (
                     <Badge
@@ -183,4 +252,11 @@ export function ShellTopbar({
       </div>
     </header>
   );
+}
+
+function formatNotificationTime(value: string): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
 }

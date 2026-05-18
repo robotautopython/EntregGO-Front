@@ -4,6 +4,7 @@ import { CheckCircle2, Loader2, MapPin, RefreshCw, Store } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BoxMark } from '@/components/brand/BoxMark';
+import { useInAppNotifications } from '@/components/shell/InAppNotifications';
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
@@ -142,6 +143,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
   const [actionError, setActionError] = useState<CourierError | null>(null);
   const [accepted, setAccepted] = useState<AcceptedDelivery | null>(null);
   const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
+  const { notify } = useInAppNotifications();
 
   const load = useCallback(
     async function runLoad(mode: 'initial' | 'realtime' = 'initial') {
@@ -191,7 +193,9 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
   }, [load]);
 
   const showRealtimeNotice = useCallback(() => {
-    setRealtimeNotice('Ha novas solicitacoes na fila.');
+    const message = 'Ha novas solicitacoes na fila.';
+    setRealtimeNotice(message);
+    notify(message);
     if (realtimeNoticeTimer.current) {
       clearTimeout(realtimeNoticeTimer.current);
     }
@@ -200,7 +204,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
       realtimeNoticeTimer.current = null;
       setRealtimeNotice(null);
     }, REALTIME_NOTICE_DISMISS_MS);
-  }, []);
+  }, [notify]);
 
   const scheduleRealtimeRefresh = useCallback(() => {
     showRealtimeNotice();
@@ -291,7 +295,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
             <div className="min-w-0">
               <Badge tone="success">Aceita</Badge>
               <p className="mt-2 text-[10px] font-extrabold uppercase tracking-widest text-success-700">
-                Loja solicitante
+                Nome da loja
               </p>
               <h2 className="mt-2 text-2xl font-black text-asphalt-950">
                 {accepted.store.name}
@@ -302,7 +306,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
                     className="mt-0.5 h-4 w-4 shrink-0 text-success-700"
                     aria-hidden="true"
                   />
-                  {accepted.store.address}
+                  Endereco de coleta: {accepted.store.address}
                 </p>
               ) : null}
               <p className="mt-3 text-xs font-bold text-asphalt-950/55">
@@ -405,7 +409,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-700">
-                          Loja solicitante
+                          Nome da loja
                         </p>
                         <p className="truncate text-base font-extrabold text-asphalt-950">
                           {item.store.name}
@@ -416,7 +420,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
                               className="mt-0.5 h-4 w-4 shrink-0 text-brand-600"
                               aria-hidden="true"
                             />
-                            {item.store.address}
+                            Endereco de coleta: {item.store.address}
                           </p>
                         ) : null}
                       </div>

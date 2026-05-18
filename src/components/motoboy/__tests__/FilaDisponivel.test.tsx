@@ -69,9 +69,9 @@ describe('FilaDisponivel', () => {
   it('renders only store name/address and no third-party PII', async () => {
     listMock.mockResolvedValue(makeResult());
     const { container } = render(<FilaDisponivel accessToken="tok" />);
-    expect(await screen.findByText('Loja solicitante')).toBeInTheDocument();
+    expect(await screen.findByText('Nome da loja')).toBeInTheDocument();
     expect(screen.getByText('Loja Alpha')).toBeInTheDocument();
-    expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
+    expect(screen.getByText(/Endereco de coleta: Rua A, 1/)).toBeInTheDocument();
     const html = container.innerHTML;
     expect(html).not.toMatch(/destination_address|notes|store_id|courier_id/);
   });
@@ -93,7 +93,7 @@ describe('FilaDisponivel', () => {
 
     const { container } = render(<FilaDisponivel accessToken="tok" />);
 
-    expect(await screen.findByText('Loja solicitante')).toBeInTheDocument();
+    expect(await screen.findByText('Nome da loja')).toBeInTheDocument();
     expect(screen.getByText('Loja Sem Endereco')).toBeInTheDocument();
     expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
     expect(container.innerHTML).not.toMatch(/destination_address|notes|store_id|courier_id/);
@@ -115,7 +115,7 @@ describe('FilaDisponivel', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Aceitar entrega' }));
 
     expect(await screen.findByText('Entrega aceita')).toBeInTheDocument();
-    expect(screen.getByText('Loja solicitante')).toBeInTheDocument();
+    expect(screen.getByText('Nome da loja')).toBeInTheDocument();
     expect(screen.getByText('Loja Sem Endereco')).toBeInTheDocument();
     expect(screen.queryByText(/Endereco nao informado/i)).not.toBeInTheDocument();
   });
@@ -124,7 +124,7 @@ describe('FilaDisponivel', () => {
     listMock.mockResolvedValue(makeResult());
     render(<FilaDisponivel accessToken="tok" />);
     expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
-    expect(screen.getByText('Rua A, 1')).toBeInTheDocument();
+    expect(screen.getByText(/Endereco de coleta: Rua A, 1/)).toBeInTheDocument();
   });
 
   it('Atualizar triggers a fresh request', async () => {

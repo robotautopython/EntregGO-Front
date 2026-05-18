@@ -84,8 +84,14 @@ Comportamento frontend:
 - `EntregaDetalhe` mostra o aviso generico "A entrega foi atualizada." quando recebe
   `delivery.accepted` ou `delivery.status_changed` e mantem o refetch de
   `GET /api/deliveries/:id` debounced/coalesced.
-- Os avisos sao efemeros, nao interpolam payload realtime e nao criam chamada REST
-  adicional alem do refetch realtime ja existente.
+- Os avisos tambem alimentam o sino do `OperationalShell`, com contador e lista in-app
+  generica. A lista e mantida somente em estado frontend de sessao, sem persistencia,
+  sem backend e sem Service Worker.
+- Os avisos nao interpolam payload realtime e nao criam chamada REST adicional alem do
+  refetch realtime ja existente.
+- Na fila e na corrida ativa, os dados da loja devem aparecer como "Nome da loja" e
+  "Endereco de coleta"; `destinationAddress` e `notes` nao podem ser usados como dados
+  da loja antes do aceite.
 - O botao manual "Atualizar" permanece como fallback em ambas as telas.
 - Cleanup remove assinatura realtime e timers dos avisos ao desmontar o componente.
 

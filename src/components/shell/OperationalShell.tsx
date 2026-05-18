@@ -12,6 +12,10 @@ import { cn } from '@/lib/cn';
 import type { AuthContext, UserRole } from '@/types/auth';
 
 import { MobileNavDrawer } from './MobileNavDrawer';
+import {
+  InAppNotificationsProvider,
+  useInAppNotifications,
+} from './InAppNotifications';
 import { ShellBottomNav } from './ShellBottomNav';
 import { ShellSidebar } from './ShellSidebar';
 import { ShellTopbar } from './ShellTopbar';
@@ -36,8 +40,31 @@ export function OperationalShell({
   showSearch,
   children,
 }: OperationalShellProps) {
+  return (
+    <InAppNotificationsProvider>
+      <OperationalShellBody
+        role={role}
+        title={title}
+        searchPlaceholder={searchPlaceholder}
+        showSearch={showSearch}
+      >
+        {children}
+      </OperationalShellBody>
+    </InAppNotificationsProvider>
+  );
+}
+
+function OperationalShellBody({
+  role,
+  title,
+  searchPlaceholder,
+  showSearch,
+  children,
+}: OperationalShellProps) {
   const router = useRouter();
   const { authContext, accessToken, isLoading, error, signOut } = useAuthSession();
+  const { items: notificationItems, unreadCount, clear: clearNotifications } =
+    useInAppNotifications();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -99,6 +126,9 @@ export function OperationalShell({
           title={title}
           searchPlaceholder={searchPlaceholder}
           showSearch={showSearch}
+          notifications={unreadCount}
+          notificationItems={notificationItems}
+          onClearNotifications={clearNotifications}
           onOpenMobileNav={() => setMobileOpen(true)}
           onSignOut={signOut}
         />

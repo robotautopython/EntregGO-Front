@@ -4,6 +4,19 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - HOTFIX M-12A DADOS DA LOJA E SINO IN-APP LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Corrigida localmente a UX pos-M-12A reportada pelo usuario. A fila e a corrida do motoboy agora rotulam explicitamente `Nome da loja` e `Endereco de coleta`, mantendo destino/observacao fora da fila pre-aceite. `/loja/nova-entrega` agora esclarece que nome/endereco da loja vem do perfil cadastrado e que o formulario envia somente destino/observacao. O sino do shell deixou de ser decorativo e passou a abrir uma lista in-app de sessao com contador para as mensagens genericas de realtime.
+**Agentes/gates utilizados:** Camisa10, BUG_Debugger, ImpactValidator
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Arquivos principais:** `src/components/shell/InAppNotifications.tsx`, `src/components/shell/ShellTopbar.tsx`, `src/components/shell/OperationalShell.tsx`, `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/CorridaAtivaReal.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/NovaEntregaForm.tsx`, testes de motoboy/loja/shell, `CONTRACTS.md`, `STATUS.md`, `LOG.md`.
+
+**Validacoes locais:** `git diff --check`, `npm run typecheck`, `npm test` (17 arquivos, 113 testes), `npm run lint` e `npm run build` passaram. Testes focados de motoboy, loja e shell tambem passaram com 39 testes.
+
+**Seguranca e escopo:** notificacoes continuam whitelisted/genericas: "Ha novas solicitacoes na fila." e "A entrega foi atualizada.". O DOM da notificacao permanece sem `deliveryId`, status bruto, endereco, observacao, email, telefone, `store_id`, `courier_id`, `user_id`, `auth_id`, Authorization, Bearer, service role ou token. REST continua fonte da verdade e Realtime continua apenas gatilho de refetch. Nao houve alteracao em backend, banco, migration, `.env*`, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage, documentos ou M-12B.
+
 ## 2026-05-18 - M-12A FRONTEND FECHADO EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao

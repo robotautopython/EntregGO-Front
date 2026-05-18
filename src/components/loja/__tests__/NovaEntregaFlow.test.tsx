@@ -53,4 +53,13 @@ describe('NovaEntregaFlow', () => {
     expect(createMock).toHaveBeenCalledWith('tok', {});
     expect(container.innerHTML).not.toMatch(/store_id|courier_id|Authorization|Bearer/i);
   });
+
+  it('explains that store name and pickup address come from the store profile', () => {
+    render(<NovaEntregaFlow accessToken="tok" />);
+
+    expect(screen.getByText('Sobre a loja e a coleta')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Nome da loja e endereco de coleta vem do perfil cadastrado/i),
+    ).toBeInTheDocument();
+  });
 });

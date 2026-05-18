@@ -15,6 +15,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { PageHeader } from '@/components/shell/PageHeader';
+import { useInAppNotifications } from '@/components/shell/InAppNotifications';
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -193,6 +194,7 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<DetailError | null>(null);
   const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
+  const { notify } = useInAppNotifications();
 
   const load = useCallback(
     async function runLoad(mode: 'initial' | 'refresh' | 'realtime' = 'initial') {
@@ -241,7 +243,9 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
   }, [load]);
 
   const showRealtimeNotice = useCallback(() => {
-    setRealtimeNotice('A entrega foi atualizada.');
+    const message = 'A entrega foi atualizada.';
+    setRealtimeNotice(message);
+    notify(message);
     if (realtimeNoticeTimer.current) {
       clearTimeout(realtimeNoticeTimer.current);
     }
@@ -250,7 +254,7 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
       realtimeNoticeTimer.current = null;
       setRealtimeNotice(null);
     }, REALTIME_NOTICE_DISMISS_MS);
-  }, []);
+  }, [notify]);
 
   const scheduleRealtimeRefresh = useCallback(() => {
     showRealtimeNotice();
