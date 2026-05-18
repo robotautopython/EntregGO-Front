@@ -4,18 +4,24 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
-## 2026-05-18 - HOTFIX M-12A DADOS DA LOJA E SINO IN-APP LOCAL
+## 2026-05-18 - HOTFIX M-12A DADOS DA LOJA E SINO IN-APP FECHADO EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao
-**O que aconteceu:** Corrigida localmente a UX pos-M-12A reportada pelo usuario. A fila e a corrida do motoboy agora rotulam explicitamente `Nome da loja` e `Endereco de coleta`, mantendo destino/observacao fora da fila pre-aceite. `/loja/nova-entrega` agora esclarece que nome/endereco da loja vem do perfil cadastrado e que o formulario envia somente destino/observacao. O sino do shell deixou de ser decorativo e passou a abrir uma lista in-app de sessao com contador para as mensagens genericas de realtime.
-**Agentes/gates utilizados:** Camisa10, BUG_Debugger, ImpactValidator
-**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+**O que aconteceu:** Fechamento operacional do hotfix frontend M-12A concluido. Commit funcional `f11a906b0f2c2595e93525e9baa035be59d55668` foi publicado em `origin/main`. A fila e a corrida do motoboy rotulam explicitamente `Nome da loja` e `Endereco de coleta`, mantendo destino/observacao fora da fila pre-aceite. `/loja/nova-entrega` esclarece que nome/endereco da loja vem do perfil cadastrado e que o formulario envia somente destino/observacao. O sino do shell abre uma lista in-app de sessao com contador para as mensagens genericas de realtime.
+**Agentes/gates utilizados:** Camisa10, ImpactValidator, DeployObservability, Documentador
+**Status:** fechado em producao
 
 **Arquivos principais:** `src/components/shell/InAppNotifications.tsx`, `src/components/shell/ShellTopbar.tsx`, `src/components/shell/OperationalShell.tsx`, `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/CorridaAtivaReal.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/NovaEntregaForm.tsx`, testes de motoboy/loja/shell, `CONTRACTS.md`, `STATUS.md`, `LOG.md`.
 
 **Validacoes locais:** `git diff --check`, `npm run typecheck`, `npm test` (17 arquivos, 113 testes), `npm run lint` e `npm run build` passaram. Testes focados de motoboy, loja e shell tambem passaram com 39 testes.
 
-**Seguranca e escopo:** notificacoes continuam whitelisted/genericas: "Ha novas solicitacoes na fila." e "A entrega foi atualizada.". O DOM da notificacao permanece sem `deliveryId`, status bruto, endereco, observacao, email, telefone, `store_id`, `courier_id`, `user_id`, `auth_id`, Authorization, Bearer, service role ou token. REST continua fonte da verdade e Realtime continua apenas gatilho de refetch. Nao houve alteracao em backend, banco, migration, `.env*`, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage, documentos ou M-12B.
+**Deploy e smoke publico:** `git ls-remote` confirmou `f11a906b0f2c2595e93525e9baa035be59d55668` em `refs/heads/main`; GitHub/Vercel retornou `success` e `Deployment has completed`. `https://entreggo.vercel.app`, `/motoboy`, `/loja/nova-entrega` e `/loja/entregas/<uuid>` retornaram `200`; backend `/api/health` retornou `200`; endpoints protegidos relevantes sem token retornaram `401 AUTH_REQUIRED`.
+
+**Smoke autenticado UI/API:** com dados ficticios temporarios, motoboy ativo online abriu `/motoboy`, recebeu `delivery.created`, viu `Nome da loja`, `Endereco de coleta`, aviso "Ha novas solicitacoes na fila.", contador no sino e a mensagem no menu; a fila refez `GET /api/deliveries/available`. Loja abriu `/loja/nova-entrega`, confirmou a microcopy de perfil/coleta, abriu `/loja/entregas/<id>` e, apos aceite autenticado pelo motoboy, recebeu realtime, viu "A entrega foi atualizada.", contador no sino e a mensagem no menu; o detalhe refez `GET /api/deliveries/:id`. O botao manual `Atualizar` funcionou nos dois fluxos.
+
+**Seguranca e cleanup:** notificacoes continuam whitelisted/genericas: "Ha novas solicitacoes na fila." e "A entrega foi atualizada.". O DOM da notificacao permaneceu sem `deliveryId`, status bruto, endereco, observacao, email, telefone, `store_id`, `courier_id`, `user_id`, `auth_id`, Authorization, Bearer, service role ou token. REST continua fonte da verdade e Realtime continua apenas gatilho de refetch. Cleanup final `delivery=0`, `store=0`, `courier=0`, `domain=0`, `auth=0`; nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+**Fora do escopo preservado:** nao houve alteracao em backend, banco, migration, `.env*`, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage, documentos ou M-12B.
 
 ## 2026-05-18 - M-12A FRONTEND FECHADO EM PRODUCAO
 
