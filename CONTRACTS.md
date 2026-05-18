@@ -84,11 +84,14 @@ Comportamento frontend:
 - `EntregaDetalhe` mostra o aviso generico "A entrega foi atualizada." quando recebe
   `delivery.accepted` ou `delivery.status_changed` e mantem o refetch de
   `GET /api/deliveries/:id` debounced/coalesced.
+- `NovaEntregaFlow`, depois de criar uma entrega real, tambem assina `delivery:<id>`,
+  mostra o aviso generico "A entrega foi atualizada.", alimenta o sino e refaz
+  `GET /api/deliveries/:id` para atualizar o status/card criado.
 - Os avisos tambem alimentam o sino do `OperationalShell`, com contador e lista in-app
   generica. A lista e mantida somente em estado frontend de sessao, sem persistencia,
   sem backend e sem Service Worker.
-- Os avisos nao interpolam payload realtime e nao criam chamada REST adicional alem do
-  refetch realtime ja existente.
+- Os avisos nao interpolam payload realtime; toda atualizacao operacional vem do
+  refetch REST autorizado.
 - Na fila e na corrida ativa, os dados da loja devem aparecer como "Nome da loja" e
   "Endereco de coleta"; `destinationAddress` e `notes` nao podem ser usados como dados
   da loja antes do aceite.
@@ -118,7 +121,10 @@ Uso permitido:
 - Payload vazio `{}` e permitido pelo contrato backend.
 - `store_id` nunca e enviado pelo frontend; o backend deriva a loja a partir da sessao.
 - O frontend nao acessa `delivery_requests` diretamente. Escrita/leitura de dominio segue pela API backend.
-- A resposta usada pela UI nao inclui `store_id` nem `courier_id`; a navegacao para o detalhe usa somente `id`.
+- A resposta usada pela UI inclui apenas `store: { name, address }` como resumo sanitizado da loja dona. Nao inclui `store_id`, `courier_id`, `user_id`, `auth_id`, email, `owner_name`, `logo_url`, `description`, telefone, tokens ou headers; a navegacao para o detalhe usa somente `id`.
+- A tela `/loja/nova-entrega` deve renderizar o nome/endereco reais vindos do REST e nunca usar placeholder de loja/coleta.
+- Apos criar a entrega, a tela assina o canal privado existente `delivery:<id>` via `subscribeToStoreDeliveryBroadcast`. `delivery.accepted` e `delivery.status_changed` apenas disparam aviso generico, notificacao in-app e `GET /api/deliveries/:id`; o payload realtime nao e interpolado no DOM.
+- O botao manual "Atualizar" permanece no card criado e chama `GET /api/deliveries/:id`.
 
 Body:
 
@@ -144,7 +150,11 @@ Resposta esperada:
     "collected_at": null,
     "in_transit_at": null,
     "delivered_at": null,
-    "updated_at": "2026-05-15T20:00:00.000Z"
+    "updated_at": "2026-05-15T20:00:00.000Z",
+    "store": {
+      "name": "Nome da loja",
+      "address": "Endereco operacional da loja"
+    }
   },
   "message": "Solicitacao de entrega criada"
 }
@@ -230,7 +240,8 @@ Uso permitido:
 - Client API `getMyDelivery(accessToken, id)` em `src/lib/api.ts`.
 - Tipos `StoreDeliveryDetail`/`StoreDeliveryListItem` em `src/types/delivery.ts`.
 - Query enviada: nenhuma. O frontend nunca envia `store_id`, `courier_id` ou `user_id`.
-- O frontend nao acessa `delivery_requests`, nao usa `supabase.from`, nao faz polling automatico e nao assina Realtime.
+- O frontend nao acessa `delivery_requests`, nao usa `supabase.from` e nao faz polling automatico.
+- `EntregaDetalhe` e o card criado em `/loja/nova-entrega` podem assinar o canal privado existente `delivery:<id>` apenas como gatilho de refetch REST.
 
 Resposta consumida:
 
@@ -248,7 +259,11 @@ Resposta consumida:
     "collected_at": "2026-05-17T12:02:00.000Z",
     "in_transit_at": "2026-05-17T12:04:00.000Z",
     "delivered_at": null,
-    "updated_at": "2026-05-17T12:04:00.000Z"
+    "updated_at": "2026-05-17T12:04:00.000Z",
+    "store": {
+      "name": "Nome da loja",
+      "address": "Endereco operacional da loja"
+    }
   },
   "message": "Entrega encontrada"
 }
@@ -258,8 +273,8 @@ Estados de UI:
 - loading enquanto busca o detalhe;
 - erro recuperavel com botao "Tentar novamente";
 - nao encontrado honesto para `DELIVERY_NOT_FOUND`, sem expor se o id e de outra loja;
-- detalhe com status real, destino, observacao, `created_at`, `expires_at`, `updated_at` e timeline de `accepted_at`, `collected_at`, `in_transit_at` e `delivered_at`;
-- atualizacao manual por botao "Atualizar"; sem `setInterval`, polling automatico, push ou realtime.
+- detalhe com status real, destino, observacao, loja/coleta, `created_at`, `expires_at`, `updated_at` e timeline de `accepted_at`, `collected_at`, `in_transit_at` e `delivered_at`;
+- atualizacao manual por botao "Atualizar"; realtime, quando assinado, e apenas gatilho de `GET /api/deliveries/:id`; sem `setInterval`, polling automatico ou push.
 
 Entradas para a tela:
 - `/loja/nova-entrega` exibe CTA "Acompanhar entrega" apos criar uma entrega real.

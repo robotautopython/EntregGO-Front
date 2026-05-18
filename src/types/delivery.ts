@@ -12,6 +12,11 @@ export interface CreateDeliveryRequestPayload {
   notes?: string;
 }
 
+export interface DeliveryStoreSummary {
+  name: string;
+  address: string;
+}
+
 export interface DeliveryRequest {
   id: string;
   destination_address: string | null;
@@ -24,6 +29,7 @@ export interface DeliveryRequest {
   in_transit_at: string | null;
   delivered_at: string | null;
   updated_at: string;
+  store: DeliveryStoreSummary;
 }
 
 export interface StoreDeliveryListItem {
@@ -40,7 +46,9 @@ export interface StoreDeliveryListItem {
   updated_at: string;
 }
 
-export type StoreDeliveryDetail = StoreDeliveryListItem;
+export interface StoreDeliveryDetail extends StoreDeliveryListItem {
+  store: DeliveryStoreSummary;
+}
 
 export interface StoreDeliveryListResult {
   items: StoreDeliveryListItem[];
@@ -96,10 +104,7 @@ export type AdminUserDeliveryListItem = AdminDeliveryListItem;
 export type AdminUserDeliveriesResult = AdminDeliveriesResult;
 export type AdminUserDeliveriesQuery = AdminDeliveriesQuery;
 
-export interface AvailableDeliveryStore {
-  name: string;
-  address: string;
-}
+export type AvailableDeliveryStore = DeliveryStoreSummary;
 
 export interface AvailableDeliveryItem {
   id: string;

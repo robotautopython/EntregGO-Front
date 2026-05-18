@@ -37,6 +37,10 @@ const detail: StoreDeliveryDetail = {
   in_transit_at: null,
   delivered_at: null,
   updated_at: '2026-05-17T12:03:00.000Z',
+  store: {
+    name: 'Loja Cafe',
+    address: 'Rua da Loja, 100',
+  },
 };
 
 beforeEach(() => {
@@ -78,14 +82,12 @@ describe('EntregaDetalhe', () => {
   });
 
   it('refreshes manually without polling', async () => {
-    getDetailMock
-      .mockResolvedValueOnce(detail)
-      .mockResolvedValueOnce({
-        ...detail,
-        status: 'em_transito',
-        in_transit_at: '2026-05-17T12:08:00.000Z',
-        updated_at: '2026-05-17T12:08:00.000Z',
-      });
+    getDetailMock.mockResolvedValueOnce(detail).mockResolvedValueOnce({
+      ...detail,
+      status: 'em_transito',
+      in_transit_at: '2026-05-17T12:08:00.000Z',
+      updated_at: '2026-05-17T12:08:00.000Z',
+    });
 
     render(<EntregaDetalhe accessToken="tok" deliveryId={detail.id} />);
 
@@ -109,11 +111,11 @@ describe('EntregaDetalhe', () => {
     });
 
     expect(screen.getByText('Atualizacao em tempo real')).toBeInTheDocument();
-    const realtimeAlert = screen
-      .getByText('A entrega foi atualizada.')
-      .closest('[role="alert"]');
+    const realtimeAlert = screen.getByText('A entrega foi atualizada.').closest('[role="alert"]');
     expect(realtimeAlert).not.toBeNull();
-    expect(within(realtimeAlert as HTMLElement).getByText('A entrega foi atualizada.')).toBeInTheDocument();
+    expect(
+      within(realtimeAlert as HTMLElement).getByText('A entrega foi atualizada.'),
+    ).toBeInTheDocument();
     expect((realtimeAlert as HTMLElement).innerHTML).not.toMatch(
       /77777777|deliveryId|status|address|destination_address|notes|store_id|courier_id|user_id|auth_id|Authorization|Bearer|service_role|token|email|phone/i,
     );
@@ -148,9 +150,7 @@ describe('EntregaDetalhe', () => {
     render(<EntregaDetalhe accessToken="tok" deliveryId={detail.id} />);
 
     const alert = await screen.findByRole('alert');
-    expect(
-      within(alert).getByText(/Não foi possível carregar a entrega/i),
-    ).toBeInTheDocument();
+    expect(within(alert).getByText(/Não foi possível carregar a entrega/i)).toBeInTheDocument();
 
     await userEvent.click(within(alert).getByRole('button', { name: /Tentar novamente/i }));
 

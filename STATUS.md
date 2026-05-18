@@ -9,6 +9,7 @@
 ## Em Andamento
 
 - [ ] Manter abas de documentos e notas como placeholders honestos ate existirem endpoints reais.
+- [ ] Fechar operacionalmente o hotfix M-12A cross-stack: commit, push, deploy e smoke pos-deploy junto do backend.
 
 ## Proximas Tarefas
 
@@ -92,6 +93,7 @@
 - [x] M-12A frontend implementada e validada localmente: `FilaDisponivel` e `EntregaDetalhe` agora exibem avisos in-app genericos e efemeros sobre eventos realtime ja existentes, sem interpolar payload, sem chamada REST extra, preservando debounce/coalescing, fallback manual e cleanup de timers/assinaturas. `CONTRACTS.md` registra a fatia. Sem backend, SQL/migration, env, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage ou documentos. Frontend `typecheck`, `test` (110), `lint` sem warnings e `build` passaram.
 - [x] M-12A frontend publicado e validado em producao: commit funcional `150f4f1d1b623bb276a26b50bb44756c84c0a9c9` em `origin/main`; Vercel/GitHub `success` e `Deployment has completed`; `/motoboy` e `/loja/entregas/<uuid>` retornaram `200`; bundles publicados contem os avisos genericos; smoke autenticado API+UI confirmou avisos em motoboy e loja, refetch REST, botao manual `Atualizar` nos dois fluxos e cleanup `delivery=0 store=0 courier=0 domain=0 auth=0`.
 - [x] Hotfix M-12A frontend publicado e validado em producao: commit funcional `f11a906b0f2c2595e93525e9baa035be59d55668` em `origin/main`; Vercel/GitHub `success` e `Deployment has completed`. `/motoboy` rotula `Nome da loja` e `Endereco de coleta`, preservando destino/observacao fora da fila pre-aceite; `/loja/nova-entrega` esclarece que loja/coleta vem do perfil cadastrado; o sino do `OperationalShell` exibe notificacoes in-app genericas com contador/lista de sessao. Smoke publico e autenticado API+UI passaram com refetch REST por realtime, `Atualizar` preservado e cleanup `delivery=0 store=0 courier=0 domain=0 auth=0`. Sem backend, banco, migration, env, canal realtime novo, Web Push/PWA/Service Worker/VAPID ou M-12B.
+- [x] Hotfix M-12A cross-stack validado localmente no frontend: `/loja/nova-entrega` renderiza `store.name/address` vindos do REST, removeu placeholder de loja/coleta, assina `delivery:<id>` com `subscribeToStoreDeliveryBroadcast` apos criar entrega, mostra "A entrega foi atualizada.", alimenta o sino in-app, refaz `GET /api/deliveries/:id` por `getMyDelivery` e preserva o botao manual `Atualizar`. Tipos `DeliveryRequest`/`StoreDeliveryDetail` agora incluem `store`. Frontend `typecheck`, `test` (17 arquivos, 117 testes), `lint`, `build` e `git diff --check` passaram; commit, push, deploy e smoke pos-deploy pendentes.
 
 ## Bloqueios
 
@@ -107,6 +109,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (113 testes; `npm test`; inclui M-12A e hotfix de notificacoes/sino); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel ate o hotfix M-12A; M-12A esta validada em producao com smoke publico e autenticado
+**Testes:** Vitest + Testing Library (117 testes; `npm test`; inclui M-12A e hotfix cross-stack de loja/realtime em `NovaEntregaFlow`); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Deploy:** publicado em Vercel ate o hotfix M-12A anterior; hotfix cross-stack atual validado localmente e pendente de commit, push, deploy e smoke pos-deploy
 **Riscos abertos:** 4

@@ -4,6 +4,20 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - HOTFIX M-12A NOVA ENTREGA COM LOJA REAL LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Validado localmente o ajuste frontend do hotfix cross-stack. `/loja/nova-entrega` agora usa `store.name/address` vindos do REST, removeu o placeholder de loja/coleta, assina o canal privado existente `delivery:<id>` apos criar entrega, mostra o aviso generico "A entrega foi atualizada.", alimenta o sino in-app e refaz `GET /api/deliveries/:id` por `getMyDelivery` para atualizar o card criado. O botao manual `Atualizar` foi preservado.
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Arquivos principais:** `src/components/loja/NovaEntregaFlow.tsx`, `src/components/loja/__tests__/NovaEntregaFlow.test.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `src/types/delivery.ts`, `CONTRACTS.md`.
+
+**Validacoes locais:** `npm run typecheck`, `npm test -- NovaEntregaFlow.test.tsx EntregaDetalhe.test.tsx` (14 testes), `npm test` (17 arquivos, 117 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Browser local:** `npm run dev -- --hostname 127.0.0.1 --port 3050` subiu o app e `/loja/nova-entrega` respondeu `200`. Sem sessao autenticada valida no Browser, a rota mostrou "Sessao nao encontrada"; o DOM nao continha `store_id`, `courier_id`, Authorization, Bearer, service role ou token. O servidor local foi encerrado apos a checagem.
+
+**Seguranca e escopo:** o payload realtime nao e interpolado no DOM; aviso e notificacao usam apenas texto generico. A tela nao envia `store_id`, `courier_id` ou `user_id`, nao acessa `delivery_requests` diretamente e nao usa polling. Sem backend direto no repo frontend, SQL/migration/RLS/env, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage, documentos ou M-12B.
+
 ## 2026-05-18 - HOTFIX M-12A DADOS DA LOJA E SINO IN-APP FECHADO EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao

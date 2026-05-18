@@ -2,14 +2,16 @@
 
 import { ArrowLeft, CheckCircle2, Clock3, PackagePlus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { RouteLine } from '@/components/brand/RouteLine';
+import { useInAppNotifications } from '@/components/shell/InAppNotifications';
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ClientApiError, createDeliveryRequest } from '@/lib/api';
+import { ClientApiError, createDeliveryRequest, getMyDelivery } from '@/lib/api';
+import { subscribeToStoreDeliveryBroadcast } from '@/lib/realtime';
 import type { DeliveryRequest } from '@/types/delivery';
 
 import type { DeliveryDraft } from './delivery-types';
@@ -19,11 +21,6 @@ interface NovaEntregaFlowProps {
   accessToken: string;
 }
 
-const STORE_PLACEHOLDER = {
-  name: 'Sua loja',
-  address: 'Endereço cadastrado no perfil da loja',
-};
-
 const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: '2-digit',
@@ -31,6 +28,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   hour: '2-digit',
   minute: '2-digit',
 });
+const REALTIME_NOTICE_DISMISS_MS = 4000;
 
 function formatDateTime(value: string): string {
   return dateTimeFormatter.format(new Date(value));
@@ -162,7 +160,12 @@ export function NovaEntregaFlow({ accessToken }: NovaEntregaFlowProps) {
       />
 
       {createdDelivery ? (
-        <CreatedDeliveryState delivery={createdDelivery} onNewRequest={handleNewRequest} />
+        <CreatedDeliveryState
+          accessToken={accessToken}
+          delivery={createdDelivery}
+          onDeliveryUpdate={setCreatedDelivery}
+          onNewRequest={handleNewRequest}
+        />
       ) : (
         <NovaEntregaForm
           onSubmit={handleSubmit}
@@ -176,12 +179,125 @@ export function NovaEntregaFlow({ accessToken }: NovaEntregaFlowProps) {
 }
 
 interface CreatedDeliveryStateProps {
+  accessToken: string;
   delivery: DeliveryRequest;
+  onDeliveryUpdate: (delivery: DeliveryRequest) => void;
   onNewRequest: () => void;
 }
 
-function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStateProps) {
+function CreatedDeliveryState({
+  accessToken,
+  delivery,
+  onDeliveryUpdate,
+  onNewRequest,
+}: CreatedDeliveryStateProps) {
   const shortId = delivery.id.slice(0, 8);
+  const loadRequestId = useRef(0);
+  const loadInFlight = useRef(false);
+  const queuedLoad = useRef(false);
+  const isActive = useRef(true);
+  const realtimeRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
+  const { notify } = useInAppNotifications();
+
+  const loadDelivery = useCallback(
+    async (mode: 'refresh' | 'realtime' = 'refresh') => {
+      if (loadInFlight.current) {
+        queuedLoad.current = true;
+        return;
+      }
+
+      const requestId = loadRequestId.current + 1;
+      loadRequestId.current = requestId;
+      loadInFlight.current = true;
+      if (mode === 'refresh') {
+        setIsRefreshing(true);
+      }
+      setRefreshError(null);
+
+      try {
+        const updatedDelivery = await getMyDelivery(accessToken, delivery.id);
+        if (isActive.current && requestId === loadRequestId.current) {
+          onDeliveryUpdate(updatedDelivery);
+        }
+      } catch {
+        if (isActive.current && requestId === loadRequestId.current && mode === 'refresh') {
+          setRefreshError('Nao foi possivel atualizar a entrega agora.');
+        }
+      } finally {
+        if (isActive.current && requestId === loadRequestId.current) {
+          setIsRefreshing(false);
+        }
+        loadInFlight.current = false;
+        if (isActive.current && queuedLoad.current) {
+          queuedLoad.current = false;
+          void loadDelivery('realtime');
+        }
+      }
+    },
+    [accessToken, delivery.id, onDeliveryUpdate],
+  );
+
+  const showRealtimeNotice = useCallback(
+    (shouldNotifyShell: boolean) => {
+      const message = 'A entrega foi atualizada.';
+      setRealtimeNotice(message);
+      if (shouldNotifyShell) {
+        notify(message);
+      }
+      if (realtimeNoticeTimer.current) {
+        clearTimeout(realtimeNoticeTimer.current);
+      }
+
+      realtimeNoticeTimer.current = setTimeout(() => {
+        realtimeNoticeTimer.current = null;
+        setRealtimeNotice(null);
+      }, REALTIME_NOTICE_DISMISS_MS);
+    },
+    [notify],
+  );
+
+  const scheduleRealtimeRefresh = useCallback(() => {
+    const shouldNotifyShell =
+      !realtimeRefreshTimer.current && !loadInFlight.current && !queuedLoad.current;
+    showRealtimeNotice(shouldNotifyShell);
+
+    if (realtimeRefreshTimer.current) {
+      clearTimeout(realtimeRefreshTimer.current);
+    }
+
+    const debounceWithJitterMs = 400 + Math.floor(Math.random() * 150);
+    realtimeRefreshTimer.current = setTimeout(() => {
+      realtimeRefreshTimer.current = null;
+      void loadDelivery('realtime');
+    }, debounceWithJitterMs);
+  }, [loadDelivery, showRealtimeNotice]);
+
+  useEffect(() => {
+    isActive.current = true;
+    const unsubscribe = subscribeToStoreDeliveryBroadcast(
+      accessToken,
+      delivery.id,
+      scheduleRealtimeRefresh,
+    );
+
+    return () => {
+      if (realtimeRefreshTimer.current) {
+        clearTimeout(realtimeRefreshTimer.current);
+        realtimeRefreshTimer.current = null;
+      }
+      if (realtimeNoticeTimer.current) {
+        clearTimeout(realtimeNoticeTimer.current);
+        realtimeNoticeTimer.current = null;
+      }
+      isActive.current = false;
+      queuedLoad.current = false;
+      unsubscribe();
+    };
+  }, [accessToken, delivery.id, scheduleRealtimeRefresh]);
 
   return (
     <section className="space-y-5 animate-fade-in" aria-live="polite">
@@ -203,15 +319,41 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
               </p>
             </div>
           </div>
-          <Button variant="secondary" size="md" onClick={onNewRequest}>
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Criar outra
-          </Button>
-          <ButtonLink href={`/loja/entregas/${delivery.id}`} variant="primary" size="md">
-            Acompanhar entrega
-          </ButtonLink>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={isRefreshing}
+              onClick={() => void loadDelivery('refresh')}
+            >
+              <RefreshCw
+                className={`h-4 w-4${isRefreshing ? ' animate-spin' : ''}`}
+                aria-hidden="true"
+              />
+              Atualizar
+            </Button>
+            <Button variant="secondary" size="md" onClick={onNewRequest}>
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Criar outra
+            </Button>
+            <ButtonLink href={`/loja/entregas/${delivery.id}`} variant="primary" size="md">
+              Acompanhar entrega
+            </ButtonLink>
+          </div>
         </div>
       </Card>
+
+      {realtimeNotice ? (
+        <Alert tone="info" title="Atualizacao em tempo real">
+          {realtimeNotice}
+        </Alert>
+      ) : null}
+
+      {refreshError ? (
+        <Alert tone="danger" title="Atualizacao nao concluida">
+          {refreshError}
+        </Alert>
+      ) : null}
 
       <Card variant="white">
         <div className="flex items-center justify-between gap-3">
@@ -226,7 +368,7 @@ function CreatedDeliveryState({ delivery, onNewRequest }: CreatedDeliveryStatePr
 
         <div className="mt-5 rounded-md border border-paper-line bg-paper p-4">
           <RouteLine
-            from={`${STORE_PLACEHOLDER.name} — ${STORE_PLACEHOLDER.address}`}
+            from={`${delivery.store.name} - ${delivery.store.address}`}
             to={delivery.destination_address ?? 'Destino não informado'}
           />
         </div>
