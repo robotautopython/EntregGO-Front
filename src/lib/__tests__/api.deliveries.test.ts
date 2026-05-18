@@ -37,6 +37,31 @@ describe('listAvailableDeliveries', () => {
   });
 });
 
+describe('getAdminInsights', () => {
+  it('gets admin insights with the Bearer token and no params', async () => {
+    const { getAdminInsights } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: {
+        success: true,
+        data: {
+          generated_at: '2026-05-18T12:00:00.000Z',
+          user_counts: {},
+          active_accounts: { stores: 0, couriers: 0 },
+          delivery_counts_by_status: {},
+          payment_counts: { paid: 0, pending: 0 },
+          latest_pending_users: { limit: 5, items: [] },
+        },
+      },
+    });
+
+    await getAdminInsights('tok-123');
+
+    expect(getMock).toHaveBeenCalledWith('/api/admin/insights', {
+      headers: { Authorization: 'Bearer tok-123' },
+    });
+  });
+});
+
 describe('listAdminDeliveries', () => {
   it('sends only page, limit and status with the Bearer token', async () => {
     const { listAdminDeliveries } = await import('@/lib/api');

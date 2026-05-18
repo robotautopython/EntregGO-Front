@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/Card';
 import { ClientApiError, getAdminInsights } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { AdminInsights, UserRole, UserStatus } from '@/types/auth';
+import type { DeliveryRequestStatus } from '@/types/delivery';
 
 const roleLabels: Record<UserRole, string> = {
   admin: 'Admin',
@@ -19,10 +20,20 @@ const roleLabels: Record<UserRole, string> = {
   motoboy: 'Motoboy',
 };
 
-const statusLabels: Record<UserStatus, string> = {
+const userStatusLabels: Record<UserStatus, string> = {
   pendente: 'Pendente',
   ativo: 'Ativo',
   bloqueado: 'Bloqueado',
+};
+
+const deliveryStatusLabels: Record<DeliveryRequestStatus, string> = {
+  aguardando: 'Aguardando',
+  aceita: 'Aceita',
+  coletada: 'Coletada',
+  em_transito: 'Em transito',
+  entregue: 'Entregue',
+  expirada: 'Expirada',
+  cancelada: 'Cancelada',
 };
 
 const statusTones: Record<UserStatus, 'warn' | 'success' | 'danger'> = {
@@ -31,8 +42,30 @@ const statusTones: Record<UserStatus, 'warn' | 'success' | 'danger'> = {
   bloqueado: 'danger',
 };
 
+const deliveryStatusTones: Record<
+  DeliveryRequestStatus,
+  'brand' | 'route' | 'signal' | 'success' | 'warn' | 'danger' | 'paper'
+> = {
+  aguardando: 'warn',
+  aceita: 'brand',
+  coletada: 'route',
+  em_transito: 'signal',
+  entregue: 'success',
+  expirada: 'paper',
+  cancelada: 'danger',
+};
+
 const roleOrder = ['admin', 'logista', 'motoboy'] as const satisfies readonly UserRole[];
 const statusOrder = ['pendente', 'ativo', 'bloqueado'] as const satisfies readonly UserStatus[];
+const deliveryStatusOrder = [
+  'aguardando',
+  'aceita',
+  'coletada',
+  'em_transito',
+  'entregue',
+  'expirada',
+  'cancelada',
+] as const satisfies readonly DeliveryRequestStatus[];
 
 const formatDateTime = (value: string) => {
   const date = new Date(value);
@@ -49,6 +82,12 @@ const getTotalUsers = (insights: AdminInsights) =>
     (roleTotal, role) =>
       roleTotal +
       statusOrder.reduce((statusTotal, status) => statusTotal + insights.user_counts[role][status], 0),
+    0,
+  );
+
+const getTotalDeliveries = (insights: AdminInsights) =>
+  deliveryStatusOrder.reduce(
+    (total, status) => total + insights.delivery_counts_by_status[status],
     0,
   );
 
@@ -98,9 +137,16 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
         : 0,
     [insights],
   );
+  const totalDeliveries = useMemo(
+    () => (insights ? getTotalDeliveries(insights) : 0),
+    [insights],
+  );
+  const totalPayments = insights ? insights.payment_counts.paid + insights.payment_counts.pending : 0;
   const isEmpty =
     Boolean(insights) &&
     totalUsers === 0 &&
+    totalDeliveries === 0 &&
+    totalPayments === 0 &&
     insights?.active_accounts.stores === 0 &&
     insights?.active_accounts.couriers === 0 &&
     insights?.latest_pending_users.items.length === 0;
@@ -144,7 +190,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
 
       {!isLoading && !error && isEmpty ? (
         <Alert tone="info" title="Sem dados ainda">
-          A API respondeu, mas ainda não há usuários ou cadastros pendentes para resumir.
+          A API respondeu, mas ainda não há usuários, entregas ou pagamentos para resumir.
         </Alert>
       ) : null}
 
@@ -181,6 +227,61 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
             />
           </div>
 
+          <div className="grid gap-6 xl:grid-cols-2">
+            <Card className="overflow-hidden p-0">
+              <div className="border-b border-paper-line px-5 py-4">
+                <p className="text-sm font-extrabold text-asphalt-950">
+                  Entregas por status
+                </p>
+                <p className="mt-1 text-xs font-semibold text-asphalt-950/55">
+                  Total operacional: {totalDeliveries}
+                </p>
+              </div>
+              <div className="grid gap-2 p-5 sm:grid-cols-2">
+                {deliveryStatusOrder.map((status) => (
+                  <div
+                    key={status}
+                    className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-paper-line bg-white px-4 py-3"
+                  >
+                    <Badge tone={deliveryStatusTones[status]}>
+                      {deliveryStatusLabels[status]}
+                    </Badge>
+                    <span className="font-mono text-xl font-extrabold tabular-nums text-asphalt-950">
+                      {insights.delivery_counts_by_status[status]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="overflow-hidden p-0">
+              <div className="border-b border-paper-line px-5 py-4">
+                <p className="text-sm font-extrabold text-asphalt-950">
+                  Pagamentos externos
+                </p>
+                <p className="mt-1 text-xs font-semibold text-asphalt-950/55">
+                  Controle administrativo simples
+                </p>
+              </div>
+              <div className="grid gap-3 p-5 sm:grid-cols-2">
+                <MetricCard
+                  label="Pagos"
+                  value={insights.payment_counts.paid}
+                  subtitle={`${totalPayments} no total`}
+                  icon={Store}
+                  tone="success"
+                />
+                <MetricCard
+                  label="Pendentes"
+                  value={insights.payment_counts.pending}
+                  subtitle="aguardando confirmacao"
+                  icon={Clock3}
+                  tone="brand"
+                />
+              </div>
+            </Card>
+          </div>
+
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
             <Card className="overflow-hidden p-0">
               <div className="border-b border-paper-line px-5 py-4">
@@ -200,7 +301,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
                           key={status}
                           className="border-b border-paper-line px-5 py-3 font-extrabold"
                         >
-                          {statusLabels[status]}
+                          {userStatusLabels[status]}
                         </th>
                       ))}
                       <th className="border-b border-paper-line px-5 py-3 font-extrabold">
@@ -254,7 +355,7 @@ function AdminInsightsPanel({ accessToken }: { accessToken: string }) {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge tone="brand">{roleLabels[user.role]}</Badge>
-                          <Badge tone="warn">{statusLabels[user.status]}</Badge>
+                          <Badge tone="warn">{userStatusLabels[user.status]}</Badge>
                         </div>
                         <p className="mt-2 truncate font-mono text-xs text-asphalt-950/55">
                           ID {user.id}

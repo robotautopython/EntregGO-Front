@@ -8,12 +8,13 @@
 
 ## Em Andamento
 
+- [ ] M-11A frontend implementada e validada localmente; commit, push, deploy e smoke pos-deploy pendentes.
 - [ ] Manter abas de documentos e notas como placeholders honestos ate existirem endpoints reais.
 
 ## Proximas Tarefas
 
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
-- [ ] Planejar a proxima fatia pequena somente leitura com gates antes de qualquer codigo.
+- [ ] Fechar operacionalmente a M-11A apos deploy backend-first.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
 
@@ -87,6 +88,7 @@
 - [x] M-09C frontend publicado e validado em producao: commit funcional `e25d372d701e6611beec11330ff4655ec20bd7d9`, consumindo backend `f413ec8091646ff580a9e99a64d6d1b34b3d5571`; Vercel `success`; `/admin/usuarios` retornou `200`; smoke UI autenticado com Playwright fez login admin, filtrou usuario ficticio, abriu o drawer, carregou a aba `Pagamento`, renderizou `Todos/Pendentes/Pagos`, chamou `GET /api/admin/users/:id/payments` com sucesso e manteve a secao sem campos proibidos.
 - [x] M-10A frontend implementada e validada localmente: helper `src/lib/realtime.ts` assina Supabase Realtime Broadcast privado com JWT atual; `FilaDisponivel` assina `delivery:available` quando o motoboy esta online e refaz `GET /api/deliveries/available`; `EntregaDetalhe` assina `delivery:<deliveryId>` e refaz `GET /api/deliveries/:id` em `delivery.accepted`/`delivery.status_changed`. Refetch e debounced/coalesced, sem polling, com unsubscribe por cleanup e botao "Atualizar" preservado. Gates Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator e TestEngineer usados; frontend `typecheck`, `test` (105), `lint`, `build` e `git diff --check` passaram.
 - [x] M-10A frontend publicado e validado em producao: commit `434789d5d8ec8ce9a77a58af6aade291ec742914` em `origin/main`; Vercel/GitHub `success`; smoke publico confirmou `/motoboy` e `/loja/entregas/<uuid>` 200; smoke autenticado API+UI confirmou fila do motoboy e detalhe da loja atualizando por realtime, com fallback manual preservado e DOM sem campos proibidos.
+- [x] M-11A frontend implementada e validada localmente: `/admin/insights` passou a exibir `delivery_counts_by_status` e `payment_counts { paid, pending }` vindos de `GET /api/admin/insights`, mantendo a chamada REST/Bearer via `getAdminInsights` sem params. A tela preserva loading, erro recuperavel, vazio honesto e ausencia de campos proibidos; sem Supabase direto, polling, realtime, cache, filtros, listas novas ou mutation. Frontend `typecheck`, `test` (110), `lint`, `build` e `git diff --check` passaram.
 
 ## Bloqueios
 
@@ -102,6 +104,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (105 testes; `npm test`; inclui M-10A); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Testes:** Vitest + Testing Library (110 testes; `npm test`; inclui M-11A); Playwright instalado como ferramenta de smoke UI autenticado controlado
 **Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A, M-09B, M-09C e M-10A validadas em producao
 **Riscos abertos:** 4

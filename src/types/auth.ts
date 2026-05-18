@@ -1,3 +1,5 @@
+import type { DeliveryRequestStatus } from './delivery';
+
 export type UserRole = 'admin' | 'logista' | 'motoboy';
 export type UserStatus = 'pendente' | 'ativo' | 'bloqueado';
 
@@ -74,6 +76,11 @@ export interface AdminInsightsPendingUser {
 export interface AdminInsights {
   generated_at: string;
   user_counts: Record<UserRole, Record<UserStatus, number>>;
+  delivery_counts_by_status: Record<DeliveryRequestStatus, number>;
+  payment_counts: {
+    paid: number;
+    pending: number;
+  };
   active_accounts: {
     stores: number;
     couriers: number;

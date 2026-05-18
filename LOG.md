@@ -752,6 +752,19 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Agentes utilizados:** Camisa10, DeployObservability, Documentador
 **Status:** fechado em producao
 
+## 2026-05-18 - M-11A INSIGHTS ADMINISTRATIVOS FRONTEND LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a parte frontend da M-11A. `/admin/insights` passou a renderizar os agregados fixos `delivery_counts_by_status` e `payment_counts { paid, pending }` vindos de `GET /api/admin/insights`, mantendo os campos anteriores (`generated_at`, `user_counts`, `active_accounts`, `latest_pending_users`). O client API `getAdminInsights` continua chamando a rota com Bearer token e sem params.
+**Arquivos modificados:** `src/types/auth.ts`, `src/app/admin/insights/page.tsx`, `src/app/admin/insights/__tests__/page.test.tsx`, `src/lib/__tests__/api.deliveries.test.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/admin/insights` no repositorio backend adicionou os agregados fixos somente leitura.
+**Agentes/gates utilizados:** ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer, Cetico, Documentador
+**Status:** implementado e validado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Ressalvas incorporadas:** A UI segue consumindo apenas API REST, sem Supabase direto. Nao ha query params novos, filtros, listas novas, mutation, polling, realtime, cache ou cron. A tela nao renderiza `store_id`, `courier_id`, `user_id`, `auth_id`, email, nomes, IDs de entregas/pagamentos, mes de referencia, vencimento, auditoria de pagamento, valor financeiro, metodo, PIX, cartao, boleto, comprovante, gateway, dados bancarios, token, header Authorization ou service role. O estado vazio considera usuarios, entregas, pagamentos e pendentes.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (16 arquivos, 110 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. O primeiro `npm run typecheck` falhou porque foi iniciado em paralelo antes de `.next/types` ser regenerado; apos `npm run build`, o `typecheck` isolado passou. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
 **Validacoes locais antes do push:** `npm run typecheck`, `npm test` (89), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
 
 **Deploy e smoke UI:** `https://entreggo.vercel.app/admin/entregas/<uuid>` retornou `200` com `X-Matched-Path: /admin/entregas/[id]`. Smoke autenticado com admin ativo abriu detalhe real, renderizou loja, coleta, destino, status e timeline, e o DOM ficou sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados de motoboy, documentos, Storage URLs, token, header, financeiro ou comprovante.
