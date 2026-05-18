@@ -9,7 +9,6 @@
 ## Em Andamento
 
 - [ ] Manter abas de documentos e notas como placeholders honestos ate existirem endpoints reais.
-- [ ] Fechar operacionalmente a M-10A com commit, push, deploy e smoke pos-deploy contra Realtime privado.
 
 ## Proximas Tarefas
 
@@ -87,10 +86,11 @@
 - [x] M-09C frontend implementada e validada localmente: aba `Pagamento` do `UserDetailDrawer` consome `GET /api/admin/users/:id/payments` por `listAdminUserPayments`, com carregamento preguiçoso ao abrir a aba, loading, erro recuperavel, vazio honesto, lista somente leitura, filtro `Todos/Pendentes/Pagos` e paginacao simples. A UI nao usa Supabase direto, nao possui mutation de marcar pago no drawer e nao renderiza `user_id`, objeto `user`, `auth_id`, email, `marked_by`, valor financeiro, metodo, comprovante, token ou header na secao Pagamento. Frontend `typecheck`, `test` (97), `lint`, `build` e `git diff --check` passaram.
 - [x] M-09C frontend publicado e validado em producao: commit funcional `e25d372d701e6611beec11330ff4655ec20bd7d9`, consumindo backend `f413ec8091646ff580a9e99a64d6d1b34b3d5571`; Vercel `success`; `/admin/usuarios` retornou `200`; smoke UI autenticado com Playwright fez login admin, filtrou usuario ficticio, abriu o drawer, carregou a aba `Pagamento`, renderizou `Todos/Pendentes/Pagos`, chamou `GET /api/admin/users/:id/payments` com sucesso e manteve a secao sem campos proibidos.
 - [x] M-10A frontend implementada e validada localmente: helper `src/lib/realtime.ts` assina Supabase Realtime Broadcast privado com JWT atual; `FilaDisponivel` assina `delivery:available` quando o motoboy esta online e refaz `GET /api/deliveries/available`; `EntregaDetalhe` assina `delivery:<deliveryId>` e refaz `GET /api/deliveries/:id` em `delivery.accepted`/`delivery.status_changed`. Refetch e debounced/coalesced, sem polling, com unsubscribe por cleanup e botao "Atualizar" preservado. Gates Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator e TestEngineer usados; frontend `typecheck`, `test` (105), `lint`, `build` e `git diff --check` passaram.
+- [x] M-10A frontend publicado e validado em producao: commit `434789d5d8ec8ce9a77a58af6aade291ec742914` em `origin/main`; Vercel/GitHub `success`; smoke publico confirmou `/motoboy` e `/loja/entregas/<uuid>` 200; smoke autenticado API+UI confirmou fila do motoboy e detalhe da loja atualizando por realtime, com fallback manual preservado e DOM sem campos proibidos.
 
 ## Bloqueios
 
-- Realtime M-10A esta implementado e validado localmente, mas ainda depende de commit, push, deploy, backend/migration remotos e smoke pos-deploy contra canais privados. Projeto ainda nao possui dashboards complexos, push real ou cron; busca textual, filtro por data, cancelamento e dados de motoboy seguem fora de escopo.
+- Realtime operacional minimo M-10A esta publicado e validado em producao. Projeto ainda nao possui dashboards complexos, push real ou cron; busca textual, filtro por data, cancelamento, assinatura realtime do motoboy aceito em `delivery:<deliveryId>` e dados de motoboy seguem fora de escopo.
 - Documentos/CNH/fotos seguem bloqueados por LGPD ate pipeline de Storage com signed URLs e Security Validator.
 - UI admin de confirmacao de pagamento externo esta publicada e validada em producao contra o contrato backend M-08. Seguem fora de escopo gateway, checkout, PIX, cartao, boleto, comprovante/upload, valor financeiro, repasse/split, nota fiscal, criacao mensal de registros, desmarcar pago e exibicao para loja/motoboy.
 - `npm audit --json` ainda falha com 7 vulnerabilidades moderadas: `next@15.5.18` aponta `postcss` interno e a cadeia de testes `vitest`/`vite` aponta advisories moderados com fix semver-major. Sem alto/critico; exige acompanhamento de release/advisory antes de PWA/push real ou upgrade major do runner.
@@ -103,5 +103,5 @@
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
 **Testes:** Vitest + Testing Library (105 testes; `npm test`; inclui M-10A); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A, M-09B e M-09C validadas em producao; M-10A ainda local
+**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A, M-09B, M-09C e M-10A validadas em producao
 **Riscos abertos:** 4

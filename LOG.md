@@ -4,6 +4,21 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - M-10A FRONTEND FECHADA EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechamento operacional frontend da M-10A concluido. Commit `434789d5d8ec8ce9a77a58af6aade291ec742914` foi publicado em `origin/main`, com assinaturas privadas Supabase Realtime em `FilaDisponivel` e `EntregaDetalhe`, refetch REST debounced/coalesced e fallback manual preservado.
+**Agentes utilizados:** Camisa10, DeployObservability, SecurityValidator, FinalValidator/TestEngineer, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (105), `npm run lint`, `npm run build` e `git diff --check` passaram, com apenas avisos LF/CRLF do Windows.
+
+**Deploy e smoke publico:** GitHub/Vercel retornaram `success` e `Deployment has completed`. `https://entreggo.vercel.app/motoboy` e `/loja/entregas/<uuid>` retornaram `200`.
+
+**Smoke autenticado API+UI:** com dados ficticios temporarios, motoboy ativo online abriu `/motoboy`; loja criou entrega; a fila do motoboy atualizou por realtime via `delivery.created` e tambem foi confirmada por GET REST. A loja abriu `/loja/entregas/<id>`; apos aceite do motoboy, o detalhe atualizou por realtime via `delivery.accepted` e GET REST confirmou status `aceita`. O fallback manual `Atualizar` permaneceu disponivel.
+
+**Seguranca e cleanup:** DOM ficou sem `store_id`, `courier_id`, `user_id`, `auth_id`, emails, `Authorization`, `Bearer` ou `service_role`. Payloads realtime ficaram restritos a `{ deliveryId, status, updatedAt }`. Cleanup final: `delivery=0`, `store=0`, `courier=0`, `domain=0`. Nenhum token, header ou secret foi impresso.
+
 ## 2026-05-14 - M-00A EXECUTADO
 
 **Fase:** fundacao
