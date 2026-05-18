@@ -744,3 +744,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Cleanup:** dados ficticios removidos; residuos finais `delivery=0`, `store=0`, `courier=0`, `domain=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
 
 **Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, busca textual, filtro por data, dashboard, realtime, push, polling automatico, cron, documentos/Storage, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros e desmarcar pago.
+
+## 2026-05-17 - M-09B LISTAGEM ADMINISTRATIVA DE ENTREGAS POR USUARIO FRONTEND LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente no frontend a integracao da aba `Entregas` do `UserDetailDrawer` com `GET /api/admin/users/:id/deliveries`, via `listAdminUserDeliveries(accessToken, userId, { page, limit, status })` e Bearer token vindo do `AdminUsersPanel`. A chamada e preguiçosa e so ocorre quando a aba e aberta. A UI exibe loading, erro recuperavel, vazio honesto, lista somente leitura, filtro por status e paginacao simples.
+**Arquivos modificados:** `src/components/admin/AdminUsersPanel.tsx`, `src/components/admin/UserDetailDrawer.tsx`, `src/components/admin/__tests__/UserDetailDrawer.test.tsx`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/types/delivery.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/admin/users/:id/deliveries` implementado no repositorio backend, com isolamento server-side por `stores.user_id`/`couriers.user_id`, alvo `admin` vazio honesto e resposta sanitizada M-07/M-09A.
+**Agentes/gates utilizados:** Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator, Documentador
+**Status:** implementado e validado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Ressalvas incorporadas:** Os testes de campos proibidos ficam escopados a secao `Entregas`, porque a aba `Perfil` do drawer continua exibindo PII administrativa permitida pelo contrato antigo de admin users. A secao Entregas nao envia nem renderiza `store_id`, `courier_id`, `user_id`, `auth_id`, email, `owner_name`, `full_name`, documentos, Storage URLs, token, header Authorization ou service role. Nao ha mutation, cancelamento, mudanca de status, busca textual, filtro por data, dashboard, Supabase direto, polling, realtime, push ou cron.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (14 arquivos, 93 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, `courier_id`, `store_id`, `user_id`, `auth_id`, email, `owner_name`, `full_name`, documentos, Storage URLs, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros, desmarcar pago, busca textual, filtro por data, dashboard, realtime, push, polling automatico e cron. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.

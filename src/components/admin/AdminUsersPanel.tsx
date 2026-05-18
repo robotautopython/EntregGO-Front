@@ -630,6 +630,8 @@ export function AdminUsersPanel({ authContext, accessToken, preset }: AdminUsers
       </Card>
 
       <UserDetailDrawer
+        key={selectedUser?.id ?? 'closed'}
+        accessToken={accessToken}
         user={selectedUser}
         detail={selectedUserDetail}
         isLoadingDetail={isLoadingUserDetail}

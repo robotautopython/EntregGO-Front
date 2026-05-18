@@ -3,22 +3,29 @@
 import {
   Ban,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   FileText,
+  Filter,
   Loader2,
-  Lock,
   Mail,
+  MapPin,
   PackageOpen,
+  RefreshCw,
   ShieldCheck,
+  Store,
   Unlock,
   Wallet,
   X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ClientApiError, listAdminUserDeliveries } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type {
   AdminCourierProfile,
@@ -28,8 +35,14 @@ import type {
   UserRole,
   UserStatus,
 } from '@/types/auth';
+import type {
+  AdminUserDeliveriesResult,
+  AdminUserDeliveryListItem,
+  DeliveryRequestStatus,
+} from '@/types/delivery';
 
 interface UserDetailDrawerProps {
+  accessToken: string;
   user: DomainUser | null;
   detail: AdminUserDetail | null;
   isLoadingDetail: boolean;
@@ -65,10 +78,56 @@ const statusMeta: Record<
   bloqueado: { tone: 'danger', label: 'Bloqueado', pulse: false },
 };
 
+type DeliveryStatusFilter = 'todos' | DeliveryRequestStatus;
+
+const DELIVERY_PAGE_SIZE = 10;
+
+const deliveryStatusFilters: Array<{ value: DeliveryStatusFilter; label: string }> = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'aguardando', label: 'Aguardando' },
+  { value: 'aceita', label: 'Aceita' },
+  { value: 'coletada', label: 'Coletada' },
+  { value: 'em_transito', label: 'Em transito' },
+  { value: 'entregue', label: 'Entregue' },
+  { value: 'expirada', label: 'Expirada' },
+  { value: 'cancelada', label: 'Cancelada' },
+];
+
+const deliveryStatusLabel: Record<DeliveryRequestStatus, string> = {
+  aguardando: 'Aguardando',
+  aceita: 'Aceita',
+  coletada: 'Coletada',
+  em_transito: 'Em transito',
+  entregue: 'Entregue',
+  expirada: 'Expirada',
+  cancelada: 'Cancelada',
+};
+
+const deliveryStatusTone: Record<
+  DeliveryRequestStatus,
+  'success' | 'warn' | 'route' | 'brand' | 'danger' | 'paper'
+> = {
+  aguardando: 'warn',
+  aceita: 'route',
+  coletada: 'brand',
+  em_transito: 'brand',
+  entregue: 'success',
+  expirada: 'danger',
+  cancelada: 'paper',
+};
+
 function formatDate(value: string | null): string {
   if (!value) return '—';
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
+function formatDeliveryDate(value: string | null): string {
+  if (!value) return '-';
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value));
 }
@@ -84,6 +143,7 @@ function getAvailableActions(
 }
 
 export function UserDetailDrawer({
+  accessToken,
   user,
   detail,
   isLoadingDetail,
@@ -198,7 +258,7 @@ export function UserDetailDrawer({
             />
           ) : null}
           {tab === 'documentos' ? <DocumentosTab user={displayUser} /> : null}
-          {tab === 'entregas' ? <EntregasTab /> : null}
+          {tab === 'entregas' ? <EntregasTab accessToken={accessToken} user={displayUser} /> : null}
           {tab === 'pagamento' ? <PagamentoTab /> : null}
           {tab === 'notas' ? <NotasTab /> : null}
         </div>
@@ -427,29 +487,297 @@ function DocumentosTab({ user }: { user: DomainUser }) {
   );
 }
 
-function EntregasTab() {
+interface UserDeliveriesError {
+  title: string;
+  message: string;
+}
+
+function mapUserDeliveriesError(error: unknown): UserDeliveriesError {
+  if (!(error instanceof ClientApiError)) {
+    return {
+      title: 'Nao foi possivel carregar entregas',
+      message: 'Tente novamente em instantes.',
+    };
+  }
+
+  switch (error.code) {
+    case 'USER_NOT_FOUND':
+      return {
+        title: 'Usuario nao encontrado',
+        message: 'O cadastro pode ter sido removido antes da consulta.',
+      };
+    case 'ADMIN_USER_DELIVERIES_PROFILE_FAILED':
+      return {
+        title: 'Perfil operacional ausente',
+        message: 'Nao foi possivel localizar o perfil vinculado a este usuario.',
+      };
+    case 'USER_PENDING':
+      return {
+        title: 'Cadastro aguardando aprovacao',
+        message: 'Seu cadastro admin ainda precisa estar ativo para ver entregas.',
+      };
+    case 'USER_BLOCKED':
+      return {
+        title: 'Conta bloqueada',
+        message: 'Sua conta esta bloqueada. Fale com a central para regularizar o acesso.',
+      };
+    case 'FORBIDDEN_ROLE':
+      return {
+        title: 'Permissao negada',
+        message: 'Somente administradores ativos podem ver entregas por usuario.',
+      };
+    case 'AUTH_REQUIRED':
+    case 'INVALID_TOKEN':
+    case 'DOMAIN_USER_NOT_FOUND':
+      return {
+        title: 'Sessao invalida',
+        message: 'Entre novamente para ver as entregas.',
+      };
+    case 'API_URL_MISSING':
+      return { title: 'API nao configurada', message: error.message };
+    default:
+      return {
+        title: 'Nao foi possivel carregar entregas',
+        message: error.message || 'Tente novamente em instantes.',
+      };
+  }
+}
+
+function DeliveryTimeline({ delivery }: { delivery: AdminUserDeliveryListItem }) {
+  const steps = [
+    ['Criada', delivery.created_at],
+    ['Expira', delivery.expires_at],
+    ['Aceita', delivery.accepted_at],
+    ['Coletada', delivery.collected_at],
+    ['Em transito', delivery.in_transit_at],
+    ['Entregue', delivery.delivered_at],
+    ['Atualizada', delivery.updated_at],
+  ] as const;
+
   return (
-    <div className="space-y-4">
-      <Card variant="paper" className="border-dashed">
-        <Lock className="h-5 w-5 text-asphalt-950/50" aria-hidden="true" />
-        <p className="mt-2 text-sm font-bold text-asphalt-950">
-          Histórico por usuário ainda não disponível
-        </p>
-        <p className="mt-1 text-xs text-asphalt-950/65">
-          Vai listar as últimas entregas relacionadas a este usuário — solicitadas (se loja) ou
-          aceitas (se motoboy). Performance Validator precisa avaliar paginação e índices antes
-          desta aba ser ligada.
-        </p>
+    <dl className="grid gap-2 text-xs sm:grid-cols-2">
+      {steps.map(([label, value]) => (
+        <div key={label} className="rounded-md bg-paper px-3 py-2">
+          <dt className="font-extrabold uppercase tracking-wide text-asphalt-950/55">{label}</dt>
+          <dd className="mt-1 font-mono font-bold text-asphalt-950/80">
+            {formatDeliveryDate(value)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function EntregasTab({ accessToken, user }: { accessToken: string; user: DomainUser }) {
+  const [filter, setFilter] = useState<DeliveryStatusFilter>('todos');
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<AdminUserDeliveriesResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<UserDeliveriesError | null>(null);
+
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await listAdminUserDeliveries(accessToken, user.id, {
+        page,
+        limit: DELIVERY_PAGE_SIZE,
+        ...(filter === 'todos' ? {} : { status: filter }),
+      });
+      setResult(data ?? null);
+    } catch (caught) {
+      setResult(null);
+      setError(mapUserDeliveriesError(caught));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken, filter, page, user.id]);
+
+  useEffect(() => {
+    setFilter('todos');
+    setPage(1);
+    setResult(null);
+    setError(null);
+  }, [user.id]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  function handleFilter(next: DeliveryStatusFilter) {
+    setPage(1);
+    setFilter(next);
+  }
+
+  const items = useMemo(() => result?.items ?? [], [result]);
+  const total = result?.pagination.total ?? 0;
+  const totalPages = total > 0 ? Math.ceil(total / DELIVERY_PAGE_SIZE) : 1;
+
+  return (
+    <section className="space-y-4" aria-label="Entregas do usuario">
+      <Card variant="paper" className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+            <Filter className="h-3.5 w-3.5" aria-hidden="true" />
+            Status
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {deliveryStatusFilters.map((option) => {
+              const active = filter === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleFilter(option.value)}
+                  className={cn(
+                    'rounded-md border px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide transition-all duration-ui ease-ride',
+                    active
+                      ? 'border-brand-500 bg-brand-500 text-white shadow-pop'
+                      : 'border-paper-line bg-white text-asphalt-950/70 hover:border-brand-300',
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </Card>
-      <Card variant="paper" className="border-dashed">
-        <p className="text-xs text-asphalt-950/65">
-          Endpoint necessário:{' '}
-          <code className="font-mono text-asphalt-950">
-            GET /api/admin/users/:id/deliveries?page=1
-          </code>
-        </p>
-      </Card>
-    </div>
+
+      {isLoading ? (
+        <Card variant="paper" className="text-center">
+          <div className="flex flex-col items-center gap-3 py-8 text-asphalt-950/70">
+            <Loader2 className="h-5 w-5 animate-spin text-brand-600" aria-hidden="true" />
+            <p className="text-sm font-semibold">Carregando entregas...</p>
+          </div>
+        </Card>
+      ) : error ? (
+        <Alert tone="danger" title={error.title}>
+          {error.message}
+          <div className="mt-3">
+            <Button variant="secondary" size="sm" onClick={() => void load()}>
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Tentar novamente
+            </Button>
+          </div>
+        </Alert>
+      ) : items.length === 0 ? (
+        <Card variant="paper" className="text-center">
+          <div className="flex flex-col items-center gap-3 py-8">
+            <PackageOpen className="h-8 w-8 text-brand-600" aria-hidden="true" />
+            <p className="text-sm font-extrabold text-asphalt-950">Nenhuma entrega encontrada.</p>
+            <p className="max-w-sm text-xs text-asphalt-950/65">
+              {user.role === 'admin'
+                ? 'Admins nao possuem entregas operacionais vinculadas.'
+                : filter === 'todos'
+                  ? 'Nao ha entregas relacionadas a este usuario.'
+                  : 'Nao ha entregas relacionadas a este usuario com esse status.'}
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs font-bold text-asphalt-950/55">
+            Pagina {page} de {totalPages} - {items.length} entrega
+            {items.length === 1 ? '' : 's'} nesta pagina - {total} no total
+          </p>
+
+          <ul className="space-y-3">
+            {items.map((delivery) => (
+              <li key={delivery.id} className="rounded-md border border-paper-line bg-white p-4">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={deliveryStatusTone[delivery.status]}>
+                      {deliveryStatusLabel[delivery.status]}
+                    </Badge>
+                    <span className="font-mono text-xs font-bold text-asphalt-950/45">
+                      {delivery.id}
+                    </span>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <p className="flex items-start gap-2 text-sm text-asphalt-950/80">
+                      <Store
+                        className="mt-0.5 h-4 w-4 shrink-0 text-brand-600"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <span className="block text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                          Loja
+                        </span>
+                        <span className="font-extrabold text-asphalt-950">
+                          {delivery.store.name || 'Loja sem nome'}
+                        </span>
+                        <span className="mt-1 block text-asphalt-950/65">
+                          {delivery.store.address || 'Endereco da loja nao informado'}
+                        </span>
+                      </span>
+                    </p>
+
+                    <p className="flex items-start gap-2 text-sm text-asphalt-950/80">
+                      <MapPin
+                        className="mt-0.5 h-4 w-4 shrink-0 text-route-600"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <span className="block text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                          Destino
+                        </span>
+                        {delivery.destination_address || 'Destino nao informado'}
+                      </span>
+                    </p>
+                  </div>
+
+                  {delivery.notes ? (
+                    <p className="rounded-md bg-paper px-3 py-2 text-sm text-asphalt-950/75">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                        Observacao
+                      </span>
+                      <span className="mt-1 block">{delivery.notes}</span>
+                    </p>
+                  ) : null}
+
+                  <DeliveryTimeline delivery={delivery} />
+
+                  <ButtonLink
+                    href={`/admin/entregas/${delivery.id}`}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    <PackageOpen className="h-4 w-4" aria-hidden="true" />
+                    Abrir detalhe
+                  </ButtonLink>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center justify-between gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              Anterior
+            </Button>
+            <span className="text-xs font-bold text-asphalt-950/55">
+              Pagina {page} de {totalPages}
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((value) => value + 1)}
+            >
+              Proxima
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

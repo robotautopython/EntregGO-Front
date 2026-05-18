@@ -21,6 +21,8 @@ import type {
   AdminDeliveryDetail,
   AdminDeliveriesQuery,
   AdminDeliveriesResult,
+  AdminUserDeliveriesQuery,
+  AdminUserDeliveriesResult,
   AvailableDeliveriesQuery,
   AvailableDeliveriesResult,
   CreateDeliveryRequestPayload,
@@ -218,6 +220,31 @@ export async function getAdminDelivery(accessToken: string, deliveryId: string) 
       `/api/admin/deliveries/${deliveryId}`,
       {
         headers: bearerHeaders(accessToken),
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listAdminUserDeliveries(
+  accessToken: string,
+  userId: string,
+  query: AdminUserDeliveriesQuery = {},
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminUserDeliveriesResult> | ApiFailure>(
+      `/api/admin/users/${userId}/deliveries`,
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+          status: query.status || undefined,
+        },
       },
     );
 

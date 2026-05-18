@@ -92,6 +92,10 @@ export interface AdminDeliveriesQuery {
   status?: DeliveryRequestStatus;
 }
 
+export type AdminUserDeliveryListItem = AdminDeliveryListItem;
+export type AdminUserDeliveriesResult = AdminDeliveriesResult;
+export type AdminUserDeliveriesQuery = AdminDeliveriesQuery;
+
 export interface AvailableDeliveryStore {
   name: string;
   address: string;
