@@ -4,6 +4,23 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - M-12A FRONTEND FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechamento operacional frontend da M-12A concluido. Commit funcional `150f4f1d1b623bb276a26b50bb44756c84c0a9c9` foi publicado em `origin/main`, adicionando avisos in-app genericos aos eventos realtime ja existentes em `FilaDisponivel` e `EntregaDetalhe`.
+**Agentes utilizados:** Camisa10, DeployObservability, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `git status --short` mostrou somente `CONTRACTS.md`, `LOG.md`, `STATUS.md`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `src/components/motoboy/FilaDisponivel.tsx` e `src/components/motoboy/__tests__/FilaDisponivel.test.tsx`. `git diff --check`, `npm run typecheck`, `npm test` (16 arquivos, 110 testes), `npm run lint` e `npm run build` passaram.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `150f4f1d1b623bb276a26b50bb44756c84c0a9c9` em `refs/heads/main`; GitHub/Vercel retornou `success` e `Deployment has completed`. `https://entreggo.vercel.app`, `/motoboy` e `/loja/entregas/<uuid>` retornaram `200`; backend `/api/health` retornou `200`; endpoints protegidos relevantes sem token retornaram `401 AUTH_REQUIRED`. Os bundles publicados contem "Ha novas solicitacoes na fila." e "A entrega foi atualizada.".
+
+**Smoke autenticado UI/API:** com dados ficticios temporarios, motoboy ativo online abriu `/motoboy`, recebeu `delivery.created`, exibiu "Ha novas solicitacoes na fila.", refetchou `GET /api/deliveries/available` e preservou o botao `Atualizar`. Loja abriu `/loja/entregas/<id>`; apos aceite autenticado pelo motoboy, recebeu realtime, exibiu "A entrega foi atualizada.", refetchou `GET /api/deliveries/:id` e preservou `Atualizar`.
+
+**Seguranca e cleanup:** os avisos ficaram sem `deliveryId`, status bruto, endereco, observacao, email, telefone, `store_id`, `courier_id`, `user_id`, `auth_id`, Authorization, Bearer, service role ou token. Tentativas abortadas durante ajuste do harness tambem limparam tudo. Cleanup final: `delivery=0`, `store=0`, `courier=0`, `domain=0`, `auth=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+**Fora do escopo preservado:** backend, banco, migration, `.env*`, canal realtime novo, Web Push/PWA, Service Worker, VAPID, cron, GPS, pagamento, Storage, documentos e M-12B.
+
 ## 2026-05-18 - M-12A FRONTEND LOCAL
 
 **Fase:** fundacao/auth-operacao
