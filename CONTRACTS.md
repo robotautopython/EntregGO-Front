@@ -570,6 +570,7 @@ Uso permitido:
 - `GET /api/admin/deliveries?page=1&limit=20&status=entregue`
 - `GET /api/admin/deliveries/:id`
 - `GET /api/admin/users/:id/deliveries?page=1&limit=10&status=entregue`
+- `GET /api/admin/users/:id/payments?page=1&limit=10&paid=false`
 - `GET /api/admin/payments?page=1&limit=20&paid=false&referenceMonth=YYYY-MM&role=logista&userStatus=ativo`
 - `PATCH /api/admin/payments/:id/mark-paid`
 - `PATCH /api/admin/users/:id/approve`
@@ -669,6 +670,34 @@ Campos proibidos no drawer enquanto nao houver pipeline de Storage validado:
 - `logo_url`
 - `bike_photo_url`
 - `license_photo_url`
+
+A aba `Pagamento` do `UserDetailDrawer` consome `GET /api/admin/users/:id/payments` com Bearer token de admin ativo. O carregamento e preguiçoso: a chamada so acontece quando o admin abre a aba. O client API `listAdminUserPayments(accessToken, userId, { page, limit, paid })` envia somente `page`, `limit` e `paid`, usando o `id` do usuario de dominio que ja veio do contrato admin users.
+
+Campos permitidos na aba Pagamento por usuario:
+- `id`
+- `reference_month`
+- `due_date`
+- `paid`
+- `paid_at`
+- `created_at`
+- `updated_at`
+
+Estados de UI da aba Pagamento por usuario:
+- loading enquanto busca a lista;
+- erro recuperavel com botao "Tentar novamente";
+- vazio honesto, incluindo usuario alvo `admin` com zero controles operacionais;
+- lista somente leitura;
+- filtro por `Todos`, `Pendentes` e `Pagos`;
+- paginacao simples `Anterior`/`Proxima`, sem busca textual, filtro por mes de referencia ou acao de marcacao.
+
+Campos proibidos na aba Pagamento por usuario:
+- `user_id`, objeto `user`, `auth_id`, email
+- `owner_name`, `full_name`, `marked_by`, `approved_by`
+- documentos e Storage URLs
+- tokens, cookies, header Authorization ou service role
+- valor financeiro, metodo de pagamento, gateway id, PIX, cartao, boleto, comprovante, dados bancarios, repasse, split ou nota fiscal
+
+Fora da M-09C: marcar como pago no drawer, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros, desmarcar pago, busca textual, filtro por mes de referencia, dashboard, realtime, push, polling automatico e cron.
 
 `/admin/pagamentos` consome `GET /api/admin/payments` e `PATCH /api/admin/payments/:id/mark-paid` com Bearer token de admin ativo. A pagina exibe controles internos de pagamento externo, com loading, erro recuperavel, vazio honesto, filtros por `paid`, `referenceMonth`, `role` e `userStatus`, paginacao real e acao idempotente de marcar como pago. O client API `listAdminPayments(accessToken, { page, limit, paid, referenceMonth, role, userStatus })` envia somente esses filtros; `markAdminPaymentPaid(accessToken, id)` envia `PATCH` com body vazio. Nao usa Supabase direto nem acessa `payments` pelo frontend.
 

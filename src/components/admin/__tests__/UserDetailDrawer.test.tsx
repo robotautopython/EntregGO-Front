@@ -4,20 +4,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { DomainUser } from '@/types/auth';
 import type { AdminUserDeliveriesResult } from '@/types/delivery';
+import type { AdminUserPaymentsResult } from '@/types/payment';
 
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
   return {
     ClientApiError: actual.ClientApiError,
     listAdminUserDeliveries: vi.fn(),
+    listAdminUserPayments: vi.fn(),
   };
 });
 
-import { ClientApiError, listAdminUserDeliveries } from '@/lib/api';
+import { ClientApiError, listAdminUserDeliveries, listAdminUserPayments } from '@/lib/api';
 
 import { UserDetailDrawer } from '../UserDetailDrawer';
 
 const listMock = vi.mocked(listAdminUserDeliveries);
+const paymentsMock = vi.mocked(listAdminUserPayments);
 
 const storeUser: DomainUser = {
   id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -49,6 +52,21 @@ const result: AdminUserDeliveriesResult = {
         name: 'Loja Teste',
         address: 'Rua Loja, 123',
       },
+    },
+  ],
+  pagination: { page: 1, limit: 10, total: 11 },
+};
+
+const paymentsResult: AdminUserPaymentsResult = {
+  items: [
+    {
+      id: '99999999-9999-4999-8999-999999999999',
+      reference_month: '2026-05',
+      due_date: '2026-05-31',
+      paid: false,
+      paid_at: null,
+      created_at: '2026-05-17T12:00:00.000Z',
+      updated_at: '2026-05-17T12:00:00.000Z',
     },
   ],
   pagination: { page: 1, limit: 10, total: 11 },
@@ -144,5 +162,75 @@ describe('UserDetailDrawer deliveries tab', () => {
     await userEvent.click(screen.getByRole('button', { name: /Tentar novamente/i }));
 
     expect(await screen.findByText('Nenhuma entrega encontrada.')).toBeInTheDocument();
+  });
+});
+
+describe('UserDetailDrawer payments tab', () => {
+  it('loads user payments lazily and keeps forbidden fields out of the payments section', async () => {
+    paymentsMock.mockResolvedValue(paymentsResult);
+
+    renderDrawer();
+
+    expect(paymentsMock).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: /Pagamento/i }));
+
+    const section = await screen.findByRole('region', { name: /Pagamentos do usuario/i });
+
+    expect(await within(section).findByText('99999999-9999-4999-8999-999999999999')).toBeInTheDocument();
+    expect(within(section).getByText('05/2026')).toBeInTheDocument();
+    expect(within(section).getByText('31/05/2026')).toBeInTheDocument();
+    expect(paymentsMock).toHaveBeenCalledWith('tok', storeUser.id, { page: 1, limit: 10 });
+    expect(section.innerHTML).not.toMatch(
+      /user_id|auth_id|owner_name|full_name|marked_by|approved_by|amount|paymentMethod|payment_method|receipt|bankData|Authorization|Bearer|token|email|users/i,
+    );
+    expect(within(section).queryByRole('button', { name: /Marcar pago/i })).not.toBeInTheDocument();
+  });
+
+  it('sends only supported payment pagination and paid params', async () => {
+    paymentsMock
+      .mockResolvedValueOnce(paymentsResult)
+      .mockResolvedValueOnce({
+        items: [],
+        pagination: { page: 2, limit: 10, total: 11 },
+      })
+      .mockResolvedValueOnce({
+        items: [],
+        pagination: { page: 1, limit: 10, total: 0 },
+      });
+
+    renderDrawer();
+    await userEvent.click(screen.getByRole('button', { name: /Pagamento/i }));
+    await screen.findByText('05/2026');
+
+    await userEvent.click(screen.getByRole('button', { name: /Proxima/i }));
+    await waitFor(() => {
+      expect(paymentsMock).toHaveBeenLastCalledWith('tok', storeUser.id, { page: 2, limit: 10 });
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Pagos' }));
+    await waitFor(() => {
+      expect(paymentsMock).toHaveBeenLastCalledWith('tok', storeUser.id, {
+        page: 1,
+        limit: 10,
+        paid: true,
+      });
+    });
+  });
+
+  it('shows recoverable payment error and empty states', async () => {
+    paymentsMock.mockRejectedValueOnce(
+      new ClientApiError('ADMIN_USER_PAYMENTS_LIST_FAILED', 'falhou'),
+    );
+
+    renderDrawer();
+    await userEvent.click(screen.getByRole('button', { name: /Pagamento/i }));
+
+    expect(await screen.findByText('falhou')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tentar novamente/i })).toBeInTheDocument();
+
+    paymentsMock.mockResolvedValueOnce({ items: [], pagination: { page: 1, limit: 10, total: 0 } });
+    await userEvent.click(screen.getByRole('button', { name: /Tentar novamente/i }));
+
+    expect(await screen.findByText('Nenhum pagamento encontrado.')).toBeInTheDocument();
   });
 });

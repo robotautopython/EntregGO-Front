@@ -40,6 +40,8 @@ import type {
   AdminPaymentListItem,
   AdminPaymentsQuery,
   AdminPaymentsResult,
+  AdminUserPaymentsQuery,
+  AdminUserPaymentsResult,
 } from '@/types/payment';
 
 export const api = axios.create({
@@ -268,6 +270,31 @@ export async function listAdminPayments(accessToken: string, query: AdminPayment
           referenceMonth: query.referenceMonth || undefined,
           role: query.role || undefined,
           userStatus: query.userStatus || undefined,
+        },
+      },
+    );
+
+    return unwrapResponse(response.data);
+  } catch (error) {
+    mapAxiosError(error);
+  }
+}
+
+export async function listAdminUserPayments(
+  accessToken: string,
+  userId: string,
+  query: AdminUserPaymentsQuery = {},
+) {
+  try {
+    assertApiUrlConfigured();
+    const response = await api.get<ApiSuccess<AdminUserPaymentsResult> | ApiFailure>(
+      `/api/admin/users/${userId}/payments`,
+      {
+        headers: bearerHeaders(accessToken),
+        params: {
+          page: query.page,
+          limit: query.limit,
+          paid: typeof query.paid === 'boolean' ? String(query.paid) : undefined,
         },
       },
     );

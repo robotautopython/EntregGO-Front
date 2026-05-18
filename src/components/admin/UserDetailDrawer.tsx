@@ -25,7 +25,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { ClientApiError, listAdminUserDeliveries } from '@/lib/api';
+import { ClientApiError, listAdminUserDeliveries, listAdminUserPayments } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type {
   AdminCourierProfile,
@@ -40,6 +40,10 @@ import type {
   AdminUserDeliveryListItem,
   DeliveryRequestStatus,
 } from '@/types/delivery';
+import type {
+  AdminUserPaymentListItem,
+  AdminUserPaymentsResult,
+} from '@/types/payment';
 
 interface UserDetailDrawerProps {
   accessToken: string;
@@ -79,8 +83,10 @@ const statusMeta: Record<
 };
 
 type DeliveryStatusFilter = 'todos' | DeliveryRequestStatus;
+type PaymentPaidFilter = 'todos' | 'pendentes' | 'pagos';
 
 const DELIVERY_PAGE_SIZE = 10;
+const PAYMENT_PAGE_SIZE = 10;
 
 const deliveryStatusFilters: Array<{ value: DeliveryStatusFilter; label: string }> = [
   { value: 'todos', label: 'Todos' },
@@ -115,6 +121,12 @@ const deliveryStatusTone: Record<
   expirada: 'danger',
   cancelada: 'paper',
 };
+
+const paymentPaidFilters: Array<{ value: PaymentPaidFilter; label: string }> = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'pendentes', label: 'Pendentes' },
+  { value: 'pagos', label: 'Pagos' },
+];
 
 function formatDate(value: string | null): string {
   if (!value) return '—';
@@ -259,7 +271,9 @@ export function UserDetailDrawer({
           ) : null}
           {tab === 'documentos' ? <DocumentosTab user={displayUser} /> : null}
           {tab === 'entregas' ? <EntregasTab accessToken={accessToken} user={displayUser} /> : null}
-          {tab === 'pagamento' ? <PagamentoTab /> : null}
+          {tab === 'pagamento' ? (
+            <PagamentoTab accessToken={accessToken} user={displayUser} />
+          ) : null}
           {tab === 'notas' ? <NotasTab /> : null}
         </div>
 
@@ -781,34 +795,275 @@ function EntregasTab({ accessToken, user }: { accessToken: string; user: DomainU
   );
 }
 
-function PagamentoTab() {
+interface UserPaymentsError {
+  title: string;
+  message: string;
+}
+
+function mapUserPaymentsError(error: unknown): UserPaymentsError {
+  if (!(error instanceof ClientApiError)) {
+    return {
+      title: 'Nao foi possivel carregar pagamentos',
+      message: 'Tente novamente em instantes.',
+    };
+  }
+
+  switch (error.code) {
+    case 'USER_NOT_FOUND':
+      return {
+        title: 'Usuario nao encontrado',
+        message: 'O cadastro pode ter sido removido antes da consulta.',
+      };
+    case 'USER_PENDING':
+      return {
+        title: 'Cadastro aguardando aprovacao',
+        message: 'Seu cadastro admin ainda precisa estar ativo para ver pagamentos.',
+      };
+    case 'USER_BLOCKED':
+      return {
+        title: 'Conta bloqueada',
+        message: 'Sua conta esta bloqueada. Fale com a central para regularizar o acesso.',
+      };
+    case 'FORBIDDEN_ROLE':
+      return {
+        title: 'Permissao negada',
+        message: 'Somente administradores ativos podem ver pagamentos por usuario.',
+      };
+    case 'AUTH_REQUIRED':
+    case 'INVALID_TOKEN':
+    case 'DOMAIN_USER_NOT_FOUND':
+      return {
+        title: 'Sessao invalida',
+        message: 'Entre novamente para ver os pagamentos.',
+      };
+    case 'API_URL_MISSING':
+      return { title: 'API nao configurada', message: error.message };
+    default:
+      return {
+        title: 'Nao foi possivel carregar pagamentos',
+        message: error.message || 'Tente novamente em instantes.',
+      };
+  }
+}
+
+function formatReferenceMonth(value: string): string {
+  const [year, month] = value.split('-');
+  return month && year ? `${month}/${year}` : value;
+}
+
+function formatDueDate(value: string): string {
+  const [year, month, day] = value.split('-');
+  return day && month && year ? `${day}/${month}/${year}` : value;
+}
+
+function PaymentTimeline({ payment }: { payment: AdminUserPaymentListItem }) {
+  const steps = [
+    ['Criado', payment.created_at],
+    ['Pago em', payment.paid_at],
+    ['Atualizado', payment.updated_at],
+  ] as const;
+
   return (
-    <div className="space-y-4">
-      <Card variant="paper" className="border-dashed">
-        <Wallet className="h-5 w-5 text-asphalt-950/50" aria-hidden="true" />
-        <p className="mt-2 text-sm font-bold text-asphalt-950">
-          Confirmação de pagamento externo aguardando endpoint
-        </p>
-        <p className="mt-1 text-xs text-asphalt-950/65">
-          Tabela <code className="font-mono text-asphalt-950">public.payments</code> já existe na
-          M-01 e a tela global de pagamentos usa o contrato M-08. O EntregGO não processa
-          pagamento; o admin apenas confirma pagamentos feitos fora da plataforma. Esta aba segue
-          sem detalhe por usuário para não criar filtro fora do contrato publicado.
-        </p>
+    <dl className="grid gap-2 text-xs sm:grid-cols-3">
+      {steps.map(([label, value]) => (
+        <div key={label} className="rounded-md bg-paper px-3 py-2">
+          <dt className="font-extrabold uppercase tracking-wide text-asphalt-950/55">{label}</dt>
+          <dd className="mt-1 font-mono font-bold text-asphalt-950/80">
+            {formatDeliveryDate(value)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function PagamentoTab({ accessToken, user }: { accessToken: string; user: DomainUser }) {
+  const [filter, setFilter] = useState<PaymentPaidFilter>('todos');
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<AdminUserPaymentsResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<UserPaymentsError | null>(null);
+
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await listAdminUserPayments(accessToken, user.id, {
+        page,
+        limit: PAYMENT_PAGE_SIZE,
+        ...(filter === 'todos' ? {} : { paid: filter === 'pagos' }),
+      });
+      setResult(data ?? null);
+    } catch (caught) {
+      setResult(null);
+      setError(mapUserPaymentsError(caught));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken, filter, page, user.id]);
+
+  useEffect(() => {
+    setFilter('todos');
+    setPage(1);
+    setResult(null);
+    setError(null);
+  }, [user.id]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  function handleFilter(next: PaymentPaidFilter) {
+    setPage(1);
+    setFilter(next);
+  }
+
+  const items = useMemo(() => result?.items ?? [], [result]);
+  const total = result?.pagination.total ?? 0;
+  const totalPages = total > 0 ? Math.ceil(total / PAYMENT_PAGE_SIZE) : 1;
+
+  return (
+    <section className="space-y-4" aria-label="Pagamentos do usuario">
+      <Card variant="paper" className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+            <Filter className="h-3.5 w-3.5" aria-hidden="true" />
+            Status
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {paymentPaidFilters.map((option) => {
+              const active = filter === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleFilter(option.value)}
+                  className={cn(
+                    'rounded-md border px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide transition-all duration-ui ease-ride',
+                    active
+                      ? 'border-brand-500 bg-brand-500 text-white shadow-pop'
+                      : 'border-paper-line bg-white text-asphalt-950/70 hover:border-brand-300',
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </Card>
-      <Card variant="paper" className="border-dashed">
-        <p className="text-xs text-asphalt-950/65">
-          Contrato global disponível:{' '}
-          <code className="font-mono text-asphalt-950">
-            GET /api/admin/payments
-          </code>{' '}
-          +{' '}
-          <code className="font-mono text-asphalt-950">
-            PATCH /api/admin/payments/:id/mark-paid
-          </code>
-        </p>
-      </Card>
-    </div>
+
+      {isLoading ? (
+        <Card variant="paper" className="text-center">
+          <div className="flex flex-col items-center gap-3 py-8 text-asphalt-950/70">
+            <Loader2 className="h-5 w-5 animate-spin text-brand-600" aria-hidden="true" />
+            <p className="text-sm font-semibold">Carregando pagamentos...</p>
+          </div>
+        </Card>
+      ) : error ? (
+        <Alert tone="danger" title={error.title}>
+          {error.message}
+          <div className="mt-3">
+            <Button variant="secondary" size="sm" onClick={() => void load()}>
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Tentar novamente
+            </Button>
+          </div>
+        </Alert>
+      ) : items.length === 0 ? (
+        <Card variant="paper" className="text-center">
+          <div className="flex flex-col items-center gap-3 py-8">
+            <Wallet className="h-8 w-8 text-brand-600" aria-hidden="true" />
+            <p className="text-sm font-extrabold text-asphalt-950">Nenhum pagamento encontrado.</p>
+            <p className="max-w-sm text-xs text-asphalt-950/65">
+              {user.role === 'admin'
+                ? 'Admins nao possuem controles de pagamento operacional.'
+                : filter === 'todos'
+                  ? 'Nao ha controles de pagamento relacionados a este usuario.'
+                  : 'Nao ha controles de pagamento relacionados a este usuario com esse status.'}
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs font-bold text-asphalt-950/55">
+            Pagina {page} de {totalPages} - {items.length} registro
+            {items.length === 1 ? '' : 's'} nesta pagina - {total} no total
+          </p>
+
+          <ul className="space-y-3">
+            {items.map((payment) => (
+              <li key={payment.id} className="rounded-md border border-paper-line bg-white p-4">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={payment.paid ? 'success' : 'warn'}>
+                      {payment.paid ? 'Pago' : 'Pendente'}
+                    </Badge>
+                    <span className="font-mono text-xs font-bold text-asphalt-950/45">
+                      {payment.id}
+                    </span>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <p className="flex items-start gap-2 text-sm text-asphalt-950/80">
+                      <Clock3
+                        className="mt-0.5 h-4 w-4 shrink-0 text-route-600"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <span className="block text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                          Referencia
+                        </span>
+                        {formatReferenceMonth(payment.reference_month)}
+                      </span>
+                    </p>
+
+                    <p className="flex items-start gap-2 text-sm text-asphalt-950/80">
+                      <Wallet
+                        className="mt-0.5 h-4 w-4 shrink-0 text-warn-500"
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <span className="block text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
+                          Vencimento
+                        </span>
+                        {formatDueDate(payment.due_date)}
+                      </span>
+                    </p>
+                  </div>
+
+                  <PaymentTimeline payment={payment} />
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center justify-between gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              Anterior
+            </Button>
+            <span className="text-xs font-bold text-asphalt-950/55">
+              Pagina {page} de {totalPages}
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage((value) => value + 1)}
+            >
+              Proxima
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

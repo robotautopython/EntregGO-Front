@@ -114,6 +114,22 @@ describe('listAdminPayments', () => {
   });
 });
 
+describe('listAdminUserPayments', () => {
+  it('sends only page, limit and paid to the user payments endpoint with the Bearer token', async () => {
+    const { listAdminUserPayments } = await import('@/lib/api');
+    getMock.mockResolvedValue({
+      data: { success: true, data: { items: [], pagination: { page: 2, limit: 10, total: 0 } } },
+    });
+
+    await listAdminUserPayments('tok-123', 'u1', { page: 2, limit: 10, paid: false });
+
+    expect(getMock).toHaveBeenCalledWith('/api/admin/users/u1/payments', {
+      headers: { Authorization: 'Bearer tok-123' },
+      params: { page: 2, limit: 10, paid: 'false' },
+    });
+  });
+});
+
 describe('markAdminPaymentPaid', () => {
   it('patches mark-paid with empty body and the Bearer token', async () => {
     const { markAdminPaymentPaid } = await import('@/lib/api');

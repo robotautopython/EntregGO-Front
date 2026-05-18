@@ -760,6 +760,19 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 
 **Cleanup:** recursos temporarios removidos no smoke cross-stack; residuos finais `delivery=0`, `store=0`, `courier=0`, `domain=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
 
+## 2026-05-18 - M-09C PAGAMENTOS ADMINISTRATIVOS POR USUARIO FRONTEND LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente no frontend a integracao da aba `Pagamento` do `UserDetailDrawer` com `GET /api/admin/users/:id/payments`, via `listAdminUserPayments(accessToken, userId, { page, limit, paid })` e Bearer token vindo do `AdminUsersPanel`. A chamada e preguiçosa e so ocorre quando a aba e aberta. A UI exibe loading, erro recuperavel, vazio honesto, lista somente leitura, filtro `Todos/Pendentes/Pagos` e paginacao simples.
+**Arquivos modificados:** `src/components/admin/UserDetailDrawer.tsx`, `src/components/admin/__tests__/UserDetailDrawer.test.tsx`, `src/lib/api.ts`, `src/lib/__tests__/api.deliveries.test.ts`, `src/types/payment.ts`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** `GET /api/admin/users/:id/payments` implementado no repositorio backend, com path param de usuario de dominio, query strict, alvo `admin` vazio honesto e resposta sanitizada sem objeto `user`.
+**Agentes/gates utilizados:** Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator, Documentador
+**Status:** implementado e validado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Ressalvas incorporadas:** A secao Pagamento nao envia nem renderiza `user_id`, objeto `user`, `auth_id`, email, `owner_name`, `full_name`, `marked_by`, `approved_by`, documentos, Storage URLs, token, header Authorization, service role, valor financeiro, metodo, gateway, PIX, cartao, boleto, comprovante, dados bancarios, repasse, split ou nota fiscal. Nao ha mutation, botao de marcar pago, Supabase direto, polling, realtime, push ou cron no drawer.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (14 arquivos, 97 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
 ## 2026-05-17 - M-09B LISTAGEM ADMINISTRATIVA DE ENTREGAS POR USUARIO FRONTEND LOCAL
 
 **Fase:** fundacao/auth-operacao
