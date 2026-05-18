@@ -13,7 +13,7 @@
 ## Proximas Tarefas
 
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
-- [ ] Fechar operacionalmente a M-09C: commit, push, deploy Vercel e smoke publico/autenticado UI com cleanup completo.
+- [ ] Planejar a proxima fatia pequena somente leitura com gates antes de qualquer codigo.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
 
@@ -84,6 +84,7 @@
 - [x] M-09B frontend implementada e validada localmente: aba `Entregas` do `UserDetailDrawer` consome `GET /api/admin/users/:id/deliveries` por `listAdminUserDeliveries`, com carregamento preguiçoso ao abrir a aba, loading, erro recuperavel, vazio honesto, lista somente leitura, filtro por status e paginacao simples. A UI nao usa Supabase direto e nao renderiza `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados pessoais do motoboy, documentos, Storage, token ou header na secao Entregas. Frontend `typecheck`, `test` (93), `lint`, `build` e `git diff --check` passaram.
 - [x] M-09B frontend publicado e validado em producao: commit funcional `59c432d5fb2d1540a4bf44edd226df369293e06b`, consumindo backend `30b454f1de93254f9ca46ec9073bbf6cecea2c73`; Vercel `success`; `/admin/usuarios` retornou `200`; smoke UI autenticado com Playwright fez login admin, filtrou logista ficticio, abriu o drawer, carregou a aba `Entregas`, exibiu loja/destino, chamou `GET /api/admin/users/:id/deliveries` com sucesso e manteve a secao sem campos proibidos.
 - [x] M-09C frontend implementada e validada localmente: aba `Pagamento` do `UserDetailDrawer` consome `GET /api/admin/users/:id/payments` por `listAdminUserPayments`, com carregamento preguiçoso ao abrir a aba, loading, erro recuperavel, vazio honesto, lista somente leitura, filtro `Todos/Pendentes/Pagos` e paginacao simples. A UI nao usa Supabase direto, nao possui mutation de marcar pago no drawer e nao renderiza `user_id`, objeto `user`, `auth_id`, email, `marked_by`, valor financeiro, metodo, comprovante, token ou header na secao Pagamento. Frontend `typecheck`, `test` (97), `lint`, `build` e `git diff --check` passaram.
+- [x] M-09C frontend publicado e validado em producao: commit funcional `e25d372d701e6611beec11330ff4655ec20bd7d9`, consumindo backend `f413ec8091646ff580a9e99a64d6d1b34b3d5571`; Vercel `success`; `/admin/usuarios` retornou `200`; smoke UI autenticado com Playwright fez login admin, filtrou usuario ficticio, abriu o drawer, carregou a aba `Pagamento`, renderizou `Todos/Pendentes/Pagos`, chamou `GET /api/admin/users/:id/payments` com sucesso e manteve a secao sem campos proibidos.
 
 ## Bloqueios
 
@@ -100,5 +101,5 @@
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
 **Testes:** Vitest + Testing Library (97 testes; `npm test`; inclui M-09C); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A e M-09B validadas em producao
+**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A, M-09B e M-09C validadas em producao
 **Riscos abertos:** 4

@@ -773,6 +773,21 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (14 arquivos, 97 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
 
+## 2026-05-18 - M-09C FRONTEND FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Frontend funcional `e25d372d701e6611beec11330ff4655ec20bd7d9` publicado em `origin/main`, disponibilizando a aba `Pagamento` real no `UserDetailDrawer`, consumindo o backend `f413ec8091646ff580a9e99a64d6d1b34b3d5571`.
+**Agentes utilizados:** Camisa10, DeployObservability, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (97), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `e25d372d701e6611beec11330ff4655ec20bd7d9` em `refs/heads/main`; GitHub deployment/Vercel retornou `success` e `Deployment has completed`. `https://entreggo.vercel.app/admin/usuarios` retornou `200`; backend `/api/health` retornou `200`; `GET /api/admin/users/<uuid>/payments` sem token retornou `401 AUTH_REQUIRED`.
+
+**Smoke autenticado UI:** com dados ficticios temporarios, Playwright fez login real como admin, filtrou o usuario ficticio em `/admin/usuarios`, abriu o drawer, acionou a aba `Pagamento`, renderizou os controles `Todos/Pendentes/Pagos` e confirmou chamada bem-sucedida a `GET /api/admin/users/:id/payments`. A secao `Pagamento` e o payload da resposta ficaram sem `user_id`, `auth_id`, email, `owner_name`, `full_name`, `marked_by`, valor, metodo, PIX, cartao, boleto, comprovante, dados bancarios, token, header Authorization ou service role.
+
+**Cleanup:** recursos temporarios removidos no smoke cross-stack; residuos finais `payment=0`, `domain=0`, `auth=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
 ## 2026-05-17 - M-09B LISTAGEM ADMINISTRATIVA DE ENTREGAS POR USUARIO FRONTEND LOCAL
 
 **Fase:** fundacao/auth-operacao
