@@ -70,6 +70,33 @@ Campos proibidos no payload realtime e no DOM por esta fatia: endereco, observac
 
 Fora da M-10A: Web Push/VAPID, Service Worker/PWA real, polling automatico, cron/expiracao automatica, cancelamento, GPS/mapa/raio, dados pessoais do motoboy para loja, assinatura realtime do motoboy aceito em `delivery:<deliveryId>`, leitura direta de tabelas de dominio pelo frontend e payload realtime com dados operacionais completos.
 
+## Realtime M-12A - Notificacoes in-app genericas
+
+A M-12A reaproveita as assinaturas privadas da M-10A e adiciona apenas feedback visual
+generico no frontend. O Realtime continua sendo gatilho leve; a API REST autenticada
+continua sendo a fonte da verdade para qualquer dado operacional.
+
+Comportamento frontend:
+
+- `FilaDisponivel` mostra o aviso generico "Ha novas solicitacoes na fila." quando
+  recebe `delivery.created` e mantem o refetch de `GET /api/deliveries/available`
+  debounced/coalesced.
+- `EntregaDetalhe` mostra o aviso generico "A entrega foi atualizada." quando recebe
+  `delivery.accepted` ou `delivery.status_changed` e mantem o refetch de
+  `GET /api/deliveries/:id` debounced/coalesced.
+- Os avisos sao efemeros, nao interpolam payload realtime e nao criam chamada REST
+  adicional alem do refetch realtime ja existente.
+- O botao manual "Atualizar" permanece como fallback em ambas as telas.
+- Cleanup remove assinatura realtime e timers dos avisos ao desmontar o componente.
+
+Campos proibidos nos avisos in-app: `deliveryId`, status bruto, endereco, observacao,
+nome, email, telefone, `store_id`, `courier_id`, `user_id`, `auth_id`, token,
+header Authorization, Bearer, service role, PII ou dado interno de autorizacao.
+
+Fora da M-12A: backend novo, migration, env nova, canal realtime novo, Web Push/VAPID,
+Service Worker/PWA real, polling automatico, `setInterval`, cache novo, cron,
+GPS/mapa/raio, pagamento, Storage, documentos e dados pessoais do motoboy.
+
 ## Entregas M-04B
 
 ### Criacao pela loja

@@ -138,7 +138,7 @@ describe('FilaDisponivel', () => {
 
   it('subscribes to delivery.created and coalesces realtime refetches', async () => {
     listMock.mockResolvedValue(makeResult());
-    render(<FilaDisponivel accessToken="tok" />);
+    const { container } = render(<FilaDisponivel accessToken="tok" />);
     expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
 
     const onCreated = subscribeAvailableMock.mock.calls[0][1];
@@ -147,20 +147,39 @@ describe('FilaDisponivel', () => {
       onCreated();
     });
 
+    expect(screen.getByText('Atualizacao em tempo real')).toBeInTheDocument();
+    const realtimeAlert = screen
+      .getByText('Ha novas solicitacoes na fila.')
+      .closest('[role="alert"]');
+    expect(realtimeAlert).not.toBeNull();
+    expect(
+      within(realtimeAlert as HTMLElement).getByText('Ha novas solicitacoes na fila.'),
+    ).toBeInTheDocument();
+    expect((realtimeAlert as HTMLElement).innerHTML).not.toMatch(
+      /deliveryId|status|address|destination_address|notes|store_id|courier_id|user_id|auth_id|Authorization|Bearer|service_role|token|email|phone/i,
+    );
+    expect(container.innerHTML).not.toMatch(/deliveryId|auth_id|Authorization|Bearer|service_role|token/i);
     await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2));
     expect(subscribeAvailableMock).toHaveBeenCalledWith('tok', expect.any(Function));
   });
 
   it('unsubscribes from realtime when the queue unmounts', async () => {
     const unsubscribe = vi.fn();
+    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
     subscribeAvailableMock.mockReturnValue(unsubscribe);
     listMock.mockResolvedValue(makeResult());
 
     const { unmount } = render(<FilaDisponivel accessToken="tok" />);
     expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
+    const onCreated = subscribeAvailableMock.mock.calls[0][1];
+    await act(async () => {
+      onCreated();
+    });
     unmount();
 
     expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
   });
 
   it('only sends page and limit to the list endpoint', async () => {

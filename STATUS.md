@@ -12,6 +12,7 @@
 
 ## Proximas Tarefas
 
+- [ ] Fechar operacionalmente a M-12A em producao: commit, push, deploy Vercel e smoke publico/autenticado.
 - [ ] Expandir a suite de testes frontend conforme novos componentes ganharem comportamento.
 - [ ] Planejar a proxima fatia pequena somente leitura com gates antes de qualquer codigo.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
@@ -89,6 +90,7 @@
 - [x] M-10A frontend publicado e validado em producao: commit `434789d5d8ec8ce9a77a58af6aade291ec742914` em `origin/main`; Vercel/GitHub `success`; smoke publico confirmou `/motoboy` e `/loja/entregas/<uuid>` 200; smoke autenticado API+UI confirmou fila do motoboy e detalhe da loja atualizando por realtime, com fallback manual preservado e DOM sem campos proibidos.
 - [x] M-11A frontend implementada e validada localmente: `/admin/insights` passou a exibir `delivery_counts_by_status` e `payment_counts { paid, pending }` vindos de `GET /api/admin/insights`, mantendo a chamada REST/Bearer via `getAdminInsights` sem params. A tela preserva loading, erro recuperavel, vazio honesto e ausencia de campos proibidos; sem Supabase direto, polling, realtime, cache, filtros, listas novas ou mutation. Frontend `typecheck`, `test` (110), `lint`, `build` e `git diff --check` passaram.
 - [x] M-11A frontend publicado e validado em producao: commit `b8410fb5250aa02a50c4754d050fbd88269a1469` em `origin/main`, consumindo backend `dda542abbbac0353cbfd78dd2fdbec47101d8de2`; Vercel/GitHub `success` e `Deployment has completed`; `/admin/insights` retornou `200`; chunk publicado contem `Entregas por status`, `Pagamentos externos`, `delivery_counts_by_status` e `payment_counts`; smoke autenticado UI confirmou blocos novos no DOM sem campos proibidos e cleanup `delivery=0 payment=0 store=0 domain=0`.
+- [x] M-12A frontend implementada e validada localmente: `FilaDisponivel` e `EntregaDetalhe` agora exibem avisos in-app genericos e efemeros sobre eventos realtime ja existentes, sem interpolar payload, sem chamada REST extra, preservando debounce/coalescing, fallback manual e cleanup de timers/assinaturas. `CONTRACTS.md` registra a fatia. Sem backend, SQL/migration, env, canal realtime novo, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage ou documentos. Frontend `typecheck`, `test` (110), `lint` sem warnings e `build` passaram.
 
 ## Bloqueios
 
@@ -104,6 +106,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (110 testes; `npm test`; inclui M-11A); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A, M-09B, M-09C, M-10A e M-11A validadas em producao
+**Testes:** Vitest + Testing Library (110 testes; `npm test`; inclui M-12A); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Deploy:** publicado em Vercel ate M-11A; M-12A esta validada localmente e pendente de commit, push, deploy e smoke pos-deploy
 **Riscos abertos:** 4

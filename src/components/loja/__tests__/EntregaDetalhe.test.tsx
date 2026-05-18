@@ -108,20 +108,36 @@ describe('EntregaDetalhe', () => {
       onChanged();
     });
 
+    expect(screen.getByText('Atualizacao em tempo real')).toBeInTheDocument();
+    const realtimeAlert = screen
+      .getByText('A entrega foi atualizada.')
+      .closest('[role="alert"]');
+    expect(realtimeAlert).not.toBeNull();
+    expect(within(realtimeAlert as HTMLElement).getByText('A entrega foi atualizada.')).toBeInTheDocument();
+    expect((realtimeAlert as HTMLElement).innerHTML).not.toMatch(
+      /77777777|deliveryId|status|address|destination_address|notes|store_id|courier_id|user_id|auth_id|Authorization|Bearer|service_role|token|email|phone/i,
+    );
     await waitFor(() => expect(getDetailMock).toHaveBeenCalledTimes(2));
     expect(subscribeStoreMock).toHaveBeenCalledWith('tok', detail.id, expect.any(Function));
   });
 
   it('unsubscribes from delivery realtime on unmount', async () => {
     const unsubscribe = vi.fn();
+    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
     subscribeStoreMock.mockReturnValue(unsubscribe);
     getDetailMock.mockResolvedValue(detail);
 
     const { unmount } = render(<EntregaDetalhe accessToken="tok" deliveryId={detail.id} />);
     expect(await screen.findByRole('heading', { name: 'Coletada' })).toBeInTheDocument();
+    const onChanged = subscribeStoreMock.mock.calls[0][2];
+    await act(async () => {
+      onChanged();
+    });
     unmount();
 
     expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    clearTimeoutSpy.mockRestore();
   });
 
   it('shows a recoverable error and retries', async () => {

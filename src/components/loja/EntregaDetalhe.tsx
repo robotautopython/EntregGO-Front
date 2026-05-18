@@ -65,6 +65,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   hour: '2-digit',
   minute: '2-digit',
 });
+const REALTIME_NOTICE_DISMISS_MS = 4000;
 
 function formatDateTime(value: string | null): string {
   if (!value) return 'Pendente';
@@ -186,10 +187,12 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
   const loadInFlight = useRef(false);
   const queuedLoad = useRef(false);
   const realtimeRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [delivery, setDelivery] = useState<StoreDeliveryDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<DetailError | null>(null);
+  const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
 
   const load = useCallback(
     async function runLoad(mode: 'initial' | 'refresh' | 'realtime' = 'initial') {
@@ -237,7 +240,21 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
     void load('initial');
   }, [load]);
 
+  const showRealtimeNotice = useCallback(() => {
+    setRealtimeNotice('A entrega foi atualizada.');
+    if (realtimeNoticeTimer.current) {
+      clearTimeout(realtimeNoticeTimer.current);
+    }
+
+    realtimeNoticeTimer.current = setTimeout(() => {
+      realtimeNoticeTimer.current = null;
+      setRealtimeNotice(null);
+    }, REALTIME_NOTICE_DISMISS_MS);
+  }, []);
+
   const scheduleRealtimeRefresh = useCallback(() => {
+    showRealtimeNotice();
+
     if (realtimeRefreshTimer.current) {
       clearTimeout(realtimeRefreshTimer.current);
     }
@@ -247,7 +264,7 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
       realtimeRefreshTimer.current = null;
       void load('realtime');
     }, debounceWithJitterMs);
-  }, [load]);
+  }, [load, showRealtimeNotice]);
 
   useEffect(() => {
     const unsubscribe = subscribeToStoreDeliveryBroadcast(
@@ -260,6 +277,10 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
       if (realtimeRefreshTimer.current) {
         clearTimeout(realtimeRefreshTimer.current);
         realtimeRefreshTimer.current = null;
+      }
+      if (realtimeNoticeTimer.current) {
+        clearTimeout(realtimeNoticeTimer.current);
+        realtimeNoticeTimer.current = null;
       }
       unsubscribe();
     };
@@ -331,6 +352,12 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
         </Alert>
       ) : delivery ? (
         <section className="space-y-5" aria-live="polite">
+          {realtimeNotice ? (
+            <Alert tone="info" title="Atualizacao em tempo real">
+              {realtimeNotice}
+            </Alert>
+          ) : null}
+
           <Card variant="white" className="space-y-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-3">

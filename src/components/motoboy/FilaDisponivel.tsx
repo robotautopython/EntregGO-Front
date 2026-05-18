@@ -23,6 +23,7 @@ interface FilaDisponivelProps {
 }
 
 const PAGE_SIZE = 20;
+const REALTIME_NOTICE_DISMISS_MS = 4000;
 
 const REMOVE_AND_RELOAD_CODES = new Set([
   'ALREADY_ACCEPTED',
@@ -132,6 +133,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
   const loadInFlight = useRef(false);
   const queuedLoad = useRef(false);
   const realtimeRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<AvailableDeliveriesResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -139,6 +141,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<CourierError | null>(null);
   const [accepted, setAccepted] = useState<AcceptedDelivery | null>(null);
+  const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
 
   const load = useCallback(
     async function runLoad(mode: 'initial' | 'realtime' = 'initial') {
@@ -187,7 +190,21 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
     void load();
   }, [load]);
 
+  const showRealtimeNotice = useCallback(() => {
+    setRealtimeNotice('Ha novas solicitacoes na fila.');
+    if (realtimeNoticeTimer.current) {
+      clearTimeout(realtimeNoticeTimer.current);
+    }
+
+    realtimeNoticeTimer.current = setTimeout(() => {
+      realtimeNoticeTimer.current = null;
+      setRealtimeNotice(null);
+    }, REALTIME_NOTICE_DISMISS_MS);
+  }, []);
+
   const scheduleRealtimeRefresh = useCallback(() => {
+    showRealtimeNotice();
+
     if (realtimeRefreshTimer.current) {
       clearTimeout(realtimeRefreshTimer.current);
     }
@@ -197,7 +214,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
       realtimeRefreshTimer.current = null;
       void load('realtime');
     }, debounceWithJitterMs);
-  }, [load]);
+  }, [load, showRealtimeNotice]);
 
   useEffect(() => {
     const unsubscribe = subscribeToAvailableDeliveriesBroadcast(accessToken, scheduleRealtimeRefresh);
@@ -206,6 +223,10 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
       if (realtimeRefreshTimer.current) {
         clearTimeout(realtimeRefreshTimer.current);
         realtimeRefreshTimer.current = null;
+      }
+      if (realtimeNoticeTimer.current) {
+        clearTimeout(realtimeNoticeTimer.current);
+        realtimeNoticeTimer.current = null;
       }
       unsubscribe();
     };
@@ -331,6 +352,12 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
       {actionError ? (
         <Alert tone="warn" title={actionError.title}>
           {actionError.message}
+        </Alert>
+      ) : null}
+
+      {realtimeNotice ? (
+        <Alert tone="info" title="Atualizacao em tempo real">
+          {realtimeNotice}
         </Alert>
       ) : null}
 

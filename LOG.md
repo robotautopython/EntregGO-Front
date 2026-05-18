@@ -4,6 +4,21 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - M-12A FRONTEND LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a M-12A no frontend. `FilaDisponivel` agora mostra o aviso generico e efemero "Ha novas solicitacoes na fila." ao receber `delivery.created` pelo Realtime ja existente. `EntregaDetalhe` agora mostra "A entrega foi atualizada." ao receber `delivery.accepted` ou `delivery.status_changed`. Os eventos continuam apenas agendando o refetch REST autenticado ja existente.
+**Agentes/gates utilizados:** Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Arquivos principais:** `src/components/motoboy/FilaDisponivel.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/motoboy/__tests__/FilaDisponivel.test.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `CONTRACTS.md`.
+
+**Validacoes locais:** `npm run typecheck`, `npm test` (16 arquivos, 110 testes), `npm run lint` sem warnings e `npm run build` passaram. Tambem foram executados testes focados de `FilaDisponivel` e `EntregaDetalhe` com 22 testes passando.
+
+**Seguranca e performance:** Os avisos nao interpolam payload realtime, nao exibem `deliveryId`, status bruto, `store_id`, `courier_id`, `user_id`, `auth_id`, token, header Authorization, Bearer, service role, email, telefone, endereco ou observacao. O debounce/coalescing de refetch foi preservado, nao houve chamada REST extra, polling, `setInterval`, cache novo ou dependencia nova. Cleanup remove assinatura realtime e timers.
+
+**Fora do escopo preservado:** backend, SQL/migration, env, canal realtime novo, Web Push/VAPID, Service Worker/PWA real, cron, GPS/mapa/raio, pagamento, Storage, documentos e dados pessoais do motoboy.
+
 ## 2026-05-18 - M-11A FRONTEND FECHADO EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao
