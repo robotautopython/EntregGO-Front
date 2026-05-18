@@ -4,6 +4,21 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - M-11A FRONTEND FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechamento operacional frontend da M-11A concluido. Commit `b8410fb5250aa02a50c4754d050fbd88269a1469` foi publicado em `origin/main`, exibindo `delivery_counts_by_status` e `payment_counts { paid, pending }` em `/admin/insights`, consumindo o backend `dda542abbbac0353cbfd78dd2fdbec47101d8de2`.
+**Agentes utilizados:** Camisa10, DeployObservability, SecurityValidator, FinalValidator/TestEngineer, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (110), `npm run lint`, `npm run build` e `git diff --check` passaram, com apenas avisos LF/CRLF do Windows.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `b8410fb5250aa02a50c4754d050fbd88269a1469` em `refs/heads/main`; GitHub/Vercel retornou `success` e `Deployment has completed`. `https://entreggo.vercel.app/admin/insights` retornou `200`; o chunk publicado da rota contem `Entregas por status`, `Pagamentos externos`, `delivery_counts_by_status` e `payment_counts`.
+
+**Smoke autenticado UI:** com dados ficticios temporarios, Playwright fez login real como admin e abriu `/admin/insights`; a tela renderizou os blocos `Entregas por status` e `Pagamentos externos`. O DOM ficou sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, nomes, IDs de entrega/pagamento, mes de referencia, vencimento, auditoria de pagamento, valor, metodo, PIX, cartao, boleto, comprovante, gateway, dados bancarios, token, header Authorization ou service role.
+
+**Cleanup:** recursos temporarios removidos no smoke cross-stack; residuos finais `delivery=0`, `payment=0`, `store=0`, `domain=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
 ## 2026-05-18 - M-10A FRONTEND FECHADA EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao
