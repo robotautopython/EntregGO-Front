@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -14,12 +14,18 @@ vi.mock('@/lib/api', async () => {
   };
 });
 
+vi.mock('@/lib/realtime', () => ({
+  subscribeToAvailableDeliveriesBroadcast: vi.fn(() => vi.fn()),
+}));
+
 import { acceptDelivery, listAvailableDeliveries } from '@/lib/api';
+import { subscribeToAvailableDeliveriesBroadcast } from '@/lib/realtime';
 
 import { FilaDisponivel } from '../FilaDisponivel';
 
 const listMock = vi.mocked(listAvailableDeliveries);
 const acceptMock = vi.mocked(acceptDelivery);
+const subscribeAvailableMock = vi.mocked(subscribeToAvailableDeliveriesBroadcast);
 
 function makeResult(overrides?: Partial<AvailableDeliveriesResult>): AvailableDeliveriesResult {
   return {
@@ -39,9 +45,11 @@ function makeResult(overrides?: Partial<AvailableDeliveriesResult>): AvailableDe
 
 beforeEach(() => {
   vi.clearAllMocks();
+  subscribeAvailableMock.mockReturnValue(vi.fn());
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   cleanup();
 });
 
@@ -126,6 +134,33 @@ describe('FilaDisponivel', () => {
     expect(listMock).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole('button', { name: /Atualizar/i }));
     await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2));
+  });
+
+  it('subscribes to delivery.created and coalesces realtime refetches', async () => {
+    listMock.mockResolvedValue(makeResult());
+    render(<FilaDisponivel accessToken="tok" />);
+    expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
+
+    const onCreated = subscribeAvailableMock.mock.calls[0][1];
+    await act(async () => {
+      onCreated();
+      onCreated();
+    });
+
+    await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2));
+    expect(subscribeAvailableMock).toHaveBeenCalledWith('tok', expect.any(Function));
+  });
+
+  it('unsubscribes from realtime when the queue unmounts', async () => {
+    const unsubscribe = vi.fn();
+    subscribeAvailableMock.mockReturnValue(unsubscribe);
+    listMock.mockResolvedValue(makeResult());
+
+    const { unmount } = render(<FilaDisponivel accessToken="tok" />);
+    expect(await screen.findByText('Loja Alpha')).toBeInTheDocument();
+    unmount();
+
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 
   it('only sends page and limit to the list endpoint', async () => {

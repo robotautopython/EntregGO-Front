@@ -23,6 +23,10 @@ vi.mock('@/lib/api', async () => {
   };
 });
 
+vi.mock('@/lib/realtime', () => ({
+  subscribeToAvailableDeliveriesBroadcast: vi.fn(() => vi.fn()),
+}));
+
 import {
   acceptDelivery,
   getActiveDelivery,

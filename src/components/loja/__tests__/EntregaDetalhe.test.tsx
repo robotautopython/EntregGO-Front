@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,11 +13,17 @@ vi.mock('@/lib/api', async () => {
   };
 });
 
+vi.mock('@/lib/realtime', () => ({
+  subscribeToStoreDeliveryBroadcast: vi.fn(() => vi.fn()),
+}));
+
 import { getMyDelivery } from '@/lib/api';
+import { subscribeToStoreDeliveryBroadcast } from '@/lib/realtime';
 
 import { EntregaDetalhe } from '../EntregaDetalhe';
 
 const getDetailMock = vi.mocked(getMyDelivery);
+const subscribeStoreMock = vi.mocked(subscribeToStoreDeliveryBroadcast);
 
 const detail: StoreDeliveryDetail = {
   id: '77777777-7777-4777-8777-777777777777',
@@ -35,9 +41,11 @@ const detail: StoreDeliveryDetail = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  subscribeStoreMock.mockReturnValue(vi.fn());
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   cleanup();
 });
 
@@ -86,6 +94,34 @@ describe('EntregaDetalhe', () => {
 
     expect(await screen.findByRole('heading', { name: 'Em trânsito' })).toBeInTheDocument();
     expect(getDetailMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('subscribes to delivery-specific realtime and coalesces accepted/status refetches', async () => {
+    getDetailMock.mockResolvedValue(detail);
+
+    render(<EntregaDetalhe accessToken="tok" deliveryId={detail.id} />);
+
+    expect(await screen.findByRole('heading', { name: 'Coletada' })).toBeInTheDocument();
+    const onChanged = subscribeStoreMock.mock.calls[0][2];
+    await act(async () => {
+      onChanged();
+      onChanged();
+    });
+
+    await waitFor(() => expect(getDetailMock).toHaveBeenCalledTimes(2));
+    expect(subscribeStoreMock).toHaveBeenCalledWith('tok', detail.id, expect.any(Function));
+  });
+
+  it('unsubscribes from delivery realtime on unmount', async () => {
+    const unsubscribe = vi.fn();
+    subscribeStoreMock.mockReturnValue(unsubscribe);
+    getDetailMock.mockResolvedValue(detail);
+
+    const { unmount } = render(<EntregaDetalhe accessToken="tok" deliveryId={detail.id} />);
+    expect(await screen.findByRole('heading', { name: 'Coletada' })).toBeInTheDocument();
+    unmount();
+
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 
   it('shows a recoverable error and retries', async () => {

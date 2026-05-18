@@ -12,7 +12,7 @@ import {
   Route,
   type LucideIcon,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { PageHeader } from '@/components/shell/PageHeader';
 import { Alert } from '@/components/ui/Alert';
@@ -21,6 +21,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ClientApiError, getMyDelivery } from '@/lib/api';
 import { cn } from '@/lib/cn';
+import { subscribeToStoreDeliveryBroadcast } from '@/lib/realtime';
 import type { DeliveryRequestStatus, StoreDeliveryDetail } from '@/types/delivery';
 
 interface EntregaDetalheProps {
@@ -181,29 +182,52 @@ function buildTimeline(delivery: StoreDeliveryDetail) {
 }
 
 export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps) {
+  const loadRequestId = useRef(0);
+  const loadInFlight = useRef(false);
+  const queuedLoad = useRef(false);
+  const realtimeRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [delivery, setDelivery] = useState<StoreDeliveryDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<DetailError | null>(null);
 
   const load = useCallback(
-    async (mode: 'initial' | 'refresh' = 'initial') => {
+    async function runLoad(mode: 'initial' | 'refresh' | 'realtime' = 'initial') {
+      if (loadInFlight.current) {
+        queuedLoad.current = true;
+        return;
+      }
+
+      const requestId = loadRequestId.current + 1;
+      loadRequestId.current = requestId;
+      loadInFlight.current = true;
       if (mode === 'initial') {
         setIsLoading(true);
-      } else {
+      } else if (mode === 'refresh') {
         setIsRefreshing(true);
       }
       setError(null);
 
       try {
         const data = await getMyDelivery(accessToken, deliveryId);
-        setDelivery(data ?? null);
+        if (requestId === loadRequestId.current) {
+          setDelivery(data ?? null);
+        }
       } catch (caught) {
-        setDelivery(null);
-        setError(mapDetailError(caught));
+        if (requestId === loadRequestId.current && mode !== 'realtime') {
+          setDelivery(null);
+          setError(mapDetailError(caught));
+        }
       } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
+        if (requestId === loadRequestId.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
+        loadInFlight.current = false;
+        if (queuedLoad.current) {
+          queuedLoad.current = false;
+          void runLoad('realtime');
+        }
       }
     },
     [accessToken, deliveryId],
@@ -212,6 +236,34 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
   useEffect(() => {
     void load('initial');
   }, [load]);
+
+  const scheduleRealtimeRefresh = useCallback(() => {
+    if (realtimeRefreshTimer.current) {
+      clearTimeout(realtimeRefreshTimer.current);
+    }
+
+    const debounceWithJitterMs = 400 + Math.floor(Math.random() * 150);
+    realtimeRefreshTimer.current = setTimeout(() => {
+      realtimeRefreshTimer.current = null;
+      void load('realtime');
+    }, debounceWithJitterMs);
+  }, [load]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToStoreDeliveryBroadcast(
+      accessToken,
+      deliveryId,
+      scheduleRealtimeRefresh,
+    );
+
+    return () => {
+      if (realtimeRefreshTimer.current) {
+        clearTimeout(realtimeRefreshTimer.current);
+        realtimeRefreshTimer.current = null;
+      }
+      unsubscribe();
+    };
+  }, [accessToken, deliveryId, scheduleRealtimeRefresh]);
 
   const timeline = useMemo(() => (delivery ? buildTimeline(delivery) : []), [delivery]);
 

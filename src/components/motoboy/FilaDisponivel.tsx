@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle2, Loader2, MapPin, RefreshCw, Store } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BoxMark } from '@/components/brand/BoxMark';
 import { PageHeader } from '@/components/shell/PageHeader';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { acceptDelivery, ClientApiError, listAvailableDeliveries } from '@/lib/api';
+import { subscribeToAvailableDeliveriesBroadcast } from '@/lib/realtime';
 import type {
   AcceptedDelivery,
   AvailableDeliveriesResult,
@@ -127,6 +128,10 @@ export function mapCourierError(error: unknown): CourierError {
 }
 
 export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps) {
+  const loadRequestId = useRef(0);
+  const loadInFlight = useRef(false);
+  const queuedLoad = useRef(false);
+  const realtimeRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<AvailableDeliveriesResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -135,26 +140,76 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
   const [actionError, setActionError] = useState<CourierError | null>(null);
   const [accepted, setAccepted] = useState<AcceptedDelivery | null>(null);
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await listAvailableDeliveries(accessToken, {
-        page,
-        limit: PAGE_SIZE,
-      });
-      setResult(data ?? null);
-    } catch (caught) {
-      setError(mapCourierError(caught));
-      setResult(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, page]);
+  const load = useCallback(
+    async function runLoad(mode: 'initial' | 'realtime' = 'initial') {
+      if (loadInFlight.current) {
+        queuedLoad.current = true;
+        return;
+      }
+
+      const requestId = loadRequestId.current + 1;
+      loadRequestId.current = requestId;
+      loadInFlight.current = true;
+      if (mode === 'initial') {
+        setIsLoading(true);
+      }
+      if (mode === 'initial') {
+        setError(null);
+      }
+      try {
+        const data = await listAvailableDeliveries(accessToken, {
+          page,
+          limit: PAGE_SIZE,
+        });
+        if (requestId === loadRequestId.current) {
+          setResult(data ?? null);
+        }
+      } catch (caught) {
+        if (requestId === loadRequestId.current && mode === 'initial') {
+          setError(mapCourierError(caught));
+          setResult(null);
+        }
+      } finally {
+        if (requestId === loadRequestId.current) {
+          setIsLoading(false);
+        }
+        loadInFlight.current = false;
+        if (queuedLoad.current) {
+          queuedLoad.current = false;
+          void runLoad('realtime');
+        }
+      }
+    },
+    [accessToken, page],
+  );
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const scheduleRealtimeRefresh = useCallback(() => {
+    if (realtimeRefreshTimer.current) {
+      clearTimeout(realtimeRefreshTimer.current);
+    }
+
+    const debounceWithJitterMs = 400 + Math.floor(Math.random() * 150);
+    realtimeRefreshTimer.current = setTimeout(() => {
+      realtimeRefreshTimer.current = null;
+      void load('realtime');
+    }, debounceWithJitterMs);
+  }, [load]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAvailableDeliveriesBroadcast(accessToken, scheduleRealtimeRefresh);
+
+    return () => {
+      if (realtimeRefreshTimer.current) {
+        clearTimeout(realtimeRefreshTimer.current);
+        realtimeRefreshTimer.current = null;
+      }
+      unsubscribe();
+    };
+  }, [accessToken, scheduleRealtimeRefresh]);
 
   const handleRefresh = useCallback(() => {
     setActionError(null);
@@ -237,8 +292,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
           </div>
         </Card>
         <Alert tone="info" title="O que vem depois">
-          As etapas de coleta, trânsito e entrega, além de notificações e tempo real, ainda
-          não fazem parte desta fatia.
+          As etapas de coleta, trânsito e entrega continuam no fluxo real da corrida ativa.
         </Alert>
         <Button
           variant="secondary"
@@ -259,7 +313,7 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
       <PageHeader
         eyebrow="Operação"
         title="Entregas disponíveis"
-        description="Solicitações abertas agora. Esta lista é um instantâneo: use Atualizar para buscar novas — não há tempo real nesta fatia."
+        description="Solicitações abertas agora. Use Atualizar como fallback manual sempre que precisar."
       />
 
       <div className="flex items-center justify-between gap-3">
@@ -305,8 +359,8 @@ export function FilaDisponivel({ accessToken, onAccepted }: FilaDisponivelProps)
               Nenhuma entrega disponível agora.
             </p>
             <p className="max-w-md text-sm text-asphalt-950/65">
-              Esta lista não atualiza sozinha. Toque em Atualizar para verificar novas
-              solicitações.
+              Toque em Atualizar para verificar novas solicitações se a conexão em tempo real
+              oscilar.
             </p>
           </div>
         </Card>

@@ -35,6 +35,41 @@ Erro esperado:
 - Role: `admin`, `logista`, `motoboy`
 - Entrega: `aguardando`, `aceita`, `coletada`, `em_transito`, `entregue`, `expirada`, `cancelada`
 
+## Realtime M-10A - Broadcast privado e refetch REST
+
+A M-10A usa Supabase Realtime Broadcast apenas como gatilho de refetch. O frontend nunca trata o payload realtime como fonte final e nunca acessa tabelas de dominio diretamente; ao receber evento, chama a API REST existente com Bearer token.
+
+Eventos e canais:
+
+- `delivery.created` em `delivery:available`; consumidor: motoboy ativo e online na fila; acao frontend: `GET /api/deliveries/available`.
+- `delivery.accepted` em `delivery:<deliveryId>`; consumidor: loja dona no detalhe; acao frontend: `GET /api/deliveries/:id`.
+- `delivery.status_changed` em `delivery:<deliveryId>`; consumidor: loja dona no detalhe; acao frontend: `GET /api/deliveries/:id`.
+
+Payload aceito pelo frontend:
+
+```json
+{
+  "deliveryId": "uuid",
+  "status": "aguardando|aceita|coletada|em_transito|entregue",
+  "updatedAt": "iso"
+}
+```
+
+Regras frontend:
+
+- Assinaturas usam `src/lib/realtime.ts`, `supabase.realtime.setAuth(accessToken)` e `supabase.channel(topic, { config: { private: true } })`.
+- `FilaDisponivel` assina `delivery:available` somente no caminho em que o motoboy esta online e sem corrida ativa; `delivery.created` agenda refetch de `listAvailableDeliveries`.
+- `EntregaDetalhe` assina `delivery:<deliveryId>`; `delivery.accepted` e `delivery.status_changed` agendam refetch de `getMyDelivery` e eventos de outro `deliveryId` sao ignorados.
+- Refetch realtime e debounced/coalesced: eventos duplicados nao disparam rajada de GET, ha no maximo uma chamada em voo e uma pendente.
+- O botao manual "Atualizar" continua como fallback.
+- Cleanup remove a assinatura ao desmontar componente, trocar token, trocar `deliveryId` ou sair do caminho online/fila; nao ha `setInterval` nem polling automatico.
+- Erro de Realtime nao quebra a tela e nao remove o fallback manual.
+- O frontend nao chama `.send()` nem emite broadcast.
+
+Campos proibidos no payload realtime e no DOM por esta fatia: endereco, observacao, nome, email, telefone, `store_id`, `courier_id`, `user_id`, `auth_id`, token, header, service role, PII ou dado interno de autorizacao.
+
+Fora da M-10A: Web Push/VAPID, Service Worker/PWA real, polling automatico, cron/expiracao automatica, cancelamento, GPS/mapa/raio, dados pessoais do motoboy para loja, assinatura realtime do motoboy aceito em `delivery:<deliveryId>`, leitura direta de tabelas de dominio pelo frontend e payload realtime com dados operacionais completos.
+
 ## Entregas M-04B
 
 ### Criacao pela loja

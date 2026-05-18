@@ -802,3 +802,18 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (14 arquivos, 93 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
 
 **Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, `courier_id`, `store_id`, `user_id`, `auth_id`, email, `owner_name`, `full_name`, documentos, Storage URLs, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros, desmarcar pago, busca textual, filtro por data, dashboard, realtime, push, polling automatico e cron. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+## 2026-05-18 - M-10A REALTIME OPERACIONAL MINIMO FRONTEND LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Implementada localmente a parte frontend da M-10A. `src/lib/realtime.ts` centraliza assinatura Supabase Realtime Broadcast privada com `supabase.realtime.setAuth(accessToken)` e `config: { private: true }`. `FilaDisponivel` assina `delivery:available` no caminho de motoboy online sem corrida ativa e refaz `GET /api/deliveries/available` ao receber `delivery.created`. `EntregaDetalhe` assina `delivery:<deliveryId>` e refaz `GET /api/deliveries/:id` ao receber `delivery.accepted` ou `delivery.status_changed`.
+**Arquivos modificados:** `src/lib/realtime.ts`, `src/lib/__tests__/realtime.test.ts`, `src/components/motoboy/FilaDisponivel.tsx`, `src/components/motoboy/__tests__/FilaDisponivel.test.tsx`, `src/components/motoboy/__tests__/MotoboyRealFlow.test.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `CONTRACTS.md`, `STATUS.md`, `LOG.md`
+**Backend relacionado:** Realtime Broadcast server-side e policies em `realtime.messages` implementados no repositorio backend.
+**Agentes/gates utilizados:** Camisa10, Cetico, ImpactValidator, SecurityValidator, PerformanceValidator, TestEngineer, Documentador
+**Status:** implementado e validado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Ressalvas incorporadas:** Payload realtime e tratado apenas como gatilho e validado por whitelist; dados finais sempre vem da API REST. Eventos duplicados sao debounced/coalesced para evitar excesso de GET e corrida entre requests. Cleanup remove assinaturas em unmount, troca de token, troca de `deliveryId` e saida do caminho online/fila. Erro de Realtime nao quebra a tela nem remove o fallback manual. O frontend nao emite broadcast, nao chama `.send()`, nao usa `setInterval`, nao faz polling automatico e nao acessa tabelas de dominio via Supabase.
+
+**Validacoes locais:** Frontend `npm run typecheck`, `npm test` (15 arquivos, 105 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+**Fora do escopo preservado:** Web Push/VAPID, Service Worker/PWA real, polling automatico, cron/expiracao automatica, cancelamento, GPS/mapa/raio, dados pessoais do motoboy para loja, assinatura realtime do motoboy aceito em `delivery:<deliveryId>`, leitura direta de tabelas de dominio pelo frontend e payload realtime com dados operacionais completos.
