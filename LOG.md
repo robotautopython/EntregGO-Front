@@ -4,6 +4,20 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - M-12B FRONTEND FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechamento operacional frontend da M-12B concluido. Commit funcional `0dcda9ae33a410ca58c669708176c78a926c3870` foi publicado em `origin/main`, consumindo backend `59a942863fa083974d4efad9497afbc4115734d8`. `/loja/nova-entrega` e `/loja/entregas/[id]` exibem o motoboy aceito e `Aceita em` somente apos o REST autenticado retornar `courier.full_name` e `accepted_at`.
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (17 arquivos, 118 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `0dcda9ae33a410ca58c669708176c78a926c3870` em `refs/heads/main`; GitHub/Vercel retornou `success` e `Deployment has completed`. `https://entreggo.vercel.app/loja/nova-entrega` e `/loja/entregas/<uuid>` retornaram `200`; backend `/api/health` retornou `200`; rotas protegidas de entrega sem token retornaram `401 AUTH_REQUIRED`.
+
+**Smoke autenticado UI/API:** com dados ficticios temporarios, a loja criou entrega e recebeu `courier=null`; motoboy ativo online aceitou; a UI autenticada abriu `/loja/entregas/<id>` e exibiu o nome do motoboy aceito e `Aceita em`. Apos transicao para `coletada`, a tela recebeu "A entrega foi atualizada.", mantendo realtime como aviso generico/refetch REST. DOM ficou sem `courier_id`, `user_id`, `auth_id`, email, telefone, `is_online`, documentos/fotos, Authorization, Bearer, service role ou token.
+
+**Cleanup e escopo:** cleanup final `delivery=0`, `store=0`, `courier=0`, `domain=0`, `auth=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso. Sem backend direto no repo frontend, SQL/migration/RLS/env, canal realtime novo, Web Push/PWA/Service Worker/VAPID, polling, cron, GPS, pagamento, Storage ou documentos.
+
 ## 2026-05-18 - M-12B FRONTEND MOTOBOY ACEITO LOCAL
 
 **Fase:** fundacao/auth-operacao
