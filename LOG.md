@@ -4,6 +4,36 @@
 
 Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em DECISIONS; aprendizados vao em LEARNINGS.
 
+## 2026-05-18 - HOTFIX PAINEL LOJA E REALTIME ACEITO LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Diagnostico e hotfix local para o aceite do motoboy nao refletir no painel do lojista. `/loja` deixou o painel estatico e passou a consumir `listMyDeliveries`, renderizar KPIs reais, entregas abertas, historico recente e fallback manual `Atualizar`. `subscribeToStoreDeliveryBroadcast` ganhou callback de canal pronto; `/loja`, `/loja/nova-entrega` e `/loja/entregas/[id]` refazem a leitura REST quando o canal fica `SUBSCRIBED`, alem do refetch no evento realtime.
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Arquivos modificados:** `src/components/loja/LojaHome.tsx`, `src/app/loja/page.tsx`, `src/lib/realtime.ts`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/NovaEntregaFlow.tsx`, `src/components/loja/__tests__/LojaHome.test.tsx`, `src/lib/__tests__/realtime.test.ts`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `src/components/loja/__tests__/NovaEntregaFlow.test.tsx`, `STATUS.md`, `LOG.md`.
+
+**Ajustes de copy no mesmo ciclo:** alem do hotfix anterior de `/loja/nova-entrega` e `/loja/entregas/[id]`, foram removidas sobras visiveis de linguagem tecnica/demo em componentes da area da loja (`AcceptedState`, `SearchingState`, `ExpiredState`, `HistoricoEntregas`, `LojaPerfil`) e o teste de `LojaHome` passou a garantir ausencia de `backend`, `API`, `POST /api`, `/api/deliveries`, `contrato real`, `payload`, `refetch` e `REST` no texto renderizado.
+
+**Validacoes locais:** `npm test -- LojaHome realtime NovaEntregaFlow EntregaDetalhe HistoricoEntregas` passou com 27 testes; `npm run typecheck`, `npm test` (18 arquivos, 124 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Escopo preservado:** sem backend, banco, migrations, env, contrato de API, autenticacao, canal realtime novo, payload realtime ampliado, polling, deploy, smoke de producao, Web Push/PWA/Service Worker/VAPID, pagamento, Storage ou documentos. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
+
+## 2026-05-18 - HOTFIX COPY LOJA LOCAL
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Hotfix frontend local para remover microcopy tecnica visivel em `/loja/nova-entrega` e `/loja/entregas/[id]`. `NovaEntregaFlow`, `NovaEntregaForm` e `EntregaDetalhe` passaram a usar linguagem de produto final em status, resumo, acompanhamento, aviso de atualizacao e erros de configuracao.
+**Status:** fechado localmente; commit, push, deploy e smoke pos-deploy pendentes
+
+**Arquivos modificados:** `src/components/loja/NovaEntregaFlow.tsx`, `src/components/loja/NovaEntregaForm.tsx`, `src/components/loja/EntregaDetalhe.tsx`, `src/components/loja/__tests__/NovaEntregaFlow.test.tsx`, `src/components/loja/__tests__/EntregaDetalhe.test.tsx`, `STATUS.md`, `LOG.md`.
+
+**Copies substituidas:** `Status recebido do backend: ...` virou `Status da entrega: ...`; `Pedido registrado na API` virou `Resumo da entrega`; a explicacao de `contrato real POST /api/deliveries` virou `Apos criar a solicitacao, voce pode acompanhar a entrega por aqui.`; o alerta de escopo tecnico virou `Proximos passos`; o aviso visual de tempo real virou `Entrega atualizada`; erros de API ausente viraram `Servico indisponivel`.
+
+**Testes:** `NovaEntregaFlow.test.tsx` e `EntregaDetalhe.test.tsx` agora verificam que o texto renderizado da loja nao contem `backend`, `API`, `POST /api`, `/api/deliveries`, `contrato real`, `payload`, `refetch` ou `REST`.
+
+**Validacoes locais:** `npm test -- NovaEntregaFlow EntregaDetalhe` passou com 16 testes; `npm run typecheck`, `npm test` (17 arquivos, 119 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Escopo preservado:** sem backend, banco, migrations, env, contrato de API, autenticacao, canal realtime novo, deploy, smoke de producao, Web Push/PWA/Service Worker/VAPID, pagamento, Storage ou documentos. Nenhum secret, token, cookie, header Authorization ou service role foi impresso.
+
 ## 2026-05-18 - M-12B FRONTEND FECHADO EM PRODUCAO
 
 **Fase:** fundacao/auth-operacao
@@ -965,3 +995,21 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 **Validacoes locais:** Frontend `npm run typecheck`, `npm test` (15 arquivos, 105 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `next lint` manteve apenas o aviso conhecido de deprecacao no Next 15; Vitest manteve o aviso conhecido do Vite CJS. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
 
 **Fora do escopo preservado:** Web Push/VAPID, Service Worker/PWA real, polling automatico, cron/expiracao automatica, cancelamento, GPS/mapa/raio, dados pessoais do motoboy para loja, assinatura realtime do motoboy aceito em `delivery:<deliveryId>`, leitura direta de tabelas de dominio pelo frontend e payload realtime com dados operacionais completos.
+
+## 2026-05-18 - HOTFIX COPY/PAINEL LOJA FRONTEND FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Fechamento operacional dos hotfixes frontend da loja concluido sem abrir feature nova. O commit funcional `b27bb83aac0175667f9a4f972d7bd7181c5773a1` foi publicado em `origin/main`, com `/loja` consumindo `listMyDeliveries`, acompanhando entregas abertas por realtime existente e copy publica de loja sem termos tecnicos. Backend relacionado permaneceu em `59a942863fa083974d4efad9497afbc4115734d8`.
+**Arquivos modificados:** `src/app/loja/page.tsx`, `src/components/loja/LojaHome.tsx`, componentes de copy da loja, testes de loja, `src/lib/realtime.ts`, `STATUS.md`, `LOG.md`
+**Agentes utilizados:** Camisa10, DeployObservability, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais:** `npm run typecheck`, `npm test` (18 arquivos, 124 testes), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `b27bb83aac0175667f9a4f972d7bd7181c5773a1` em `refs/heads/main`. O alias Vercel de producao passou a servir o bundle novo de `/loja`. Smoke publico confirmou `/`, `/loja`, `/loja/nova-entrega`, `/loja/entregas/<uuid>` e backend `/api/health` com `200`; rotas protegidas de entrega sem token retornaram `401`.
+
+**Smoke autenticado UI/API:** com dados ficticios temporarios, loja criou entrega pela UI em `/loja/nova-entrega`; `/loja` listou a entrega real, exibiu KPIs/historico recente e preservou `Atualizar`; motoboy aceitou pela API publicada e o painel atualizou por realtime/refetch; `/loja/entregas/:id` exibiu motoboy e `Aceita em`, manteve copy de produto sem `backend`, `API`, `POST /api`, `contrato real`, `REST`, `payload` ou `refetch`, preservou `Atualizar` e recebeu `coletada` com aviso `Entrega atualizada`.
+
+**Cleanup:** recursos temporarios removidos; residuos finais `delivery=0`, `store=0`, `courier=0`, `domain=0`, `auth=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
+**Fora do escopo preservado:** backend, SQL/migration/RLS/grants/env, canal realtime novo, payload realtime ampliado, Web Push/PWA/Service Worker/VAPID, cron, GPS, pagamento, Storage, documentos e M-12C.
