@@ -745,6 +745,21 @@ Registro cronologico de ciclos significativos. Fatos ficam aqui; decisoes vao em
 
 **Fora do escopo preservado:** cancelamento, alteracao de status, dados pessoais do motoboy, busca textual, filtro por data, dashboard, realtime, push, polling automatico, cron, documentos/Storage, gateway, checkout, PIX, cartao, boleto, cobranca integrada, comprovante/upload, valor financeiro, repasse/split, nota fiscal, tela para loja/motoboy, criacao/geracao mensal de registros e desmarcar pago.
 
+## 2026-05-17 - M-09B FRONTEND FECHADO EM PRODUCAO
+
+**Fase:** fundacao/auth-operacao
+**O que aconteceu:** Frontend funcional `59c432d5fb2d1540a4bf44edd226df369293e06b` publicado em `origin/main`, consumindo o backend `30b454f1de93254f9ca46ec9073bbf6cecea2c73` para exibir entregas por usuario na aba `Entregas` do `UserDetailDrawer`.
+**Agentes utilizados:** Camisa10, DeployObservability, Documentador
+**Status:** fechado em producao
+
+**Validacoes locais antes do push:** `npm run typecheck`, `npm test` (93), `npm run lint`, `npm run build` e `git diff --check` passaram. `git diff --check` exibiu apenas avisos LF/CRLF do Windows, sem erro de whitespace.
+
+**Deploy e smoke publico:** `git ls-remote` confirmou `59c432d5fb2d1540a4bf44edd226df369293e06b` em `refs/heads/main`; GitHub deployment/Vercel retornou `success`. `https://entreggo.vercel.app/admin/usuarios` retornou `200`; backend `/api/health` retornou `200`; `GET /api/admin/users/<uuid>/deliveries` sem token retornou `401 AUTH_REQUIRED`.
+
+**Smoke autenticado UI:** com dados ficticios temporarios, Playwright fez login real como admin, filtrou o logista ficticio em `/admin/usuarios`, abriu o drawer, acionou a aba `Entregas`, exibiu loja e destino reais da entrega e confirmou chamada bem-sucedida a `GET /api/admin/users/:id/deliveries`. A secao `Entregas` ficou sem `store_id`, `courier_id`, `user_id`, `auth_id`, `owner_name`, `full_name`, documentos, Storage URLs, token ou header.
+
+**Cleanup:** recursos temporarios removidos no smoke cross-stack; residuos finais `delivery=0`, `store=0`, `courier=0`, `domain=0`. Nenhum token, cookie, header Authorization, service role ou secret foi impresso.
+
 ## 2026-05-17 - M-09B LISTAGEM ADMINISTRATIVA DE ENTREGAS POR USUARIO FRONTEND LOCAL
 
 **Fase:** fundacao/auth-operacao

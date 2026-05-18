@@ -16,7 +16,6 @@
 - [ ] Planejar a proxima fatia pequena somente leitura com gates antes de qualquer codigo.
 - [ ] Preparar PWA/Service Worker real somente apos acompanhar o residual de auditoria do Next/PostCSS e validar seguranca.
 - [ ] Planejar cancelamento e dados complementares do motoboy somente com contrato backend e validadores.
-- [ ] Fechar operacionalmente a M-09B: commit, push, deploy Vercel e smoke pos-deploy antes de marcar producao.
 
 ## Concluido
 
@@ -83,6 +82,7 @@
 - [x] M-08 UI admin de pagamento externo publicada e validada em producao: frontend `eb7b54faa6223091a341d75620ab96557e29934f`, backend M-08 `d47e9fecae486824c8f2f0898e65d09830bb3805`; Vercel/GitHub `success`; `/admin/pagamentos` `200` e chunk publicado com UI nova; smoke autenticado API+UI passou com dados ficticios, retry idempotente, ausencia de campos proibidos e cleanup completo.
 - [x] M-09A detalhe administrativo somente leitura de entrega publicada e validada em producao: frontend `c03e759a8e2e874a93cffec8ed78277f6dad9342` publicou `/admin/entregas/[id]`, consumindo `GET /api/admin/deliveries/:id` por `getAdminDelivery`, com loading, erro recuperavel, nao encontrado honesto, detalhe renderizado e entrada "Abrir detalhe" na listagem `/admin/entregas`. Smoke UI autenticado confirmou admin ativo abrindo detalhe real e DOM sem `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados de motoboy, documentos, Storage, token ou header.
 - [x] M-09B frontend implementada e validada localmente: aba `Entregas` do `UserDetailDrawer` consome `GET /api/admin/users/:id/deliveries` por `listAdminUserDeliveries`, com carregamento preguiçoso ao abrir a aba, loading, erro recuperavel, vazio honesto, lista somente leitura, filtro por status e paginacao simples. A UI nao usa Supabase direto e nao renderiza `store_id`, `courier_id`, `user_id`, `auth_id`, email, dados pessoais do motoboy, documentos, Storage, token ou header na secao Entregas. Frontend `typecheck`, `test` (93), `lint`, `build` e `git diff --check` passaram.
+- [x] M-09B frontend publicado e validado em producao: commit funcional `59c432d5fb2d1540a4bf44edd226df369293e06b`, consumindo backend `30b454f1de93254f9ca46ec9073bbf6cecea2c73`; Vercel `success`; `/admin/usuarios` retornou `200`; smoke UI autenticado com Playwright fez login admin, filtrou logista ficticio, abriu o drawer, carregou a aba `Entregas`, exibiu loja/destino, chamou `GET /api/admin/users/:id/deliveries` com sucesso e manteve a secao sem campos proibidos.
 
 ## Bloqueios
 
@@ -98,6 +98,6 @@
 
 **Build:** passando
 **Lint:** passando (`next lint` deprecado no Next 15; migrar antes de Next 16)
-**Testes:** Vitest + Testing Library (93 testes; `npm test`; inclui M-09B local); Playwright instalado como ferramenta de smoke UI autenticado controlado
-**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI e M-09A validadas em producao
+**Testes:** Vitest + Testing Library (93 testes; `npm test`; inclui M-09B); Playwright instalado como ferramenta de smoke UI autenticado controlado
+**Deploy:** publicado em Vercel; Fatia 4C, M-07, M-08 backend-first, M-08 UI, M-09A e M-09B validadas em producao
 **Riscos abertos:** 4
