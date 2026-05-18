@@ -20,7 +20,7 @@ import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ClientApiError, createDeliveryRequest, getMyDelivery } from '@/lib/api';
 import { subscribeToStoreDeliveryBroadcast } from '@/lib/realtime';
-import type { DeliveryRequest } from '@/types/delivery';
+import type { DeliveryRequest, DeliveryRequestStatus } from '@/types/delivery';
 
 import type { DeliveryDraft } from './delivery-types';
 import { NovaEntregaForm, type DeliverySubmitError } from './NovaEntregaForm';
@@ -37,6 +37,15 @@ const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
   minute: '2-digit',
 });
 const REALTIME_NOTICE_DISMISS_MS = 4000;
+const statusLabel: Record<DeliveryRequestStatus, string> = {
+  aguardando: 'Aguardando',
+  aceita: 'Aceita',
+  coletada: 'Coletada',
+  em_transito: 'Em trânsito',
+  entregue: 'Entregue',
+  expirada: 'Expirada',
+  cancelada: 'Cancelada',
+};
 
 function formatDateTime(value: string): string {
   return dateTimeFormatter.format(new Date(value));
@@ -101,8 +110,8 @@ function mapCreateError(error: unknown): DeliverySubmitError {
       };
     case 'API_URL_MISSING':
       return {
-        title: 'API não configurada',
-        message: error.message,
+        title: 'Serviço indisponível',
+        message: 'Não foi possível preparar a solicitação agora. Tente novamente mais tarde.',
       };
     default:
       return {
@@ -155,7 +164,7 @@ export function NovaEntregaFlow({ accessToken }: NovaEntregaFlowProps) {
       <PageHeader
         eyebrow="Pedido em movimento"
         title="Nova entrega"
-        description="Crie uma solicitação real para sua loja e abra o acompanhamento assim que ela nascer."
+        description="Crie uma solicitação para sua loja e abra o acompanhamento assim que ela nascer."
         actions={
           <Link
             href="/loja"
@@ -291,6 +300,10 @@ function CreatedDeliveryState({
       accessToken,
       delivery.id,
       scheduleRealtimeRefresh,
+      undefined,
+      () => {
+        void loadDelivery('realtime');
+      },
     );
 
     return () => {
@@ -306,7 +319,7 @@ function CreatedDeliveryState({
       queuedLoad.current = false;
       unsubscribe();
     };
-  }, [accessToken, delivery.id, scheduleRealtimeRefresh]);
+  }, [accessToken, delivery.id, loadDelivery, scheduleRealtimeRefresh]);
 
   return (
     <section className="space-y-5 animate-fade-in" aria-live="polite">
@@ -326,7 +339,7 @@ function CreatedDeliveryState({
                   : `Entrega #${shortId} aguardando próxima etapa.`}
               </h2>
               <p className="mt-1 text-sm font-medium text-asphalt-950/70">
-                Status recebido do backend: {delivery.status}
+                Status da entrega: {statusLabel[delivery.status]}
               </p>
             </div>
           </div>
@@ -355,7 +368,7 @@ function CreatedDeliveryState({
       </Card>
 
       {realtimeNotice ? (
-        <Alert tone="info" title="Atualizacao em tempo real">
+        <Alert tone="info" title="Entrega atualizada">
           {realtimeNotice}
         </Alert>
       ) : null}
@@ -370,9 +383,9 @@ function CreatedDeliveryState({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
-              Resumo da entrega
+              Dados da solicitação
             </p>
-            <h3 className="mt-1 text-lg font-black text-asphalt-950">Pedido registrado na API</h3>
+            <h3 className="mt-1 text-lg font-black text-asphalt-950">Resumo da entrega</h3>
           </div>
           <PackagePlus className="h-6 w-6 text-asphalt-950/45" aria-hidden="true" />
         </div>
@@ -395,7 +408,7 @@ function CreatedDeliveryState({
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <StatusTile label="Criada em" value={formatDateTime(delivery.created_at)} />
-          <StatusTile label="Status" value={delivery.status} />
+          <StatusTile label="Status" value={statusLabel[delivery.status]} />
           {acceptedCourierName ? (
             <StatusTile label="Motoboy" value={acceptedCourierName} icon={UserCheck} />
           ) : null}
@@ -406,9 +419,9 @@ function CreatedDeliveryState({
         </div>
       </Card>
 
-      <Alert tone="info" title="Escopo desta etapa">
-        A solicitação foi criada no backend. O acompanhamento abre a entrega pelo contrato real e
-        mostra as próximas transições conforme o motoboy avançar.
+      <Alert tone="info" title="Próximos passos">
+        Após criar a solicitação, você pode acompanhar a entrega por aqui conforme o motoboy
+        avançar.
       </Alert>
     </section>
   );

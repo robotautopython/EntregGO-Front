@@ -38,6 +38,8 @@ import { NovaEntregaFlow } from '../NovaEntregaFlow';
 const createMock = vi.mocked(createDeliveryRequest);
 const getDetailMock = vi.mocked(getMyDelivery);
 const subscribeStoreMock = vi.mocked(subscribeToStoreDeliveryBroadcast);
+const forbiddenStoreTechnicalCopy =
+  /backend|API|POST\s+\/api|\/api\/deliveries|contrato real|payload|refetch|REST/i;
 
 const createdDelivery: DeliveryRequest = {
   id: '99999999-9999-4999-8999-999999999999',
@@ -68,6 +70,12 @@ afterEach(() => {
 });
 
 describe('NovaEntregaFlow', () => {
+  it('does not expose implementation terms in the request form', () => {
+    const { container } = render(<NovaEntregaFlow accessToken="tok" />);
+
+    expect(container.textContent).not.toMatch(forbiddenStoreTechnicalCopy);
+  });
+
   it('offers a clear CTA to the created delivery detail', async () => {
     createMock.mockResolvedValue(createdDelivery);
 
@@ -81,6 +89,7 @@ describe('NovaEntregaFlow', () => {
     expect(screen.getByText(/Loja Cafe/)).toBeInTheDocument();
     expect(screen.getByText(/Rua da Loja, 100/)).toBeInTheDocument();
     expect(container.innerHTML).not.toContain('Sua loja');
+    expect(container.textContent).not.toMatch(forbiddenStoreTechnicalCopy);
     expect(container.innerHTML).not.toMatch(/store_id|courier_id|Authorization|Bearer/i);
   });
 
@@ -99,7 +108,7 @@ describe('NovaEntregaFlow', () => {
     await userEvent.click(await screen.findByRole('button', { name: /Atualizar/i }));
 
     expect(getDetailMock).toHaveBeenCalledWith('tok', createdDelivery.id);
-    expect(await screen.findByText('Status recebido do backend: aceita')).toBeInTheDocument();
+    expect(await screen.findByText('Status da entrega: Aceita')).toBeInTheDocument();
   });
 
   it('uses delivery realtime only as a generic notification and REST refetch trigger', async () => {
@@ -120,6 +129,8 @@ describe('NovaEntregaFlow', () => {
       'tok',
       createdDelivery.id,
       expect.any(Function),
+      undefined,
+      expect.any(Function),
     );
 
     const onChanged = subscribeStoreMock.mock.calls[0][2];
@@ -131,7 +142,7 @@ describe('NovaEntregaFlow', () => {
     await waitFor(() => expect(getDetailMock).toHaveBeenCalledTimes(1));
     expect(notificationMock.notify).toHaveBeenCalledTimes(1);
     expect(notificationMock.notify).toHaveBeenCalledWith('A entrega foi atualizada.');
-    expect(await screen.findByText('Status recebido do backend: coletada')).toBeInTheDocument();
+    expect(await screen.findByText('Status da entrega: Coletada')).toBeInTheDocument();
 
     const realtimeAlert = screen.getByText('A entrega foi atualizada.').closest('[role="alert"]');
     expect(realtimeAlert).not.toBeNull();
@@ -144,6 +155,7 @@ describe('NovaEntregaFlow', () => {
     expect(container.innerHTML).not.toMatch(
       /store_id|courier_id|user_id|auth_id|Authorization|Bearer|service_role|token/i,
     );
+    expect(container.textContent).not.toMatch(forbiddenStoreTechnicalCopy);
   });
 
   it('cleans the delivery subscription and timers when leaving the created state', async () => {
@@ -191,7 +203,7 @@ describe('NovaEntregaFlow', () => {
     });
 
     expect(screen.getByRole('button', { name: /Criar solicita/i })).toBeInTheDocument();
-    expect(screen.queryByText('Status recebido do backend: aceita')).not.toBeInTheDocument();
+    expect(screen.queryByText('Status da entrega: Aceita')).not.toBeInTheDocument();
   });
 
   it('explains that store name and pickup address come from the store profile', () => {

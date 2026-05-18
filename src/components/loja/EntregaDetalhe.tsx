@@ -120,8 +120,8 @@ function mapDetailError(error: unknown): DetailError {
     case 'API_URL_MISSING':
       return {
         kind: 'recoverable',
-        title: 'API não configurada',
-        message: error.message,
+        title: 'Serviço indisponível',
+        message: 'Não foi possível carregar o acompanhamento agora. Tente novamente mais tarde.',
       };
     default:
       return {
@@ -276,6 +276,10 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
       accessToken,
       deliveryId,
       scheduleRealtimeRefresh,
+      undefined,
+      () => {
+        void load('realtime');
+      },
     );
 
     return () => {
@@ -289,7 +293,7 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
       }
       unsubscribe();
     };
-  }, [accessToken, deliveryId, scheduleRealtimeRefresh]);
+  }, [accessToken, deliveryId, load, scheduleRealtimeRefresh]);
 
   const timeline = useMemo(() => (delivery ? buildTimeline(delivery) : []), [delivery]);
   const acceptedCourierName = delivery?.accepted_at ? delivery.courier?.full_name : null;
@@ -359,7 +363,7 @@ export function EntregaDetalhe({ accessToken, deliveryId }: EntregaDetalheProps)
       ) : delivery ? (
         <section className="space-y-5" aria-live="polite">
           {realtimeNotice ? (
-            <Alert tone="info" title="Atualizacao em tempo real">
+            <Alert tone="info" title="Entrega atualizada">
               {realtimeNotice}
             </Alert>
           ) : null}

@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const supabaseMock = vi.hoisted(() => {
   const on = vi.fn(() => channel);
-  const subscribe = vi.fn(() => channel);
+  const subscribe = vi.fn((callback?: (status: string) => void) => {
+    void callback;
+    return channel;
+  });
   const channel = { on, subscribe };
   return {
     channel,
@@ -106,6 +109,18 @@ describe('realtime helpers', () => {
     unsubscribe();
 
     expect(supabaseMock.removeChannel).toHaveBeenCalledWith(supabaseMock.channel);
+  });
+
+  it('runs the ready callback after a private store channel subscribes', async () => {
+    const onReady = vi.fn();
+    subscribeToStoreDeliveryBroadcast('tok', 'd1', vi.fn(), undefined, onReady);
+    await vi.waitFor(() => expect(supabaseMock.subscribe).toHaveBeenCalled());
+
+    const onStatus = supabaseMock.subscribe.mock.calls[0]?.[0];
+    if (!onStatus) throw new Error('missing subscribe callback');
+    onStatus('SUBSCRIBED');
+
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 
   it('validates realtime payloads by whitelist', () => {

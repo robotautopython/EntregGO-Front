@@ -28,6 +28,7 @@ interface SubscribeOptions {
   events: DeliveryRealtimeEvent[];
   onEvent: (event: DeliveryRealtimeEvent, payload: DeliveryRealtimePayload) => void;
   onError?: () => void;
+  onReady?: () => void;
 }
 
 const payloadStatuses = new Set([
@@ -77,6 +78,7 @@ export function subscribeToPrivateDeliveryBroadcast({
   events,
   onEvent,
   onError,
+  onReady,
 }: SubscribeOptions): () => void {
   if (!accessToken) return () => undefined;
 
@@ -98,7 +100,9 @@ export function subscribeToPrivateDeliveryBroadcast({
         });
       });
       channel.subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        if (status === 'SUBSCRIBED') {
+          onReady?.();
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           onError?.();
         }
       });
@@ -134,6 +138,7 @@ export function subscribeToStoreDeliveryBroadcast(
   deliveryId: string,
   onDeliveryChanged: () => void,
   onError?: () => void,
+  onReady?: () => void,
 ) {
   return subscribeToPrivateDeliveryBroadcast({
     accessToken,
@@ -145,5 +150,6 @@ export function subscribeToStoreDeliveryBroadcast(
       }
     },
     onError,
+    onReady,
   });
 }

@@ -152,10 +152,9 @@ export function LojaPerfil({ authContext }: LojaPerfilProps) {
       </Card>
 
       <Card variant="paper" className="border-dashed">
-        <p className="text-sm font-bold text-asphalt-950">Construindo este perfil</p>
+        <p className="text-sm font-bold text-asphalt-950">Perfil da loja</p>
         <p className="mt-1 text-xs text-asphalt-950/65">
-          O endpoint <code className="font-mono text-asphalt-950">PATCH /api/stores/me</code> entra
-          numa próxima etapa — o formulário acima é o destino visual final.
+          Mantenha nome, endereço e contato atualizados para facilitar suas próximas entregas.
         </p>
       </Card>
     </div>

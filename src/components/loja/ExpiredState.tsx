@@ -29,15 +29,15 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-danger-700">
             Tempo esgotado
           </p>
-          <h2 className="text-3xl font-black text-asphalt-950">Nenhum aceite nesta simulação.</h2>
+          <h2 className="text-3xl font-black text-asphalt-950">Nenhum aceite no prazo.</h2>
           <p className="mx-auto max-w-md text-sm text-asphalt-950/70">
-            Use este estado para validar o layout de expiração enquanto o aceite real não existe.
+            Revise os dados da entrega ou tente novamente para chamar outro motoboy.
           </p>
         </div>
 
         <div className="w-full max-w-xl rounded-lg border border-dashed border-paper-line bg-paper p-5 text-left">
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-asphalt-950/55">
-            Última simulação
+            Última tentativa
           </p>
           <div className="mt-3">
             <RouteLine from={storeName} to={draft.destinationAddress ?? 'Destino não informado'} />
@@ -47,7 +47,7 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="primary" size="lg" onClick={onRetry}>
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Simular novamente
+            Tentar novamente
           </Button>
           <Button variant="secondary" size="lg" onClick={onEdit}>
             <Pencil className="h-4 w-4" aria-hidden="true" />
@@ -61,7 +61,7 @@ export function ExpiredState({ draft, storeName, onRetry, onEdit }: ExpiredState
         <ul className="mt-2 space-y-1.5 text-sm text-asphalt-950/75">
           <li>· Confirme se o endereço tem número e bairro.</li>
           <li>· Adicione complemento (apto, sala, ponto de referência).</li>
-          <li>· Use novas tentativas apenas para validar o fluxo visual.</li>
+          <li>· Tente novamente quando os dados da entrega estiverem corretos.</li>
         </ul>
       </Card>
     </section>

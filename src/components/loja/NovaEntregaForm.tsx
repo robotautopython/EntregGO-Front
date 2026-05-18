@@ -63,7 +63,7 @@ export function NovaEntregaForm({
         </span>
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-600">
-            Solicitação real
+            Solicitação de entrega
           </p>
           <h2 className="text-2xl font-black text-asphalt-950 sm:text-3xl">
             Para onde a entrega vai?
@@ -131,8 +131,7 @@ export function NovaEntregaForm({
           <div className="flex items-start gap-3 text-sm text-asphalt-950/75">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-route-600" aria-hidden="true" />
             <p>
-              A criação usa o contrato real <strong>POST /api/deliveries</strong>. Depois disso,
-              a entrega pode ser aberta no acompanhamento da loja.
+              Após criar a solicitação, você pode acompanhar a entrega por aqui.
             </p>
           </div>
         </div>

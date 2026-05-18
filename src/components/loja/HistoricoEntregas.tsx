@@ -137,7 +137,10 @@ function mapListError(error: unknown): ListError {
         message: 'Entre novamente para ver o histórico.',
       };
     case 'API_URL_MISSING':
-      return { title: 'API não configurada', message: error.message };
+      return {
+        title: 'Serviço indisponível',
+        message: 'Não foi possível carregar o histórico agora. Tente novamente mais tarde.',
+      };
     default:
       return {
         title: 'Não foi possível carregar o histórico',

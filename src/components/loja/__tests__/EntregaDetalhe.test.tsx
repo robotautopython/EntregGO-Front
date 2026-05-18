@@ -24,6 +24,8 @@ import { EntregaDetalhe } from '../EntregaDetalhe';
 
 const getDetailMock = vi.mocked(getMyDelivery);
 const subscribeStoreMock = vi.mocked(subscribeToStoreDeliveryBroadcast);
+const forbiddenStoreTechnicalCopy =
+  /backend|API|POST\s+\/api|\/api\/deliveries|contrato real|payload|refetch|REST/i;
 
 const detail: StoreDeliveryDetail = {
   id: '77777777-7777-4777-8777-777777777777',
@@ -82,6 +84,7 @@ describe('EntregaDetalhe', () => {
     expect(screen.getAllByText('Aceita').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Coletada').length).toBeGreaterThan(0);
     expect(getDetailMock).toHaveBeenCalledWith('tok', detail.id);
+    expect(container.textContent).not.toMatch(forbiddenStoreTechnicalCopy);
     expect(container.innerHTML).not.toMatch(
       /store_id|courier_id|user_id|auth_id|email|phone|owner_name|full_name|is_online|logo_url|bike_photo_url|license_photo_url|Authorization|Bearer|service_role|token/i,
     );
@@ -135,7 +138,7 @@ describe('EntregaDetalhe', () => {
       onChanged();
     });
 
-    expect(screen.getByText('Atualizacao em tempo real')).toBeInTheDocument();
+    expect(screen.getByText('Entrega atualizada')).toBeInTheDocument();
     const realtimeAlert = screen.getByText('A entrega foi atualizada.').closest('[role="alert"]');
     expect(realtimeAlert).not.toBeNull();
     expect(
@@ -145,7 +148,13 @@ describe('EntregaDetalhe', () => {
       /77777777|deliveryId|status|address|destination_address|notes|store_id|courier_id|user_id|auth_id|full_name|Motoboy Parceiro|Authorization|Bearer|service_role|token|email|phone/i,
     );
     await waitFor(() => expect(getDetailMock).toHaveBeenCalledTimes(2));
-    expect(subscribeStoreMock).toHaveBeenCalledWith('tok', detail.id, expect.any(Function));
+    expect(subscribeStoreMock).toHaveBeenCalledWith(
+      'tok',
+      detail.id,
+      expect.any(Function),
+      undefined,
+      expect.any(Function),
+    );
   });
 
   it('unsubscribes from delivery realtime on unmount', async () => {
